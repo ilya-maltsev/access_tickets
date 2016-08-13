@@ -1,0 +1,81 @@
+# This file is a part of Access tickets plugin,
+# access management plugin for Redmine
+#
+# Copyright (C) 2016 Ilya Maltsev
+# email: i.y.maltsev@yandex.ru
+#
+# access_tickets is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# access_tickets is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
+
+
+require 'access_tickets/hooks'
+
+if ActiveRecord::Base.connection.table_exists? 'i_settings'
+  r = ActiveRecord::Base.connection.execute("SELECT count(*) FROM `i_settings` WHERE `i_settings`.`deleted` = 0 AND `i_settings`.`param` = 'at_erm_integration' AND `i_settings`.`value` = 1").to_a[0][0]
+else
+  r =0
+end
+
+ACCESS_TICKETS_VERSION_TYPE = "Light version"
+
+Redmine::Plugin.register :access_tickets do
+  name 'Access tickets' 
+  author 'Maltsev Ilya' 
+  description 'Access management plugin for Redmine'
+  version ACCESS_TICKETS_VERSION_TYPE
+  url ''
+  author_url 'mailto:i.y.maltsev@yandex.ru'
+  settings :partial => '/isettings/at_settings', :default => {} 
+
+  menu :top_menu, :access_tickets, {
+    'controller' => 'itickets', 'action' => "show_at_project"
+    },
+      :html => {:class => 'icon icon-roles'},
+       :caption => :at_access_tickets,
+       :if => Proc.new{ISetting.check_config() }
+
+  Redmine::MenuManager.map :top_menu do |menu|
+
+    if r > 0
+      menu.push(:at_my_access_parent, 
+      {:controller => 'iaccesses', :action => 'accesses_list'}, 
+      {
+        :parent => :access_tickets,
+        :caption => :at_access_list,
+      })
+
+      menu.push(:at_resources_list_parent, 
+      {:controller => 'iresources', :action => 'resources_list'}, 
+      {
+        :parent => :access_tickets,
+        :caption => :at_resources_list,
+      })
+
+    else 
+      menu.push(:at_my_access, 
+      {:controller => 'iaccesses', :action => 'accesses_list'}, 
+      {
+        :caption => :at_access_list,
+      })
+      menu.push(:at_resources_list, 
+      {:controller => 'iresources', :action => 'resources_list'}, 
+      {
+        :caption => :at_resources_list,
+      })
+    end
+
+
+end
+
+
+end
