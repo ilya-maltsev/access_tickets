@@ -1,0 +1,451 @@
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+
+<div id="" class="box">
+
+<fieldset class="at_descript">
+<legend><h4><%= l(:at_resources_list) %></h4></legend>
+
+<%= form_tag({}, :id => "easy-query-list") do -%>
+  <table id="resources_list" class="list entities issues issues_index context-menu-container">
+    <thead>
+      <tr>
+        <th style="width:25%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
+        <th style="width:20%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
+        <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>"><%= text_field_tag("search_owner", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+        <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>"><%= text_field_tag("search_granter", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+        <th style="width:5%;background-color:white" title=""></th>
+      </tr>
+      <tr>
+        <th style="width:25%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:20%" title="<%= l(:at_roles) %>"><a><%= l(:at_roles) %></a></th>
+        <th style="width:15%" title="<%= l(:at_resource_owners) %>"><a><%= l(:at_resource_owners) %></a></th>
+        <th style="width:15%" title="<%= l(:at_resource_granters) %>"><a><%= l(:at_resource_granters) %></a></th>
+        <th style="width:5%" title="<%= l(:at_activity) %>"><%= l(:at_activity) %></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for resource in IResource.resources_list(User.current.id) %>
+      <tr>
+        <td>
+        <span class="nowrap">
+          <a id="<%= resource[:id] %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= resource[:name] %></a>
+        </span>
+        </td>
+        <td>
+        <% if resource[:roles].size < 5 %>
+          <% for role in resource[:roles] %>
+            <a id="<%= role[:id] %>" onclick="show_role_description(this);" class="" title="<%= l(:at_show_role_description) %>"><%= role[:name] %></a><br>
+          <% end %>
+        <% else %>
+          <% for role in resource[:roles][0..3] %>
+            <a id="<%= role[:id] %>" onclick="show_role_description(this);" class="" title="<%= l(:at_show_role_description) %>"><%= role[:name] %></a><br>
+          <% end %>
+          <a onclick="expand(this);" class="expand" title="<%= l(:at_show_all_list) %>">>></a>
+          <div class="hidden_roles" style="display:none">
+          <% for role in resource[:roles][4-resource[:roles].size..resource[:roles].size] %>
+            <a id="<%= role[:id] %>" onclick="show_role_description(this);" class="" title="<%= l(:at_show_role_description) %>"><%= role[:name] %></a><br>
+          <% end %>
+          </div>
+          <a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%= l(:at_cut_down_list) %>"><<</a>
+        <% end %>
+        </td>
+        <td>
+        <% if resource[:iresowners].size < 5 %>
+          <% for iresowner in resource[:iresowners] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresowner[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresowner[:name] %></a></span><br>
+          <% end %>
+        <% else %>
+          <% for iresowner in resource[:iresowners][0..3] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresowner[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresowner[:name] %></a></span><br>
+          <% end %>
+          <a onclick="expand(this);" class="expand" title="<%= l(:at_show_all_list) %>">>></a>
+          <div class="hidden_roles" style="display:none">
+          <% for iresowner in resource[:iresowners][4-resource[:iresowners].size..resource[:iresowners].size] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresowner[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresowner[:name] %></a></span><br>
+          <% end %>
+          </div>
+          <a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%= l(:at_cut_down_list) %>"><<</a>
+        <% end %>
+        </td>
+        <td>
+        <% if resource[:iresgranters].size < 5 %>
+          <% for iresgranter in resource[:iresgranters] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresgranter[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresgranter[:name] %></a></span><br>
+          <% end %>
+        <% else %>
+          <% for iresgranter in resource[:iresgranters][0..3] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresgranter[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresgranter[:name] %></a></span><br>
+          <% end %>
+          <a onclick="expand(this);" class="expand" title="<%= l(:at_show_all_list) %>">>></a>
+          <div class="hidden_roles" style="display:none">
+          <% for iresgranter in resource[:iresgranters][4-resource[:iresgranters].size..resource[:iresgranters].size] %>
+            <span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= iresgranter[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= iresgranter[:name] %></a></span><br>
+          <% end %>
+          </div>
+          <a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%= l(:at_cut_down_list) %>"><<</a>
+        <% end %>
+        </td>
+        <td>
+          <% if resource[:editable] == 1%>
+            <a id ="<%= resource[:id] %>" style="" class="icon-cf" title="<%= l(:at_edit) %>" onclick="edit_resource(this);"></a>
+          <% end %>
+          <% if resource[:removable] == 1%>
+            <a id="<%= resource[:id] %>" style="" class="icon-close" title="<%= l(:at_remove) %>" onclick="confirm_removing_resource(this);"></a>
+          <% end %>
+        </td> 
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+
+<% end %>
+<div style="clear: both;"></div>
+
+</fieldset>
+</div>
+
+
+
+
+<script type="text/javascript">
+
+function cut_down(obj) {
+  $(obj).parent().find('div.hidden_roles').hide();
+  $(obj).parent().find('.expand').show();
+  $(obj).hide();
+}
+
+function expand(obj) {
+  $(obj).parent().find('div.hidden_roles').show();
+  $(obj).parent().find('.cut_down').show();
+  $(obj).hide();
+}
+
+function remove_resource(res_id){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/remove_resource", { resource_id : res_id }, function( data ) {
+    if (data.status == 1) {
+      update_resources_list(data);
+      //$('#entity_list').DataTable().draw();
+    }
+  }, "json");
+
+}
+
+function confirm_removing_resource(obj) {
+  //alert($(obj).attr("id"));
+  var res_id = $(obj).attr("id");
+  var code = 'remove_resource('+ res_id + ')';
+  //eval(code);
+  show_confirm_dialog('<%=j l(:at_removing_resource) %>', '<%=j l(:at_confirm_removing_resource) %>', code);
+}
+
+function validate_name_len(name, len) {
+  if ( name.length < len ) {
+    return true;
+  } else {
+    return "Название может содержать до " + len + " символов";
+  }
+}
+
+function validate_desc_len(desc, len) {
+  if ( desc.length < len ) {
+    return true;
+  } else {
+    return "Описание может содержать до " + len + " символов";
+  }
+}
+
+$('body').append('<div id="confirmDialogBox" style="display:none"></div>');
+
+function show_confirm_dialog(title, warning, code) {
+  var result, confirm_result = false;
+  var $confirmDialog = $('#confirmDialogBox')
+    .html(warning)
+    .dialog({
+    title: title,
+    //modal: true,
+    autoOpen: false, 
+    height:200,
+    resizable: false,
+    buttons: [{ 
+      text: "Нет",
+      class: "button-4",
+      click: function () {
+        confirm_result =  false;
+        $(this).dialog('close');
+      }, 
+    },  {
+      text: "Да",
+      class: "button-6",
+      click: function() {
+        confirm_result = true;
+        $(this).dialog('close');
+      }
+    }],
+    close: function() {
+      if (confirm_result == true) {
+        eval(code);
+      }
+    },
+    open: function( event, ui ) {
+      $('button.ui-state-focus').removeClass('ui-state-focus');
+    }
+  });
+  $confirmDialog.dialog('open');
+}
+
+
+
+$('#wrapper').append('<div id="msgBox"></div>');
+
+
+var security_officer = <%= ITicket.check_security_officer(User.current) ? 1 : 0 %>;
+
+$(document).attr("title", "<%= l(:at_resources_list) %>");
+
+$(document.body).on('click', 'button.icon-del', function() {
+  $('#resources_list').DataTable().row( $(this).parents('tr') ).remove().draw();
+});
+
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
+
+$('#resources_list').DataTable({
+    //"bPaginate": false,
+    //"bFilter": false, 
+    //"processing": false,
+    //"serverSide": true,
+    "createdRow" : function( row, data, index ) {
+
+        // Add identity if it specified
+        //if( data.hasOwnProperty("id") ) {
+        //    row.id = "row-" + data.id;
+        //} 
+        //var count = 
+        if (index > 0) {
+          var IDs = [];
+          $("#resources_list").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          //console.log(IDs);
+          //console.log(Math.max.apply(Math,IDs));
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": false,
+    //"bFilter": false, 
+    //"iDisplayLength": 4,
+    //"lengthMenu": [[4, -1 ], [4, "Все"]],
+    "lengthMenu": [[5, 10, -1], ["5 <%= l(:at_entries) %>", "10 <%= l(:at_entries) %>", "<%= l(:at_all_entries) %>"]],
+    "bSort" : false,
+    "oLanguage": {
+      "sInfo": "<%= l(:at_sInfo) %>",
+      "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+      "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+      "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                  "sSearch": "",
+      "oPaginate": {
+              "sFirst": "<%= l(:at_sFirst) %>",
+              "sNext": "<%= l(:at_sNext) %>",
+              "sLast": "<%= l(:at_sLast) %>",
+              "sPrevious": "<%= l(:at_sPrevious) %>"
+      },
+      "sLengthMenu": "<%= l(:at_sLengthMenu) %>"
+
+  },
+  "columns": [
+    { "orderDataType": "dom-text", type: 'string' },
+    { "orderDataType": "dom-text", type: 'string' },
+    { "orderDataType": "dom-text", type: 'string' },
+    { "orderDataType": "dom-text", type: 'string' },
+    null,
+  ],
+  });
+
+  function show_role_description(obj) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_role_description", { role_id: $(obj).attr('id') }, "json");  
+  }
+
+  function show_resource(obj) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+  }
+
+
+  function edit_resource(obj){
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource", { resource_id: $(obj).attr('id') }, "json");
+
+  }
+
+function update_resources_list(data) {
+  //console.log(data);
+  if (data.iresources.length > 0) {
+    
+    $('#resources_list').DataTable().clear().draw();
+    $.each(data.iresources,function(i){
+      var id, name, roles, resowners, resgranters, actions;
+      id = this["id"];
+      //name = this["name"];
+      name = '<span class="nowrap"><a id="'+ this.id + '" onclick="show_resource(this);" class="resource_details" title="<%= l(:at_show_resource_details) %>">'+ this.name + '</a></span>';
+      roles = "";
+      resowners = "";
+      resgranters = "";
+      //if (this["iroles"].length > 0) {
+      //  roles = "";
+      //  $.each(this["iroles"], function(i) {
+      //    roles = roles + this + "<br>";
+      //  });
+      //} else {
+      //  roles = "";
+      //}
+      iroles = this["roles"];
+      if (iroles.length > 0) {
+        if (iroles.length < 5) {
+          $.each(iroles, function(i) {
+            role = '<span class="nowrap"><a id = "'+ this.i_role.id + '" onclick="show_role_description(this);" class="role_details" title="<%= l(:at_show_role_description) %>">'+ this.i_role.name + '</a></span>';
+            roles = roles + role + "<br>";
+          });
+        } else {
+          for (var i = 0; i < 4; i++) {
+            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            roles = roles + role + "<br>";
+          }
+          roles = roles + '<a onclick="expand(this);" class="expand" title="<%=j l(:at_show_all_list) %>">>></a><div class="hidden_roles" style="display:none">';
+          for (var i = 4; i < iroles.length; i++) {
+            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            roles = roles + role + "<br>";
+          }
+          roles = roles + '</div><a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%=j l(:at_cut_down_list) %>"><<</a>';
+        }
+      } else {
+        roles = "";
+      }
+      iresowners = this["iresowners"];
+      if (iresowners.length > 0) {
+        resowners = "";
+        if (iresowners.length < 5) {
+          $.each(iresowners, function(i) {
+            resowner = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
+            resowners = resowners + resowner + "<br>";
+          });
+        } else {
+          for (var i = 0; i < 4; i++) {
+            resowner = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ iresowners[i].id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ iresowners[i].name + '</a></span>';
+            resowners = resowners + resowner + "<br>";
+          }
+          resowners = resowners + '<a onclick="expand(this);" class="expand" title="<%=j l(:at_show_all_list) %>">>></a><div class="hidden_roles" style="display:none">';
+          for (var i = 4; i < iresowners.length; i++) {
+            resowner = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ iresowners[i].id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ iresowners[i].name + '</a></span>';
+            resowners = resowners + resowner + "<br>";
+          }
+          resowners = resowners + '</div><a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%=j l(:at_cut_down_list) %>"><<</a>';
+        }
+      } else {
+        resowners = "";
+      }
+      iresgranters = this["iresgranters"];
+      if (iresgranters.length > 0) {
+        resgranters = "";
+        if (iresgranters.length < 5) {
+          $.each(iresgranters, function(i) {
+            resgranter = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
+            resgranters = resgranters + resgranter + "<br>";
+          });
+        } else {
+          for (var i = 0; i < 4; i++) {
+            resgranter = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ iresgranters[i].id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ iresgranters[i].name + '</a></span>';
+            resgranters = resgranters + resgranter + "<br>";
+          }
+          resgranters = resgranters + '<a onclick="expand(this);" class="expand" title="<%=j l(:at_show_all_list) %>">>></a><div class="hidden_roles" style="display:none">';
+          for (var i = 4; i < iresgranters.length; i++) {
+            resgranter = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ iresgranters[i].id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ iresgranters[i].name + '</a></span>';
+            resgranters = resgranters + resgranter + "<br>";
+          }
+          resgranters = resgranters + '</div><a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%=j l(:at_cut_down_list) %>"><<</a>';
+        }
+      } else {
+        resgranters = "";
+      }
+      //actions = '<a id="'+id+'" style="color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-list" title="<%=j l(:at_details) %>" onclick="show_resource(this);"></a>';
+      actions = '';
+      if (this["editable"] == 1) {
+        actions = actions + '<a id ="'+id+'" style="color: #52afe5 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-cf" title="<%=j l(:at_edit) %>" onclick="edit_resource(this);"></a>';
+      }
+      if (this["removable"] == 1) {
+        actions = actions + '<a id="'+id+'" style="color: #F78282 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-close" title="<%=j l(:at_remove) %>" onclick="confirm_removing_resource(this);"></a>';
+      }
+      $('#resources_list').DataTable().row.add([
+        name,
+        roles,
+        resowners,
+        resgranters,
+        actions
+        ]).draw();
+    });
+
+    }
+}
+
+
+
+  <% if ITicket.check_security_officer(User.current) %>
+  $('table#resources_list').before('<div class="dataTables_wrapper dataTables_length" style="">');
+
+
+  $('.dataTables_wrapper').append('<div id="resource_management" style="text-align: center;width : 100%;display:inline-block;float: left;"></div>');
+
+  $('#resource_management').append("<%=j button_tag(l(:at_add_resource),  :id => 'add_res_button', :type => 'button', :class => 'button-1 nomargin-bottom', :style => 'float:right;margin-left:10px;line-height:0 !important;height:30px !important;') %>");
+
+  $('#resource_management').append('<div id="new_resource" style="text-align: center;display:inline-block;float: right;height: 30px; line-height: 30px; padding: 0;" title=""></div>');
+
+  $('#new_resource').append('<label style="float:left;" for="resource_name"><%= l(:at_resource_name) %>:</label>');
+
+  $('#new_resource').append("<%=j text_field_tag('resource_name', nil, :title => l(:at_resource_name), :placeholder => '', :style=>'width: 300px;float:left;margin-left:10px;', :maxlength => "64", :class => 'at_input'  ) %>");
+
+  <% end %>
+
+$('#resources_list').removeAttr('style');
+
+
+
+$("#add_res_button").click(function(e) {
+  var result = validate_name_len($("#resource_name").val(), 64); 
+  if ( result == true ) {
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/add_resource", { name : $("#resource_name").val() }, function( data ) {
+      $("#resource_name").val('');
+      update_resources_list(data);
+    }, "json");
+  } else {
+    alert(result);
+  }
+});
+$('#resources_list_filter label input[type=search]').hide();
+$('#search_resource').on( 'input', function () { 
+  $('#resources_list').DataTable().columns(0).search($('#search_resource').val()).draw();
+} );
+
+$('#search_role').on( 'input', function () { 
+  $('#resources_list').DataTable().columns(1).search($('#search_role').val()).draw();
+} );
+
+
+$('#search_owner').on( 'input', function () { 
+  $('#resources_list').DataTable().columns(2).search($('#search_owner').val()).draw();
+} );
+
+$('#search_granter').on( 'input', function () { 
+  $('#resources_list').DataTable().columns(3).search($('#search_granter').val()).draw();
+} );
+
+$('#resources_list').DataTable().column(4).visible( false );
+<% if ITicket.check_security_officer(User.current) || IResgranter.is_resgranter(User.current.id) || IResowner.is_resowner(User.current.id) %>
+  $('#resources_list').DataTable().column(4).visible( true );
+<% end %>
+</script>
+
+
+<%= content_tag('div', render(:partial => "/css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>

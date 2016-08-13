@@ -1,0 +1,62 @@
+<div style="margin-left:50px;padding:10px">
+  <div>
+
+  <div style="margin-bottom: 8px;">
+    <div style="width : 200px;display:inline-block">
+      <%= label_tag(:access_tickets_resource_id, l(:at_resource_m)) %>
+    </div>
+    <%= select_tag('resourse_id', options_from_collection_for_select(IResource.active.all, :id, :name), {:style=>'width: 200px', :prompt => l(:at_select_resource), :onchange => "show_resugroups(this)"} ) %> 
+  </div>
+
+
+  <div style="margin-bottom: 8px;">
+    <div style="width : 200px;display:inline-block">
+      <%= label_tag(:access_tickets_admin_group_id, l(:at_groups_availability)) %>:
+    </div>
+    <%= select_tag('resugroup_id', options_from_collection_for_select(Group.all, :id, :lastname), {:style=>'width: 200px !important', :include_blank => true, :multiple => "", :onchange => "set_groups_for_resources(this)"} ) %>
+  </div >
+</div>
+
+
+<script type="text/javascript">
+  $('#resourse_id').chosen({width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_select_resource)%>'});
+
+  $('#resugroup_id').chosen({width:"220px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '});
+
+
+  function show_resugroups(obj){
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource/groups_availability", { resource_id: $(obj).val() }, function( data ) {
+      //console.log(data);
+      $('#resugroup_id').empty();
+      $('#resugroup_id').append('<option value=""><%= l(:at_select_group)%></option>');
+      var groups = data.groups;
+      $.each(groups,function(i){
+        $('#resugroup_id').append('<option value=' + groups[i].id + '>' + groups[i].name + '</option>');
+      });
+      $('#resugroup_id').val(data.resugroups);
+      $('#resugroup_id').trigger("chosen:updated");
+    }, "json");
+  }
+
+
+  function set_groups_for_resources(obj){
+    if ( $("select#resugroup_id option").filter(":selected").val() == 'null' ) {
+    } else {
+      $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource/set_groups_availability", { resource_id : $("select#resourse_id option").filter(":selected").val(),
+      iresugroups: $(obj).val() }, function( data ) {
+        //console.log(data);
+      }, "json");
+    }
+  }
+
+
+  //function set_group_templates(obj){
+  //  if ( $("select#group_id option").filter(":selected").val() == 'null' ) {
+  //  } else {
+  //    $.post("access_tickets_isettings/set_group_templates", { group_id : $("select#group_id option").filter(":selected").val(),
+  //    group_templates: $(obj).val() }, function( data ) {
+  //    }, "json");
+  //  }
+  //}
+
+</script>

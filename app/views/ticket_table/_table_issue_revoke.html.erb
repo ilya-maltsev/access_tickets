@@ -1,0 +1,529 @@
+<% if @issue.project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i %>
+
+
+<div id="" class="box">
+<fieldset class="at_descript">
+<legend><h3><%= l(:at_access_list) %></h3></legend>
+
+<%= form_tag({}, :id => "easy-query-list") do -%>
+  <table id="show_ticket" class="list entities issues issues_index context-menu-container">
+    <thead>
+      <tr>
+        <th style="width:20%" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
+        <th style="width:15%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:15%" title="<%= l(:at_role) %>"><a><%= l(:at_role) %></a></th>
+        <th style="width:20%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+        <th style="width:10%" title="<%= l(:at_period) %>"><a><%= l(:at_period) %></a></th>
+        <th style="width:15%" title="<%= l(:at_status) %>"><a><%= l(:at_status) %></a></th>
+        <th style="width:5%" title="<%= l(:label_activity) %>"><a class="icon icon-settings settings"/a></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for access in IAccess.accesses_list(0, @issue.id, User.current.id) %>
+      <tr>
+        <td><%=raw access[:users]*"<br>" %></td>
+        <td>
+        <span class="nowrap">
+          <a id="<%= access[:i_resource_id] %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= access[:i_resource] %></a>
+        </span>
+        </td>
+        <td><%=raw access[:i_roles]*"<br>" %></td>
+        <td>
+        <% if !access[:description].nil? %>
+          <%= access[:description] %>
+        <% else %>
+          <% for entity in access[:ientities] %>
+            <%= entity[:caption] %><br>
+          <% end %>
+        <% end %>
+        </td>
+        <% if access[:e_date].to_s == "2025-12-31" %>
+        <td><%= l(:at_forever) %><%= l(:at_since) %><%= access[:s_date] %></td>
+        <% else %>
+        <td><%= access[:s_date] %> -<br><%= access[:e_date] %></td>
+        <% end %>
+        <td>
+        <span class="nowrap add-user-links" data-id="1">
+          <a href="<%= Redmine::Utils::relative_url_root %>/users/<%= access[:user_id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= access[:user_name] %></a></span>
+        <% if access[:status_id] == 1 || access[:status_id] == 2  %>
+          <p style="color: #4ebf67 !important"><%= access[:status] %>
+        <% else %>
+          <p style="color: #F78282 !important"><%= access[:status] %>
+        <% end %>
+          </p>
+        </td>
+
+        <td>
+        <% if access[:status_id] == 1 && access[:may_be_deactivated]  == 1 %>
+        <a id="<%= access[:r_uid] %>" class="revoke_grant icon icon-close at_red" title="<%= l(:at_deactivate_this_grant) %>" onclick="deactivate_single_grant(this);"> </a>
+        <% else if access[:status_id] == 2 && access[:may_be_activated]  == 1 %>
+        <a id="<%= access[:r_uid] %>" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_activate_this_grant) %>" onclick="activate_single_grant(this)"> </a>
+        <% else %>
+        
+        <% end %>
+        <% end %>
+        </td>
+
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+
+    <% end %>
+<div style="clear: both;"></div>
+
+</fieldset>
+</div>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/access_tickets.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+<script type="text/javascript">
+$('#ajax-indicator span').text('<%= l(:at_loading) %>');
+
+  $('#show_ticket').DataTable({
+    //"bPaginate": false,
+    "bFilter": false, 
+    "bInfo": false,
+    "lengthMenu": [[10, 20, -1], ["10 записей", "20 записей", "Все записи"]],
+    "oLanguage": {
+      "sInfo": "Показаны от _START_ до _END_ из _TOTAL_ записей",
+      "sInfoFiltered": "(отсортировано из _MAX_ записей)",
+      "sInfoEmpty": "Нет совпадений для отображения",
+      "sZeroRecords": "Записи отсутствуют",
+                  "sSearch": "",
+      "oPaginate": {
+              "sFirst": "В начало",
+              "sNext": "Вперед",
+              "sLast": "В конец",
+              "sPrevious": "Назад"
+      },
+      "sLengthMenu": "Показать _MENU_"
+    },
+  });
+
+  $('#show_ticket').DataTable().column(0).visible( false );
+
+  $('div#show_ticket_length label').attr("style","float:left !important; width: 200px !important;"); 
+
+  $('#show_ticket_length label select').attr("style", "width:65% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
+
+  $('#show_ticket_length').attr("style","width:98%;margin-left:3px"); 
+
+$('#show_ticket_paginate').before('<div id="ticket_version" style="float:left;width:50%;margin-top:20px"><%=j IAccess.last_revoking_version(@issue.id, User.current.id) %> </div>');
+
+  //$('h3.ticket-access-request').text('<%= l(:at_access_request_for_new_emp) %>');
+
+  $('.dataTables_length').append('<div id="user_management" style=""></div>');
+
+  <% if @issue.tracker_id == ISetting.active.where(:param => "tr_revoke_id").first.value.to_i %>
+
+  <% end %>
+
+
+  $('#user_management').append('<%= label_tag(:at_employee_id, l(:at_employee) + ":") %>');
+
+  <% if @issue.tracker_id == ISetting.active.where(:param => "tr_revoke_id").first.value.to_i %>
+    $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_blue" id="at_iticket_edit" name="button" style="margin-left:10px;float: right;display: none" type="button"><%=j l(:at_edit) %></button>');
+    $('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"width: 200px; float: left;margin-left:10px;", :class => "", :onchange => "set_tickets_user(this)", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee)} ) %>');
+
+
+    <% if @issue.at_revoking_status[0..1] == [0,0]  %>
+      <% for user in IAccess.show_revoking_users(User.current.id) %>
+        $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+      <% end %>
+      $("#at_iticket_edit").show();
+    <% else %>
+      $('#users_list').empty();
+
+      <% for user in IAccess.show_revoking_users(User.current.id, @issue.id) %>
+        $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+      <% end %>
+    <% end %>
+
+  <% else %>
+    <% if @issue.tracker_id == ISetting.active.where(:param => "tr_dismissal_id").first.value.to_i %>
+      <% if @issue.at_revoking_status[0] == 0  %>
+        $('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"", :class =>  "", :onchange => "confirm_set_dismissal_user()", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee)} ) %>');
+        <% for user in IAccess.show_revoking_users(User.current.id) %>
+          $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+        <% end %>
+      <% else %>
+        $('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"", :class =>  "", :onchange => "confirm_set_dismissal_user()"} ) %>');
+        <% for user in IAccess.show_revoking_users(User.current.id, @issue.id) %>
+          $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  $('#users_list').find(' option[value='+<%= @issue.at_revoking_status[8] %>+']').attr('selected','selected');
+
+var ch_opts = {width:"250px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
+
+
+$('#users_list').chosen(ch_opts);
+
+
+  $("label[for='at_employee_id']").attr("class","current_employee"); 
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_confirm_revoking" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_confirm_revoking) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_red" id="at_revoke_confirm_revoking" name="button" style="float: left;margin-left:10px;display: none" type="button"><%=j l(:at_revoke_confirmation) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_green" id="at_deactivate_grants" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_deactivate_grants) %></button>');
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom at_background_red" id="at_refuse_deactivating_grants" name="button" style="float: left;margin-left:10px; display: none" type="button"><%=j l(:at_refuse_deactivating_grants) %></button>');
+
+  $('#show_ticket').DataTable().column(6).visible( false );
+
+
+
+  <% if @issue.at_revoking_status[0..1] == [0,0] &&  @issue.at_revoking_status[2] > 0 && @issue.at_revoking_status[4] == 1 %>
+    $("#at_confirm_revoking").show();
+  <% end %>
+
+
+  <% if @issue.at_revoking_status[0] == 1 && @issue.at_revoking_status[5] == 1 %>
+      $("#at_revoke_confirm_revoking").show();
+    <% if @issue.at_revoking_status[3] != 1  %>
+
+    <% end %>
+  <% end %>
+
+  <% if @issue.at_revoking_status[0..1] == [1,0] &&  @issue.at_revoking_status[6] == 1 %>
+    $("#at_deactivate_grants").show();
+    $('#show_ticket').DataTable().column(6).visible( true );
+  <% end %>
+
+  <% if @issue.at_revoking_status[0..1] == [1,0] && @issue.at_revoking_status[7] == 1 %>
+    $("#at_refuse_deactivating_grants").show();
+    $('#show_ticket').DataTable().column(6).visible( true );
+  <% end %>
+
+
+  $("#at_iticket_edit").click(function(e) { 
+
+    if ( $("select#users_list option").filter(":selected").val() == '' ) {
+      alert('<%= l(:at_select_employee) %>');
+    } else {
+      $.post("access_tickets/edit_revoking_table", { issue_id : <%= @issue.id.to_s %> , r_user_id: $("select#users_list").val() }, "json");  
+    }
+
+  });
+
+<% if @issue.at_revoking_status[0] == 1 %>
+  $('select#users_list').prop('disabled','disabled');
+  $('select#users_list').trigger('chosen:updated');
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+<% if @issue.at_revoking_status[1] == 1 %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+  function revoking(data){
+
+      if (data[2][0] == "0"){
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").text("<%= l(:at_no) %>");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").text("<%= l(:at_no) %>");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+        $("#at_revoke_confirm_revoking").hide();
+        $("#at_deactivate_grants").hide();
+        $('#show_ticket').DataTable().column(6).visible( false );
+        $('select#users_list').removeAttr('disabled');
+        $('select#users_list').trigger('chosen:updated');
+        if (data[2][2] > 0 && data[2][4] == 1) {
+          $("#at_confirm_revoking").show();
+        }
+        if (data[2][1] == 0 && data[2][8] !== 0 || data[2][3] == 1){
+          $("#at_iticket_edit").show();
+        }
+      } else {
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").text("<%= l(:at_yes) %>");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_revoked_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+        $("#at_confirm_revoking").hide();
+
+        $("#at_deactivate_grants").hide();
+        if (data[2][3] !== 1) {
+          $('select#users_list').prop('disabled','disabled');
+          $('select#users_list').trigger('chosen:updated');
+        }
+        <% if @issue.tracker_id == ISetting.active.where(:param => "tr_revoke_id").first.value.to_i %>
+        if (data[2][5]) {
+          $("#at_revoke_confirm_revoking").show();
+        }
+        <% end %>
+        if (data[2][6] == 1) {
+          $("#at_deactivate_grants").show();
+          $('#show_ticket').DataTable().column(6).visible( true );
+        }
+        $( "#ajax-modal" ).before($('#ajax-indicator').clone())
+        location.reload();
+
+      }
+
+  }
+
+  function deactivating(data){
+
+      if (data[2][1] == "0"){
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").text("<%= l(:at_no) %>");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+        if (data[2][5] == 1){
+          $("#at_revoke_confirm_revoking").show();
+        } else {
+          $("#at_revoke_confirm_revoking").hide();
+        }
+        if (data[2][6] == 1){
+          $("#at_deactivate_grants").show();
+        } else {
+          $("#at_deactivate_grants").hide();
+        }
+        if (data[2][7] == 1){
+          $("#at_refuse_deactivating_grants").show();
+        } else {
+          $("#at_refuse_deactivating_grants").hide();
+        }
+      } else {
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").text("<%= l(:at_yes) %>");
+        $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+        $('#show_ticket').DataTable().column(6).visible( false );
+        if (data[2][6] == 1){
+          $("#at_deactivate_grants").show();
+        } else {
+          $("#at_deactivate_grants").hide();
+        }
+        if (data[2][7] == 1){
+          $("#at_refuse_deactivating_grants").show();
+        } else {
+          $("#at_refuse_deactivating_grants").hide();
+        }
+        $( "#ajax-modal" ).before($('#ajax-indicator').clone())
+        location.reload();
+      }
+  }
+
+
+
+
+
+function set_tickets_user(obj){
+    
+    $('#show_ticket').DataTable().clear().draw();
+    $("#at_confirm_revoking").hide();
+    $("#at_iticket_edit").show();
+
+}
+
+function set_dismissal_user(){
+    $('#show_ticket').DataTable().clear().draw();
+    window.open("access_tickets/set_dismissal_user?issue_id=<%= @issue.id.to_s %>&r_user_id=" + $('#users_list').val(),"_self");
+}
+
+
+  $("#at_confirm_revoking").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("access_tickets/confirm_revoking?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+  $("#at_revoke_confirm_revoking").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("access_tickets/refuse_confirmation_revoking?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+
+  $("#at_deactivate_grants").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("access_tickets/deactivate_grants?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+  $("#at_refuse_deactivating_grants").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("access_tickets/refuse_deactivating_grants?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+
+
+  function deactivate_single_grant(e) { 
+    $(e).hide();
+    $.post("access_tickets/deactivate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
+      var current_page = $('#show_ticket').DataTable().page();
+      $('#show_ticket').DataTable().clear().draw();
+      update_datatable(data);
+      deactivating(data);
+      $('#show_ticket').DataTable().page(current_page).draw(false);
+    },"json");  
+  };
+
+  function activate_single_grant(e) { 
+    $(e).hide();
+    $.post("access_tickets/activate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
+      var current_page = $('#show_ticket').DataTable().page();
+      $('#show_ticket').DataTable().clear().draw();
+      update_datatable(data);
+      deactivating(data);
+      $('#show_ticket').DataTable().page(current_page).draw(false);
+    },"json");  
+  };
+
+
+$('#show_ticket').removeAttr('style');
+
+function show_resource(obj) { 
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+}
+
+
+function confirm_set_dismissal_user() {
+  var code = 'set_dismissal_user()';
+  show_confirm_dialog('<%=j l(:at_confirming_dissmissal) %>', '<%=j l(:at_confirm_dissmiss) %>' + '<span class="nowrap add-user-links" data-id="1"><a href="<%= Redmine::Utils::relative_url_root %>/users/'+ $('#users_list').val()  +'/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ $( "#users_list option:selected" ).text() +'</a></span>?', code);
+}
+
+
+$('body').append('<div id="confirmDialogBox"></div>');
+
+function show_confirm_dialog(title, warning, code) {
+  var result, confirm_result = false;
+  var $confirmDialog = $('#confirmDialogBox')
+    .html(warning)
+    .dialog({
+    title: title,
+    //modal: true,
+    autoOpen: false, 
+    height:220,
+    width: 400,
+    resizable: false,
+    buttons: [{ 
+      text: "Нет",
+      class: "button-4",
+      click: function () {
+        confirm_result =  false;
+        $(this).dialog('close');
+      }, 
+    },  {
+      text: "Да",
+      class: "button-6",
+      click: function() {
+        confirm_result = true;
+        $(this).dialog('close');
+      }
+    }],
+    close: function() {
+      if (confirm_result == true) {
+        eval(code)
+      }
+    },
+    open: function( event, ui ) {
+      $('button.ui-state-focus').removeClass('ui-state-focus');
+    }
+  });
+  $confirmDialog.dialog('open');
+}
+
+function update_datatable(data){
+    //console.log(data);
+    $('#ticket_version').html(data[1]);
+    //$('#show_ticket').DataTable().column(6).visible( false );
+    
+    if ( data[2][0] == 0 && data[2][1] == 0 && data[2][1] > 0 ){
+      $("#at_confirm_revoking").show();
+    }
+
+    $.each(data[0],function(i){
+      var color,status,actions,period,description,user_id,resource;
+      if (this["ientities"].length > 0) {
+
+
+         description = "";
+        $.each(this["ientities"],function(i){
+          description = description + this["caption"] + '<br>';
+        });
+
+
+      } else {
+        description = this["description"];
+      }
+      resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
+
+      if (data[2][0] == 1 && this["status_id"] == 1 && this["may_be_deactivated"] == 1) {
+        actions = '<a id="' + this["r_uid"] + '" class="revoke_grant icon icon-close at_red" title="<%= l(:at_deactivate_this_grant) %>" onclick="deactivate_single_grant(this);"> </a>';
+        //alert('1');
+        $('#show_ticket').DataTable().column(6).visible( true );
+      } else if (data[2][0] == 1 && this["status_id"] == 2 && this["may_be_activated"] == 1) {
+        actions = '<a id="' + this["r_uid"] + '" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_activate_this_grant) %>" onclick="activate_single_grant(this);">';
+
+      } else {
+        actions = "";
+      }
+      if (this["status_id"] == 1 || this["status_id"] == 2 || this["status_id"] == 3 || this["status_id"] == 4) {
+        color = "#4ebf67";
+
+        status = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/' + this["user_id"] + '/profile" class="user active" data-remote="true" title="">' + this["user_name"] + '</a></span>' + '<p style="color: ' + color +  ' !important">'+ this["status"] + "</p>" ;
+      } else if (this["status_id"] == 1) {
+        color = "#F78282";
+        status = '<p style="color: ' + color +  ' !important">'+ this["status"] + '</p>';
+        //
+      } else if (this["status_id"] == 0) {
+        color = "#F78282";
+        status = '<p style="color: ' + color +  ' !important">'+ this["status"] + '</p>';
+      }
+      if (this["e_date"] == "31-12-2025") {
+        period = "<%= l(:at_forever) %><%= l(:at_since) %>" + this["s_date"];
+      } else {
+        //period = this["s_date"]+" -<br>"+this["e_date"];
+        period = this["s_date"]+" -<br>"+this["e_date"];
+      }
+      $('#show_ticket').DataTable().row.add([
+      this["users"].join('<br>'),
+      resource,
+      this["i_roles"].join('<br>'),
+      description,
+      period,
+      status, 
+      actions
+      ]).draw();
+    });
+    <% if @issue.tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
+      if (data[3] == 0) {
+        $("#users_list option:selected").removeAttr("selected");
+      } else {
+        $('#users_list').find(' option[value='+data[3]+']').attr('selected','selected');
+      }
+    <% end %>
+}
+
+
+
+
+$('select[name="show_ticket_length"]').parent().hide();
+
+
+$('#show_ticket_wrapper').attr('style','min-height:300px');
+</script>
+
+<div id="msgBox" style="display:none;"></div>
+<style>
+
+#edit_ticket thead tr th:first-child{
+background-image: none !important;
+}
+
+
+</style>
+
+<%= content_tag('div', render(:partial => "/css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>
+
+<% end %>

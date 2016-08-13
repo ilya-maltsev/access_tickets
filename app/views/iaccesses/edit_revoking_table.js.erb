@@ -1,0 +1,294 @@
+var issue_itickets = $.parseJSON('<%=j raw @accesses %>');
+//console.log(issue_itickets);
+
+$(document.body).on('click', 'button.icon-del', function() {
+  $('#edit_ticket').DataTable().row( $(this).parents('tr') ).remove().draw();
+  $('#at_versions option:selected').removeAttr("selected");
+});
+
+
+function check_all_rows(obj) { 
+  var value = 0;
+  if ($(obj).is(":checked")) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+  $('#edit_ticket tbody tr').each(function(){
+    if (value == 1) {
+      $(this).find('.single_checker').prop('checked','checked');
+      $(this).find('input.entity_checker').prop('checked','checked');
+    } else {
+      $(this).find('.single_checker').prop('checked','');
+      $(this).find('input.entity_checker').prop('checked','');
+    }
+  });
+
+}
+
+
+function check_single_row(obj) { 
+  var value = 0;
+  var i = 0;
+  if ($(obj).is(":checked")) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+  if (value == 1) {
+    $(obj).parent().parent().find('input.entity_checker').prop('checked','checked');
+  } else {
+    $(obj).parent().parent().find('input.entity_checker').prop('checked','');
+  } 
+
+  $('#edit_ticket tbody tr').each(function(){
+    if (!($(this).find('.single_checker').is(":checked"))) {
+      i++;
+    }
+  });
+  if (i == 0) {
+    $('#check_all').prop('checked','checked');
+  }
+  if (i > 0) {
+    
+    $('#check_all').prop('checked','');
+  }
+}
+
+
+function uncheck_single_row(obj) { 
+  var i = 0;
+  $(obj).parent().parent().find('.entity_checker').each(function(){
+    if ($(this).is(":checked")) {
+      i++;
+    }
+  });
+  if ( i == 1 || i == 0 ) {
+    $(obj).parent().parent().parent().find('.single_checker').prop('checked','');
+  }
+  if (i > 0) {
+    $(obj).parent().parent().parent().find('.single_checker').prop('checked','checked');
+  }
+
+}
+
+
+
+
+//$("#msgBox").append('  ');
+
+$("#msgBox").html(' \
+  <table id ="edit_ticket" class="list entities issues issues_index context-menu-container"> \
+	<thead><tr> \
+    <th style="width:5%" title="" style="background:none !important;background-image: none !important;"><input id="check_all" type="checkbox" class="checker" onclick="check_all_rows(this)"></th>        \
+		<th style="" title="<%=j l(:at_resource) %>"><%=j l(:at_resource) %></th>        \
+		<th style="" title="<%=j l(:at_role) %>"><%=j l(:at_role) %></th>        \
+		<th style="" title="<%=j l(:at_note) %>"><%=j l(:at_note) %></th>       \
+		<th style="width:12%" title="<%=j l(:at_s_date) %>"><%=j l(:at_s_date) %></th>      \
+    <th style="width:15%" title="<%=j l(:at_e_date) %>"><%=j l(:at_e_date) %></th>      \
+	</tr></thead>    \
+	<tbody><tr>     \
+    <td></td> \
+		<td></td>  \
+		<td></td>   \
+		<td></td>    \
+		<td></td> \
+		<td></td>    \
+	</tr></tbody>  \
+</table>' );
+
+
+$('#msgBox').prop('title', '<%=j l(:at_revoking_changing) %>');
+
+
+//$.post("access_tickets/edit_ticket_table/show", { issue_id : <%=j @issue_id %> }, function( data ) {
+//  console.log(data);
+//}, "json");
+
+$('#msgBox').dialog({
+  //autoOpen: false,
+  resizable: false,
+  //autoResize: true,
+  //show: "clip",
+  //hide: "clip",
+  height: '600',
+  width: '1120',
+  //autoOpen: false,
+  modal: true,
+  position: 'center',
+  buttons: [{ 
+    text: "<%=j l(:at_cancel) %>",
+    class: "button-6",
+    click: function () {
+              $(this).dialog('close');
+            }, 
+  },
+
+  { 
+    text: "<%=j l(:at_save) %>",
+    class: "button-5",
+    click: function() {
+      var table_errors = 0;
+      var Rows = $('#edit_ticket').DataTable().settings()[0]["aoData"];
+      var sendData = new Array();
+      if (Rows.length > 0) {
+        $('#edit_ticket tbody tr').each(function(){
+          if ($(this).find('.single_checker').is(":checked")) {
+            var access = {};
+            access["r_uid"] = "";
+            access["entities"] = [];
+            access["r_uid"] = $(this).find('.single_checker').attr('id');
+            $(this).find('.entity_checker').each(function(){
+              if ($(this).is(":checked")) {
+                access["entities"].push($(this).attr('id'));
+              }
+            });
+            sendData.push(access);
+          }
+        });
+        //console.log(JSON.stringify(sendData));
+        $.post("access_tickets/edit_revoking_table/save", { issue_id: <%=j @issue_id %>, r_user_id: <%=j @r_user_id %>, i_tickets: JSON.stringify(sendData) }, function( data ) {
+          //$('#show_ticket').DataTable().clear().draw();
+          //console.log(data);
+          //revoking(data);
+          //update_datatable(data);
+          $( "#ajax-modal" ).before($('#ajax-indicator').clone());
+          location.reload();
+        }, "json");
+      } 
+      $( "#msgBox" ).dialog( "close" );
+      ///console.log(sendData);
+    } 
+  }]
+
+});
+
+$(document.body).on('focus', '.chosen-container', function() {
+    $(this).find('a').css("border-color", "");
+});
+
+$(document.body).on('focus', '.search-field input', function() {
+    $(this).parent().parent().css("border-color", "");
+});
+
+
+showModal('msgBox');
+
+
+
+$('#edit_ticket').DataTable({
+    "bPaginate": true,
+    "bFilter": true, 
+    //"processing": false,
+    //"serverSide": true,
+   
+    "createdRow" : function( row, data, index ) {
+
+        // Add identity if it specified
+        //if( data.hasOwnProperty("id") ) {
+        //    row.id = "row-" + data.id;
+        //} 
+        //var count = 
+        if (index > 0) {
+          var IDs = [];
+          $("#edit_ticket").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          //console.log(IDs);
+          //console.log(Math.max.apply(Math,IDs));
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": false,
+    //"iDisplayLength": 4,
+    "lengthMenu": [[4, -1 ], [4, "Все"]],
+    "bSort" : true,
+    "oLanguage": {
+		"sInfo": "Показаны от _START_ до _END_ из _TOTAL_ записей",
+
+		"sInfoFiltered": "(отсортировано из _MAX_ записей)",
+		"sInfoEmpty": "Нет совпадений для отображения",
+		"sZeroRecords": "Записи отсутствуют",
+                "sSearch": "",
+		"oPaginate": {
+            "sFirst": "В начало",
+            "sNext": "Вперед",
+            "sLast": "В конец",
+            "sPrevious": "Назад"
+		},
+		"sLengthMenu": "Показать _MENU_ записей",
+    "columns": [
+        {"sClass": "dom"},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+	},
+});
+
+
+
+
+//$('#edit_ticket').DataTable().column(1).visible( false );
+
+
+
+
+if (issue_itickets) {
+
+  $('#edit_ticket').DataTable().clear().draw();
+
+  var description;
+  //console.log(issue_itickets);
+  $.each(issue_itickets,function(i){
+    //console.log(this["users"]);
+    var actions,description,checkbox;
+    actions = '<input id="'+ this["r_uid"] +'" type="checkbox" class="single_checker" onclick="check_single_row(this)">';
+
+    
+    //console.log(this["ientities"][0].caption);
+
+    if (this["ientities"].length > 0) {
+
+        //description = this["ientities"];
+        description = "";
+        $.each(this["ientities"],function(i){
+          checkbox = '<input id="'+ this["id"] +'" type="checkbox" class="entity_checker" onclick="uncheck_single_row(this)">';
+          //console.log(this["caption"]);
+          description = description + '<label class="entity_caption">' + checkbox +  this["caption"] + '</label>' + '<br>';
+        });
+    } else {
+      description = this["description"];
+    }
+
+    
+
+    $('#edit_ticket').DataTable().row.add([
+        actions,
+        this["i_resource"],
+        this["i_roles"].join('<br>'),
+        description,
+        this["s_date"],
+        this["e_date"]
+    ]).draw();
+
+  });
+
+}
+
+
+
+
+
+  $('#ticket_action').remove();
+
+
+$('#edit_ticket_filter label input[type=search]').hide();
+
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
+

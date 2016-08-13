@@ -1,0 +1,32 @@
+$("#ajax-modal").html('<h3 class="title"><%=j l(:at_role_desc)  %></h3> \
+    <div style="white-space: nowrap;line-height: 1.4em;margin-top: 5px; padding-left: 10px; font-size: 0.9em;">  \
+      <div style="text-align:left;width:100%;display:inline-block;float: left;margin-right:10px;margin-bottom:5px;"> \
+        <div style="width : 130px;display:inline-block;text-align:right;vertical-align:top"> \
+          <label style="font-size: 14px;font-weight: bold;"><%=j l(:at_resource_name)  %></label>: \
+        </div> \
+        <div style="width:80%;display:inline-block;"> \
+          <label style="white-space:normal;width:80%;max-width: 80%;min-width: 100%;min-height:30px;margin-left:10px"><%=j @resource_name  %></label> \
+        </div> \
+      </div>  \
+      <div style="text-align:left;width:100%;display:inline-block;float: left;margin-right:10px;margin-bottom:5px;"> \
+        <div style="width : 130px;display:inline-block;text-align:right;vertical-align:top"> \
+          <label style="font-size: 14px;font-weight: bold;"><%=j l(:at_role_name)  %></label>: \
+        </div> \
+        <div style="width:80%;display:inline-block;"> \
+          <label style="white-space:normal;width:80%;max-width: 80%;min-width: 100%;min-height:30px;margin-left:10px"><%=j @irole[:name]  %></label> \
+        </div> \
+      </div>  \
+      <div style="text-align:left;width:100%;display:inline-block;float: left;margin-right:10px;margin-bottom:5px;"> \
+        <div style="width : 130px;display:inline-block;text-align:right;vertical-align:top"> \
+          <label style="font-size: 14px;font-weight: bold;"><%=j l(:at_role_desc)  %></label>: \
+        </div> \
+        <div style="width:80%;display:inline-block;"> \
+          <label style="white-space:normal;width:80%;max-width: 80%;min-width: 100%;min-height:30px;margin-left:10px"><%=j @irole[:description]  %></label> \
+        </div> \
+      </div>  \
+        </div>  \
+      </div> \
+    </div>  \
+  </h3> \
+  ');
+showModal('ajax-modal', '50%');

@@ -1,0 +1,392 @@
+<% if !@project.nil? %>
+
+<% if @project.id == ISetting.active.where(:param => "at_project_id").first.value.to_i %>
+
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+<div id="" class="box" style="display:none">
+
+
+<%= form_tag({}, :id => "easy-query-list") do -%>
+  <table id="edit_ticket" class="list entities issues issues_index context-menu-container">
+    <thead>
+      <tr>
+        <th style="width:10%" title="<%= l(:at_activity) %>"><a class="icon icon-settings settings"/a></th>
+        <th style="width:15%" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
+        <th style="width:25%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:15%" title="<%= l(:at_role) %>"><a><%= l(:at_role) %></a></th>
+        <th style="width:25%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+        <th style="width:10%" title="<%= l(:at_period) %>"><a><%= l(:at_period) %></a></th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+<% end %>
+<div style="clear: both;"></div>
+</div>
+
+
+<script type="text/javascript">
+
+function logging(obj){
+
+  console.log("sss");
+}
+
+$( document ).ready(function() {
+
+
+    $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_verified_id").first.value %>').parent().attr('style','display:none');
+    $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_approved_id").first.value %>').parent().attr('style','display:none');
+    $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_granting_id").first.value %>').parent().attr('style','display:none');
+    $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_confirming_id").first.value %>').parent().attr('style','display:none');
+
+    $('#issue-form-custom-fields-').parent().attr("style", "display: none");
+
+
+    //console.log( $('#issue_tracker_id').val() );
+    
+    //$('#issue_tracker_id').attr("onchange", "alert($(this).val())");
+    //$('#issue_tracker_id').val(<%= ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>);
+    //$('#issue_tracker_id').attr("disabled", true);
+
+
+    $('#issue_status_id').attr("disabled", true);
+    //$('#issue_assigned_to_id').val(<%= ISetting.active.where(:param => "sec_group_id").first.value.to_i %>);
+    $("#issue_assigned_to_id option[value='<%= ISetting.active.where(:param => "sec_group_id").first.value.to_i %>']").attr('selected', 'selected');
+    //$('#issue_assigned_to_id').attr("disabled", "disabled");
+
+
+    $('#issue_tracker_id').change(function(){
+
+      console.log( $('#issue_tracker_id').val() );
+
+    });
+
+    $('#issue_tracker_id').removeAttr("class");
+});
+
+
+
+$(document.body).on('click', 'button.icon-del', function() {
+  $('#edit_ticket').DataTable().row( $(this).parents('tr') ).remove().draw();
+  //$('#at_versions option:selected').removeAttr("selected");
+});
+
+
+
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
+
+
+$('#edit_ticket').DataTable({
+    //"bPaginate": false,
+    //"bFilter": false, 
+    //"processing": false,
+    //"serverSide": true,
+    "createdRow" : function( row, data, index ) {
+
+        // Add identity if it specified
+        //if( data.hasOwnProperty("id") ) {
+        //    row.id = "row-" + data.id;
+        //} 
+        //var count = 
+        if (index > 0) {
+          var IDs = [];
+          $("#edit_ticket").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          //console.log(IDs);
+          //console.log(Math.max.apply(Math,IDs));
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": true,
+    "bFilter": false, 
+    //"iDisplayLength": 4,
+    //"lengthMenu": [[4, -1 ], [4, "Все"]],
+    "lengthMenu": [[5, 10, -1], ["5 записей", "10 записей", "Все записи"]],
+    "bSort" : false,
+    "oLanguage": {
+    "sInfo": "Показаны от _START_ до _END_ из _TOTAL_ записей",
+
+    "sInfoFiltered": "(отсортировано из _MAX_ записей)",
+    "sInfoEmpty": "Нет совпадений для отображения",
+    "sZeroRecords": "Записи отсутствуют",
+                "sSearch": "",
+    "oPaginate": {
+            "sFirst": "В начало",
+            "sNext": "Вперед",
+            "sLast": "В конец",
+            "sPrevious": "Назад"
+    },
+    "sLengthMenu": "Показать _MENU_",
+    "columns": [
+        {"sClass": "dom"},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+  },
+  });
+
+function show_roles(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/settings/plugin/access_tickets_iresources/show_details", { id: $(obj).val() }, function( data ) {
+    $(obj).parent().parent().find("#role_id").empty();
+    var i_roles = data.i_roles;
+    $(obj).parent().parent().find('#role_id').append("<option value=''><%=j l(:at_select_role) %></option>");
+    $(obj).parent().parent().find('#role_id').attr("data-placeholder","<%=j l(:at_select_role) %>");
+    $.each(i_roles,function(i){
+      $(obj).parent().parent().find('#role_id').append('<option value=' + i_roles[i].i_role.id + '>' + i_roles[i].i_role.name + '</option>');
+    });
+    $(obj).parent().parent().find('#role_id').trigger("chosen:updated");
+  }, "json");
+}
+
+function show_identities(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/settings/plugin/access_tickets_ientities/ientity_show_list", { res_id: $(obj).val() }, function( data ) {
+    //console.log(data.ientities.length);
+
+    var ientities = data.ientities;
+    if (ientities.length > 0) {
+      if ($(obj).parent().parent().find('#description').length > 0 ) {
+        $(obj).parent().parent().find('#description').parent().append('<%=j select_tag("entity_id", nil,  {:style=>"width: 250px", :class => "entity_id",  :prompt => l(:at_select_ientity),"data-placeholder" => l(:at_select_ientity), "multiple" => "", "tabindex" => "3" } )  %>');
+        $(obj).parent().parent().find('#description').remove();
+      }
+      $(obj).parent().parent().find('.entity_id').empty();
+      $(obj).parent().parent().find('.entity_id').append("<option value=''><%=j l(:at_select_ientity) %></option>");
+      $(obj).parent().parent().find('.entity_id').chosen(ch_opts);
+      $.each(ientities, function(i) {
+        var ipv4;
+        if ( ientities[i].i_entity.ipv4 != "" ) {
+          ipv4 = ' [' +ientities[i].i_entity.ipv4 + ']';
+        }
+        $(obj).parent().parent().find('.entity_id').append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + ipv4 + '</option>');
+      });
+      $(obj).parent().parent().find('.entity_id').trigger('chosen:updated');
+    } else {
+      if ($(obj).parent().parent().find('#description').length > 0 ) {
+        $(obj).parent().parent().find('#description').val("");
+      } 
+      if ($(obj).parent().parent().find('.entity_id').length > 0 ) {
+        $(obj).parent().parent().find('.entity_id').parent().append('<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"", "maxlength" => "127"   ) %>');
+        $(obj).parent().parent().find('div#entity_id_chosen').remove();
+        $(obj).parent().parent().find('.entity_id').remove();
+      }
+    }
+  }, "json");
+}
+
+
+  $('div#edit_ticket_length label').attr("style","float:left !important; width: 200px !important"); 
+  $('#edit_ticket_length label select').attr("style", "width:65% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
+
+  $('#edit_ticket_length').attr("style","width:98%;margin-left:3px"); 
+
+
+
+    $('.dataTables_length').append('<div id="employee_management" style="text-align: center;width : 80%;display:inline-block;float: right;margin-left:10px;"></div>');
+
+    $('#employee_management').append('<button class="button-1 nomargin-bottom" style="float:right;" id="add_row_button" name="button" style="background-color: #F78282 !important;float: right;margin-left:10px;" type="button" onclick="add_row()"><%=j l(:at_add_row) %></button>');
+
+    //$('#employee_management').append('<select class="" id="user_list" style="width: 200px; margin-top: 4px;float: right;margin-left:10px;" onchange="show_accesses_list(this)"></select>');
+
+    //$('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 7px;float: right;margin-left:10px;"><%= l(:at_employee) %>:</label>');
+    
+  function add_row(){
+    $.post("<%=j Redmine::Utils::relative_url_root %>/issues/access_tickets/edit_ticket_table/add_row");
+  }
+
+</script>
+
+
+<link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/jquery.dataTables.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/jquery.dataTables_themeroller.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/selectboxes.css" media="screen" rel="stylesheet" type="text/css" />
+
+
+<style>
+
+li.search-choice {
+  margin-left: 3px !important;
+  margin-right: 3px !important;
+}
+
+th.sorting_disabled {
+  background-color: #FFFFFF !important;
+}
+
+.nomargin-bottom {
+  margin-bottom: 0 !important;
+}
+
+input.hasDatepicker {
+  min-width: 123px !important;
+}
+
+button.ui-datepicker-trigger {
+  margin: 0px 0px 0px -33px !important;
+}
+
+.icon {
+
+  cursor: pointer !important;
+}
+
+div#ticket_action, .dataTables_length{
+    background-color: #FAFAFA;
+    border: 1px solid #E6E6E6;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+
+
+button.ui-datepicker-trigger {
+  color: #4EBF67 !important;
+}
+
+.ui-dialog-buttonpane{
+  border-top:  solid 1px #52afe5;
+}
+
+#edit_ticket tbody tr:hover{
+  background-color: #F4FFF2;
+}
+#edit_ticket tbody tr td [class*=button-].icon:before {
+ left: 4px !important;
+}
+
+#edit_ticket thead th,#edit_ticket thead th a  {
+  text-align: center;
+  color: #169 !important;
+}
+
+#edit_ticket, #edit_ticket thead,  #edit_ticket thead th {
+  border : none;
+}
+
+#edit_ticket tbody tr td {
+border-top:  solid 1px #52afe5;
+text-align: center;
+}
+
+#edit_ticket thead tr th, #edit_ticket tbody tr td {
+border-left:  solid 1px #52afe5;
+}
+
+#edit_ticket thead tr th:first-child, #edit_ticket tbody tr td:first-child {
+border-left:  none ;
+}
+#edit_ticket thead tr th:last-child, #edit_ticket tbody tr td:last-child {
+border-right:  none ;
+}
+
+#edit_ticket tbody tr td select {
+width: 175px ; 
+
+}
+
+#edit_ticket tbody tr td select.user_id {
+width: 200px !important; 
+
+}
+
+#edit_ticket tbody tr td textarea {
+  margin-top:3px;
+  height: 20px ;
+  width: 190px;
+  font-size: 13px;
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: linear-gradient(bottom, #fcfcfc , #fff);  
+  border: 1px solid #ccc;  padding: 6px 3px;  
+  box-sizing: border-box;  
+  -moz-box-sizing: border-box;
+}
+#edit_ticket tbody tr td textarea:focus {
+  border: 1px solid #5897fb;
+}
+
+div.ui-dialog-buttonset button.ui-button {
+  border: none !important;
+ font-size:14px !important;
+ line-height:normal !important;
+ padding: 10px !important;
+ text-align:left !important;
+ text-decoration: none !important;
+ white-space: nowrap !important;
+ cursor:pointer !important;
+ position: relative !important;
+ margin-bottom: 8px !important;
+}
+
+
+
+#table-error {
+
+  width:30%; 
+  background: url("../images/exclamation.png") no-repeat left;
+  padding-left:20px;
+  margin:10px 0 0 10px;
+  float:left;
+
+}
+
+.chosen-results li[data-option-array-index="0"] {
+
+  display: none !important;
+}
+
+#s_date, #e_date {
+width: 105px !important;
+
+}
+.s_date {
+margin-bottom: 4px;
+}
+
+.button-blue {
+  padding: 0px !important;
+  margin-top: 8px!important;
+  width:30px !important;
+  line-height: 0.7 !important; 
+  height:30px !important;
+  background-color: #52afe5
+}
+
+.button-red {
+  padding: 0px 22px !important;
+  margin-top: 8px!important;
+  width:30px !important;
+  line-height: 0.7 !important; 
+  height:30px !important;
+  background-color: #F78282 !important
+}
+
+.at_red {
+  color: #F78282 !important;
+}
+
+.at_blue {
+  color: #52afe5 !important;
+}
+
+.at_green {
+  color: #4ebf67 !important;
+}
+
+</style>
+
+<% end %>
+
+<% end %>

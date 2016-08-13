@@ -1,0 +1,296 @@
+<div style="margin-left:50px;padding:10px">
+  <div>
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:access_tickets_resource_id, l(:at_resource_m)) %>
+    </div>
+    <%= select_tag('resourse_id', options_from_collection_for_select(IResource.active.all, :id, :name), {:style=>'width: 200px', :prompt => l(:at_select_resource), :onchange => "show_details(this)"} ) %> 
+    <%= button_tag(l(:at_remove), :id => 'at_iresource_remove', :type => 'button', :class => 'button-2', :style => 'background-color: #F78282 !important') %>
+    <%= button_tag(l(:at_add),  :id => 'at_iresource_add', :type => 'button', :class => 'button-1') %>
+    <%= text_field_tag('at_iresource_name', nil, :title => l(:at_name), :placeholder => l(:at_name), :style=>'width: 200px'  ) %>
+    <%= button_tag(l(:at_edit),  :id => 'at_iresource_edit', :type => 'button', :class => 'button-2', :style => 'background-color: #52afe5 !important') %>
+  </div>
+
+
+  <div>
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:access_tickets_resource_id, l(:at_role_m)) %>
+    </div>
+    <%= select_tag('role_id', nil,  {:style=>'width: 200px', :prompt => l(:at_resource_not_selected) } )  %> 
+    <%= button_tag(l(:at_remove), :id => 'at_irole_remove', :type => 'button', :class => 'button-2', :style => 'background-color: #F78282 !important') %>
+    <%= button_tag(l(:at_add), :id => 'at_irole_add', :type => 'button', :class => 'button-1') %>
+    <%= text_field_tag('at_irole_name', nil, :title => l(:at_name), :placeholder => l(:at_name), :style=>'width: 200px'  ) %>
+    <%= button_tag(l(:at_edit), :id => 'at_irole_edit', :type => 'button', :class => 'button-2', :style => 'background-color: #52afe5 !important') %>
+  </div>
+
+  <div style="margin-bottom: 8px;">
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:access_tickets_resource_owner_id, l(:at_resource_owners)) %>:
+    </div>
+  	<%= select_tag('resource_owner_id', nil, {:style=>'width: 200px', :prompt => l(:at_resource_not_selected), "data-placeholder" => "", "multiple" => "", :onchange => "set_owners(this)"} ) %>
+  </div >
+
+  <div style="margin-bottom: 8px;">
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:access_tickets_resource_granter_id, l(:at_resource_granters)) %>:
+  </div>
+    <%= select_tag('resource_granter_id', nil, {:style=>'width: 200px', :prompt => l(:at_resource_not_selected), "data-placeholder" => "", "multiple" => "", :onchange => "set_granters(this)"} ) %>
+  </div>
+
+  <div style="margin-bottom: 8px;">
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:has_ip_id, l(:at_has_ip)) %>
+    </div>
+    <%= check_box_tag "has_ip", 1, false, :disabled => true, :onclick => "set_has_ip(this)" %>
+  </div>
+
+  <div>
+    <div style="width : 150px;display:inline-block">
+      <%= label_tag(:access_tickets_entity_id, l(:at_entity_m)) %>
+    </div>
+    <%= select_tag('ientity_id', nil, {:style=>'width: 200px', :prompt => l(:at_resource_not_selected), :onchange => "ie_show_details(this)"} ) %> 
+    <%= button_tag(l(:at_remove), :id => 'at_ientity_remove', :type => 'button', :class => 'button-2', :style => 'background-color: #F78282 !important') %>
+    <%= button_tag(l(:at_add),  :id => 'at_ientity_add', :type => 'button', :class => 'button-1') %>
+    <%= text_field_tag('at_ientity_name', nil, :title => l(:at_name), :placeholder => l(:at_name), :style=>'width: 200px'  ) %>
+    <%= text_field_tag('at_ientity_description', nil, :title => l(:at_description), :placeholder => l(:at_description), :style=>'width: 200px'  ) %>
+    <%= text_field_tag('at_ientity_ipv4', nil, :title => l(:at_ipv4), :placeholder => l(:at_ipv4), :style=>'width: 100px'  ) %>
+    <%= button_tag(l(:at_edit),  :id => 'at_ientity_edit', :type => 'button', :class => 'button-2', :style => 'background-color: #52afe5 !important') %>
+  </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+  //var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
+  var ch_opts = {width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_resource_not_selected)%>'};
+  $('#resourse_id').chosen({width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_select_resource)%>'});
+
+  $('#role_id').chosen(ch_opts);
+  $('#resource_owner_id').chosen(ch_opts);
+  $('#resource_granter_id').chosen(ch_opts);
+  $('#ientity_id').chosen(ch_opts);
+
+
+
+  function clear_fields() {
+	  $('#at_iresource_name').val('');
+    $('#resource_granter_id').val('');
+    $('#at_irole_name').val('');
+    $('input#has_ip').prop('disabled','');
+    clear_ie_fields();
+  }
+
+    function clear_ie_fields() {
+    $('#at_ientity_name').val('');
+    $('#at_ientity_description').val('');
+    $('#at_ientity_ipv4').val('');
+  }
+
+  function set_granters(obj){
+    if ( $("select#resourse_id option").filter(":selected").val() == 'null' ) {
+    } else {
+      $.post("access_tickets_iresources/set_granters", { res_id : $("select#resourse_id option").filter(":selected").val(),
+      iresgranters: $(obj).val() }, function( data ) {
+      }, "json");
+    }
+  }
+
+  function set_owners(obj){
+    if ( $("select#resourse_id option").filter(":selected").val() == 'null' ) {
+    } else {
+      $.post("access_tickets_iresources/set_owners", { res_id : $("select#resourse_id option").filter(":selected").val(),
+      iresowners: $(obj).val() }, function( data ) {
+      }, "json");
+    }
+  }
+
+  function set_has_ip(obj){
+    if ( $("select#resourse_id option").filter(":selected").val() == 'null' ) {
+    } else {
+      var value = 0;
+      if ($(obj).is(":checked")) {
+        value = 1;
+      } else {
+        value = 0;
+      }
+      $.post("access_tickets_iresources/set_has_ip", { res_id : $("select#resourse_id option").filter(":selected").val(),
+      has_ip: value }, function( data ) {
+      }, "json");
+    }
+  }
+
+  function ie_show_details(obj){
+    $.post("access_tickets_ientities/show_details", { ie_id: $(obj).val() }, function( data ) {
+      //console.log(data);
+      $('#at_ientity_name').val(data.i_entity.name);
+      $('#at_ientity_description').val(data.i_entity.description);
+      $('#at_ientity_ipv4').val(data.i_entity.ipv4);
+    }, "json");
+  }
+
+  function show_details(obj){
+    $.post("access_tickets_iresources/show_details", { id: $(obj).val() }, function( data ) {
+      console.log(data);
+      $('#ientity_id').empty();
+      $('#role_id').empty();
+      $('#resource_owner_id').empty();
+      $('#resource_granter_id').empty();
+      $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
+      $('#ientity_id').append('<option value=""><%= l(:at_select_ientity)%></option>');
+      var i_roles = data.i_roles;
+      var users = data.users;
+      $.each(i_roles,function(i){
+        $('#role_id').append('<option value=' + i_roles[i].i_role.id + '>' + i_roles[i].i_role.name + '</option>');
+      });
+      $('#role_id').trigger("chosen:updated");
+      $('#resource_granter_id').append('<option value=""></option>');
+      $('#resource_owner_id').append('<option value=""></option>');
+      $.each(users,function(i){
+        $('#resource_owner_id').append('<option value=' + users[i].id + '>' + users[i].name + '</option>'); 
+        $('#resource_granter_id').append('<option value=' + users[i].id + '>' + users[i].name + '</option>');
+      });
+      $('#resource_owner_id').val(data.iresowners);
+      $('#resource_owner_id').trigger("chosen:updated");
+      $('#resource_granter_id').val(data.iresgranters);
+      $('#resource_granter_id').trigger("chosen:updated");
+      if (data.has_ip) {
+        $('input#has_ip').prop('checked','checked');
+      } else {
+        $('input#has_ip').prop('checked','');
+      }
+      var ientities = data.ientities;
+      $.each(ientities, function(i) {
+        $('#ientity_id').append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + '</option>');
+      });
+      $('#ientity_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+  }
+
+  $("#at_irole_add").click(function(e) {
+    $.post("access_tickets_iroles/add", { id : $("select#resourse_id option").filter(":selected").val(), name : $("#at_irole_name").val() }, function( data ) {
+    $('#role_id').empty();
+    $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
+    $.each(data,function(i){
+       $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    }); 
+    $('#role_id').trigger("chosen:updated");
+    //console.log(data);
+    }, "json");
+    clear_fields();
+  });
+
+  $("#at_irole_edit").click(function(e) {
+    $.post("access_tickets_iroles/edit", { id : $("select#role_id option").filter(":selected").val(), name : $("#at_irole_name").val() }, function( data ) {
+    $('#role_id').empty();
+    $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
+    $.each(data,function(i){
+       $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    });
+    $('#role_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+  });
+
+  $("#at_irole_remove").click(function(e) {
+    $.post("access_tickets_iroles/remove", { id : $("select#role_id option").filter(":selected").val() }, function( data ) {
+    $('#role_id').empty();
+    $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
+    $.each(data,function(i){
+       $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    });
+    $('#role_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+  });
+
+
+  $("#at_ientity_add").click(function(e) {
+    $.post("access_tickets_ientities/add", { res_id : $("select#resourse_id option").filter(":selected").val(), name : $("#at_ientity_name").val(), description: $("#at_ientity_description").val(), ipv4: $("#at_ientity_ipv4").val() }, function( data ) {
+    $('#ientity_id').empty();
+    $('#ientity_id').append('<option value=""><%= l(:at_select_ientity)%></option>');
+    var ientities = data.ientities;
+    $.each(ientities, function(i) {
+      $('#ientity_id').append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + '</option>');
+    });
+    $('#ientity_id').trigger("chosen:updated");
+    //console.log(data);
+    }, "json");
+    clear_ie_fields();
+  });
+
+  $("#at_ientity_edit").click(function(e) {
+    $.post("access_tickets_ientities/edit", { ie_id : $("select#ientity_id option").filter(":selected").val(), name : $("#at_ientity_name").val(), description: $("#at_ientity_description").val(), ipv4: $("#at_ientity_ipv4").val() }, function( data ) {
+    //console.log(data);
+    $('#ientity_id').empty();
+    $('#ientity_id').append('<option value=""><%= l(:at_select_ientity)%></option>');
+    var ientities = data.ientities;
+    $.each(ientities, function(i) {
+      $('#ientity_id').append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + '</option>');
+    });
+
+    $('#ientity_id').trigger("chosen:updated");
+    }, "json");
+    clear_ie_fields();
+  });
+
+  $("#at_ientity_remove").click(function(e) {
+    $.post("access_tickets_ientities/remove", { ie_id : $("select#ientity_id option").filter(":selected").val() }, function( data ) {
+    $('#ientity_id').empty();
+    $('#ientity_id').append('<option value=""><%= l(:at_select_ientity)%></option>');
+    var ientities = data.ientities;
+    $.each(ientities, function(i) {
+      $('#ientity_id').append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + '</option>');
+    });
+    $('#ientity_id').trigger("chosen:updated");
+    //console.log(data);
+    }, "json");
+    clear_ie_fields();
+  });
+
+
+
+
+
+  $("#at_iresource_add").click(function(e) {
+    $.post("access_tickets_iresources/add", { name : $("#at_iresource_name").val() }, function( data ) {
+    $('#resourse_id').empty();
+    $('#role_id').empty();
+    $('#resource_owner_id').empty();
+    $('#resourse_id').append('<option value=""><%= l(:at_select_resource)%></option>');
+    $.each(data,function(i){
+       $('#resourse_id').append('<option value=' + data[i].i_resource.id + '>' + data[i].i_resource.name + '</option>');
+    });	
+    $('#resourse_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+ });
+
+ $("#at_iresource_edit").click(function(e) {
+    $.post("access_tickets_iresources/edit", { id : $("select#resourse_id option").filter(":selected").val(), name : $("#at_iresource_name").val() }, function( data ) {
+    $('#resourse_id').empty();
+    $('#role_id').empty();
+    $('#resource_owner_id').empty();
+    $('#resourse_id').append('<option value=""><%= l(:at_select_resource)%></option>');
+    $.each(data,function(i){
+       $('#resourse_id').append('<option value=' + data[i].i_resource.id + '>' + data[i].i_resource.name + '</option>');
+    });
+    $('#resourse_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+  });
+
+ $("#at_iresource_remove").click(function(e) {
+    $.post("access_tickets_iresources/remove", { id : $("select#resourse_id option").filter(":selected").val() }, function( data ) {
+    $('#resourse_id').empty();
+    $('#role_id').empty();
+    $('#resource_owner_id').empty();
+    $('#resourse_id').append('<option value=""><%= l(:at_select_resource)%></option>');
+    $.each(data,function(i){
+       $('#resourse_id').append('<option value=' + data[i].i_resource.id + '>' + data[i].i_resource.name + '</option>');
+    });
+    $('#resourse_id').trigger("chosen:updated");
+    }, "json");
+    clear_fields();
+  });
+</script>

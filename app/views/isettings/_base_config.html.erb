@@ -1,0 +1,27 @@
+<style>
+.tabular.settings label {
+  margin-left: 0px;
+  width: 100%;
+}
+</style>
+
+<%= l(:at_base_config_desc) %>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+  $(document).attr("title", "<%= l(:at_params) %>");
+  $('div#settings form input[type="submit"]').hide();
+  $('div#settings').append('<button class="button-1 nomargin-bottom" id="set_base_config" name="button" style="float: left;margin-left:10px;height:21px;padding:0px 2px !important;" type="button"><%=j l(:at_set_base_config) %></button>');
+  $("#set_base_config").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("/access_tickets/set_base_config","_self");
+  });
+
+});
+
+
+
+
+</script>

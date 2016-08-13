@@ -1,0 +1,30 @@
+$('#edit_ticket').DataTable().row.add([
+  '<button class="icon icon-del button-2 button-blue" title="<%=j l(:at_remove) %>"><span class="glyph info"></span> </button>',
+  '<%=j select_tag("user_id", options_from_collection_for_select(User.active.all, :id, :name), {:style=>"", :class => "user_id", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee), "multiple" => "", "tabindex" => "3"} ) %>',
+  '<%=j select_tag("resource_id", options_from_collection_for_select(IResource.active.all, :id, :name), {:style=>"", :prompt => l(:at_select_resource),  :class => "resource_id",:onchange => "show_roles(this);show_identities(this)"} ) %>',
+  '<%=j select_tag("role_id", nil,  {:style=>"", :class => "role_id",  :prompt => l(:at_resource_not_selected),"data-placeholder" => l(:at_resource_not_selected), "multiple" => "", "tabindex" => "3" } )  %>',
+  '<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>',
+  '<%=j text_field_tag("s_date", nil, {:title => l(:at_s_date), :style=>"", :class => "s_date", "readonly" => "true", :placeholder => l(:at_begining) } ) %><br><%=j text_field_tag("e_date", nil, {:title => l(:at_e_date), :style=>"", :class => "e_date", "readonly" => "true", :placeholder => l(:at_ending) } ) %>' 
+  ]).draw();
+
+
+var IDs = [];
+$("#edit_ticket").find("tr").each(function(){ 
+  IDs.push(this.id); 
+});
+dtl = Math.max.apply(Math,IDs);
+
+//console.log(dtl);
+$('#' + dtl).find('#s_date').attr("id","s_date_" + dtl);
+$('#' + dtl).find('#s_date_' + dtl).datepicker(datepickerOptions);
+$('#' + dtl).find('#e_date').attr("id","e_date_" + dtl);
+$('#e_date_' + dtl).val("<%=j l(:at_forever) %>");
+$('#' + dtl).find('#e_date_' + dtl).datepicker(dpOptions);
+
+$('tr#' + dtl).find('.user_id').chosen(ch_opts);
+$('tr#' + dtl).find('#user_id_chosen').attr('style','width:100%');
+$('tr#' + dtl).find('.resource_id').chosen(ch_opts);
+$('tr#' + dtl).find('#resource_id_chosen').attr('style','width:100%');
+$('tr#' + dtl).find('.role_id').chosen(ch_opts);
+$('tr#' + dtl).find('#role_id_chosen').attr('style','width:100%');
+$('#at_versions option:selected').removeAttr("selected");

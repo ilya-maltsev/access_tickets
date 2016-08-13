@@ -1,0 +1,62 @@
+
+
+
+<script src="<%=  Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+
+<% if ISetting.check_config() %>
+  <div class="tabs">
+    <ul>
+      <li>
+        <%= link_to l(:at_main_settings), { :tab => "main_settings" },
+        :id => "tab-main_settings",
+        :class => ('selected'),
+        :onclick => "showTab('main_settings', this.href); this.blur(); return false;" %>
+      </li>
+      <li>
+        <%= link_to l(:at_group_liders), { :tab => "liders_mgt" },
+        :id => "tab-liders_mgt",
+        :class => (''),
+        :onclick => "showTab('liders_mgt', this.href); this.blur(); return false;" %>
+      </li>
+
+    </ul>
+  </div>
+  <%= content_tag('div', render(:partial => "isettings/main_settings", :locals => {}), :id => 'tab-content-main_settings', :style => (''), :class => 'tab-content') %>
+  <%= content_tag('div', render(:partial => "isettings/groups_mgt", :locals => {}), :id => 'tab-content-liders_mgt', :style => ('display:none'), :class => 'tab-content') %>
+<% else %>
+  <div class="tabs">
+    <ul>
+      <li>
+        <%= link_to l(:at_base_config), { :tab => "base_config" },
+        :id => "tab-base_config",
+        :class => ('selected'),
+        :onclick => "showTab('base_config', this.href); this.blur(); return false;" %>
+      </li>
+    </ul>
+  </div>
+  <%= content_tag('div', render(:partial => "isettings/base_config", :locals => {}), :id => 'tab-content-base_config', :style => (''), :class => 'tab-content') %>
+<% end %>
+
+
+
+
+<script>
+  $('div#settings form input[type="submit"]').val("Закрыть");
+  //$('#content').append("<%=j content_tag('div', render(:partial => 'isettings/resugroups_mgt', :locals => {}), :id => 'tab-content-resugroups_mgt', :style => ('display:none'), :class => 'tab-content') %>");
+</script>
+
+
+<link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/selectboxes.css" media="screen" rel="stylesheet" type="text/css" />
+
+<style>
+  button {
+   padding-top:7px !important;
+   padding-bottom:7px !important;
+  }
+  .chosen-results li[data-option-array-index="0"] {
+    display: none !important;
+  }
+</style>
+
+
+<%= content_tag('div', render(:partial => "/css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>

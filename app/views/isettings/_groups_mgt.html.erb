@@ -1,0 +1,53 @@
+<div style="margin-left:50px;padding:10px">
+  <div>
+
+  <div style="margin-bottom: 8px;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_group_id, l(:at_group) + ":") %>
+    </div>
+    <%= select_tag('group_id', options_from_collection_for_select(Group.active.all, :id, :name),  {:style=>'width: 200px', :prompt => l(:at_select_group), :onchange => "show_group_details(this)" } )  %> 
+  </div>
+
+
+  <div style="margin-bottom: 8px;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_liders_id, l(:at_liders) + ":") %>
+    </div>
+  	<%= select_tag('group_liders_id', nil, {:style=>'width: 200px', :prompt => l(:at_group_not_selected), "data-placeholder" => "", "multiple" => "", :onchange => "set_group_liders(this)"} ) %>
+  </div >
+
+</div>
+
+
+<script type="text/javascript">
+  var ch_gr_opts = {width:"320px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_group_not_selected)%>'};
+  
+  $('#group_id').chosen(ch_gr_opts);
+  $('#group_liders_id').chosen({width:"320px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_select_lider)%>'});
+  $('#group_templates_id').chosen({width:"500px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_select_template)%>'});
+
+  function show_group_details(obj){
+    $.post("access_tickets_isettings/show_group_details", { group_id: $(obj).val() }, function( data ) {
+      $('#group_liders_id').empty();
+      $('#group_liders_id').append('<option value=""><%= l(:at_select_group)%></option>');
+      var users = data.users;
+      $.each(users,function(i){
+        $('#group_liders_id').append('<option value=' + users[i].id + '>' + users[i].name + '</option>');
+      });
+      var templates = data.templates;
+      $('#group_liders_id').val(data.group_liders);
+      $('#group_liders_id').trigger("chosen:updated");
+    }, "json");
+  }
+
+
+  function set_group_liders(obj){
+    if ( $("select#group_id option").filter(":selected").val() == 'null' ) {
+    } else {
+      $.post("access_tickets_isettings/set_group_liders", { group_id : $("select#group_id option").filter(":selected").val(),
+      group_liders: $(obj).val() }, function( data ) {
+      }, "json");
+    }
+  }
+
+</script>
