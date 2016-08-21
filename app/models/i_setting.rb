@@ -24,242 +24,315 @@ class ISetting < ActiveRecord::Base
   attr_accessible :param, :value, :updated_at, :updated_by_id, :deleted
 
   def self.check_config
-    if ISetting.all.count == 0
-      false
-    else
+    if ISetting.active.all.count == ISetting.values_map.count
       true
+    else
+      false
     end
   end
 
   def self.values_map()
-    ["cf_deactivated_id","cf_revoked_id","cf_new_emp_first_day_id", "at_project_id", "cw_group_id", "tr_dismissal_id", "tr_template_agreement_id", "tr_new_emp_id", "tr_change_term_id", "tr_grant_id", "tr_revoke_id", "cf_approved_id", "cf_verified_id", "cf_granting_id", "cf_confirming_id", "sec_group_id", "approving_issue_status_id","working_issue_status_id", "granted_issue_status_id", "blocked_issue_status_id", "at_simple_approvement", "admin_group_id", "hr_group_id", "at_erm_integration"]
+    ["cf_deactivated_id","cf_revoked_id", "at_project_id", "cw_group_id", "tr_grant_id", "tr_revoke_id",  "cf_verified_id", "cf_approved_id", "cf_granting_id", "cf_confirming_id", "sec_group_id", "admin_group_id", "hr_group_id","working_issue_status_id", "granted_issue_status_id", "blocked_issue_status_id", "at_simple_approvement"]
+  end
+
+
+  def self.bs_values_map()
+    ["cf_deactivated_name","cf_revoked_name","project_name","cw_group_name", "tr_grant_name", "tr_revoke_name", "cf_verified_name","cf_approved_name", "cf_granting_name", "cf_confirming_name", "sec_group_name", "admin_group_name", "hr_group_name", "wis_name","gis_name","bis_name"]
+  end
+
+  def self.plugin_settings_ermi
+    if Setting[:plugin_access_tickets].length != 0
+
+      plugin_at_settings = Setting.plugin_access_tickets
+
+      if plugin_at_settings.length != 0
+        at_erm_integration = plugin_at_settings[:at_erm_integration].to_i
+      else
+        at_erm_integration = 0
+      end
+    else
+      at_erm_integration = 0
+    end
+    at_erm_integration
+  end
+
+  def self.save_settings_value(key,value)
+    if ISetting.active.where(:param => key).empty?
+      settings = ISetting.create(:updated_by_id => user_id)
+      settings[:deleted] = 0
+      settings[:param] = key
+      settings[:value] = value
+    else
+      settings = ISetting.active.where(:param => key).first
+      settings[:deleted] = 0
+      settings[:value] = value
+      settings[:updated_by_id] = user_id
+    end
+    if settings.save
+      if key == "at_project_id"
+        ISetting.set_default_project_values()
+      end
+      true
+    else
+      false
+    end
+  end
+
+def self.set_basic_settings(params)
+
+    if ISetting.active.where(:param => "at_simple_approvement").count == 0
+      ISetting.create(:param => "at_simple_approvement", :value => 0, :deleted => 0 )
+    end
+
+    cf_verified = params.detect {|param| param["key"] == "cf_verified_id"}
+    cf_verified_name = params.detect {|param| param["key"] == "cf_verified_name"}
+    if !cf_verified.nil?
+      cf_verified_id = cf_verified["value"]
+      ISetting.active.where(:param => "cf_verified_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_verified_id", :value =>  cf_verified_id, :deleted => 0 )
+    elsif !cf_verified_name.nil?
+      cf = CustomField.new(:name => cf_verified_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_verified_id = cf[:id]
+      ISetting.active.where(:param => "cf_verified_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_verified_id", :value =>  cf_verified_id, :deleted => 0 )
+    else
+    end
+
+    cf_approved = params.detect {|param| param["key"] == "cf_approved_id"}
+    cf_approved_name =  params.detect {|param| param["key"] == "cf_approved_name"}
+    if !cf_approved.nil?
+      cf_approved_id = cf_approved["value"]
+      ISetting.active.where(:param => "cf_approved_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_approved_id", :value =>  cf_approved_id, :deleted => 0 )
+    elsif !cf_approved_name.nil?
+      cf = CustomField.new(:name => cf_approved_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_approved_id = cf[:id]
+      ISetting.active.where(:param => "cf_approved_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_approved_id", :value =>  cf_approved_id, :deleted => 0 )
+    else
+    end
+
+    cf_granting = params.detect {|param| param["key"] == "cf_granting_id"}
+    cf_granting_name = params.detect {|param| param["key"] == "cf_granting_name"}
+    if !cf_granting.nil?
+      cf_granting_id = cf_granting["value"]
+      ISetting.active.where(:param => "cf_granting_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_granting_id", :value =>  cf_granting_id, :deleted => 0 )
+    elsif !cf_granting_name.nil?
+      cf = CustomField.new(:name => cf_granting_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_granting_id = cf[:id]
+      ISetting.active.where(:param => "cf_granting_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_granting_id", :value =>  cf_granting_id, :deleted => 0 )
+    else
+    end
+
+    cf_confirming = params.detect {|param| param["key"] == "cf_confirming_id"}
+    cf_confirming_name =  params.detect {|param| param["key"] == "cf_confirming_name"}
+    if !cf_confirming.nil?
+      cf_confirming_id = cf_confirming["value"]
+      ISetting.active.where(:param => "cf_confirming_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_confirming_id", :value =>  cf_confirming_id, :deleted => 0 )
+    elsif !cf_confirming_name.nil?
+      cf = CustomField.new(:name => cf_confirming_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_confirming_id = cf[:id]
+      ISetting.active.where(:param => "cf_confirming_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_confirming_id", :value =>  cf_confirming_id, :deleted => 0 )
+    else
+    end
+
+    cf_revoked = params.detect {|param| param["key"] == "cf_revoked_id"}
+    cf_revoked_name =  params.detect {|param| param["key"] == "cf_revoked_name"}
+    if !cf_revoked.nil?
+      cf_revoked_id = cf_revoked["value"]
+      ISetting.active.where(:param => "cf_revoked_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_revoked_id", :value =>  cf_revoked_id, :deleted => 0 )
+    elsif !cf_revoked_name.nil?
+      cf = CustomField.new(:name => cf_revoked_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_revoked_id = cf[:id]
+      ISetting.active.where(:param => "cf_revoked_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_revoked_id", :value =>  cf_revoked_id, :deleted => 0 )
+    else
+    end
+
+    cf_deactivated = params.detect {|param| param["key"] == "cf_deactivated_id"}
+    cf_deactivated_name =  params.detect {|param| param["key"] == "cf_revoked_name"}
+    if !cf_deactivated.nil?
+      cf_deactivated_id = cf_deactivated["value"]
+      ISetting.active.where(:param => "cf_deactivated_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_deactivated_id", :value =>  cf_deactivated_id, :deleted => 0 )
+    elsif !cf_deactivated_name.nil?
+      cf = CustomField.new(:name => cf_deactivated_name["value"], :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
+      cf[:type] = "IssueCustomField"
+      cf.save
+      cf_deactivated_id = cf[:id]
+      ISetting.active.where(:param => "cf_deactivated_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "cf_deactivated_id", :value =>  cf_deactivated_id, :deleted => 0 )
+    else
+    end
+
+    tr_grant = params.detect {|param| param["key"] == "tr_grant_id"}
+    tr_grant_name =  params.detect {|param| param["key"] == "tr_grant_name"}
+    if !tr_grant.nil?
+      tr_grant_id = tr_grant["value"]
+      tracker_grant = Tracker.find(tr_grant_id)
+      [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id].each do |cf_id|
+        if cf_id.in?(tracker_grant.custom_field_ids)
+          tracker_grant.custom_field_ids << cf_id
+        end
+      end
+      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
+    elsif !tr_grant_name.nil?
+      tracker_grant = Tracker.new(:name => tr_grant_name["value"])
+      tracker_grant.save
+      tr_grant_id = tracker_grant[:id]
+      tracker_grant.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
+      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
+    else
+    end
+
+    tr_revoke = params.detect {|param| param["key"] == "tr_revoke_id"}
+    tr_revoke_name =  params.detect {|param| param["key"] == "tr_revoke_name"}
+    if !tr_revoke.nil?
+      tr_revoke_id = tr_revoke["value"]
+      tracker_revoke = Tracker.find(tr_revoke_id)
+      [cf_revoked_id,cf_deactivated_id].each do |cf_id|
+        if cf_id.in?(tracker_revoke.custom_field_ids)
+          tracker_revoke.custom_field_ids << cf_id
+        end
+      end
+      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_revoke_id", :value =>  tr_revoke_id, :deleted => 0 )
+    elsif !tr_revoke_name.nil?
+      tracker_revoke = Tracker.new(:name => tr_revoke_name["value"])
+      tracker_revoke.save
+      tr_revoke_id = tracker_revoke[:id]
+      tracker_revoke.custom_field_ids = [cf_revoked_id,cf_deactivated_id]
+      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_revoke_id", :value => tr_revoke_id, :deleted => 0 )
+    else
+    end
+
+
+    [["working_issue_status_id","wis_name"],["granted_issue_status_id","gis_name"],["blocked_issue_status_id","bis_name"]].each do |status|
+      exist_status = params.detect {|param| param["key"] == status[0]}
+      new_status_name =  params.detect {|param| param["key"] == status[1]}
+      if !exist_status.nil?
+        exist_status_id = exist_status["value"]
+        ISetting.active.where(:param => status[0]).update_all(:deleted =>  1)
+        ISetting.create(:param => status[0], :value =>  exist_status_id, :deleted => 0 )
+      elsif !new_status_name.nil?
+        is = IssueStatus.new(:name => new_status_name["value"])
+        is.save
+        new_status_id = is[:id]
+        ISetting.active.where(:param => status[0]).update_all(:deleted =>  1)
+        ISetting.create(:param => status[0], :value =>  new_status_id, :deleted => 0 )
+      else
+      end
+    end
+
+
+    [["cw_group_id","cw_group_name"],["sec_group_id","sec_group_name"],["admin_group_id","admin_group_name"],["hr_group_id","hr_group_name"]].each do |bm_group|
+      exist_group = params.detect {|param| param["key"] == bm_group[0]}
+      new_group_name = params.detect {|param| param["key"] == bm_group[1]}
+      if !exist_group.nil?
+        exist_group_id = exist_group["value"]
+        ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
+        ISetting.create(:param => bm_group[0], :value =>  exist_group_id, :deleted => 0 )
+      elsif !new_group_name.nil?
+        group = Group.new(:lastname => new_group_name[:value])
+        group.save
+        new_group_id = group[:id]
+        ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
+        ISetting.create(:param => bm_group[0], :value =>  new_group_id, :deleted => 0 )
+      else
+      end
+    end
+
+
+    at_project = params.detect { |param| param["key"] == "at_project_id" }
+    project_name = params.detect { |param| param["key"] == "project_name" }
+    if !at_project.nil?
+      at_project_id = at_project["value"]
+      project = Project.find(at_project_id)
+      [tracker_grant,tracker_revoke].each do |tracker|
+        if !tracker.in?(project.trackers)
+          project.trackers << tracker
+        end
+      end
+      [cf_verified_id,cf_approved_id,cf_granting_id, cf_confirming_id,cf_deactivated_id,cf_revoked_id].each do |cf_id|
+        if !CustomField.find(cf_id).in?(project.issue_custom_fields)
+          project.issue_custom_fields << CustomField.find(cf_id)
+        end
+      end
+      if !project.enabled_modules.where(:name => "issue_tracking").empty?
+        project.enabled_modules.create(:name => "issue_tracking")
+      end
+      ISetting.active.where(:param => "at_project_id").update_all(:deleted =>  at_project_id)
+      ISetting.create(:param => "at_project_id", :value =>  at_project_id, :deleted => 0 )
+    elsif !project_name.nil?
+      project = Project.new(:name => project_name["value"], :identifier => SecureRandom.hex(5), :is_public => 1, :enabled_module_names => [""], :trackers => Tracker.where(:id => [tr_grant_id,tr_revoke_id]))
+      project.save
+      project.enabled_modules.create(:name => "issue_tracking")
+      project.issue_custom_fields = CustomField.where(:id => [cf_verified_id,cf_approved_id,cf_granting_id, cf_confirming_id,cf_deactivated_id,cf_revoked_id])
+      at_project_id = project[:id]
+      ISetting.active.where(:param => "at_project_id").update_all(:deleted =>  at_project_id)
+      ISetting.create(:param => "at_project_id", :value =>  at_project_id, :deleted => 0 )
+    else
+    end
+
+
   end
 
 
 
-
-def self.basic_config
-    config = {}
-
-
-    at_erm_integration = ISetting.active.where(:param => "at_erm_integration")
-    if at_erm_integration.count == 0
-      @at_erm_integration = 0        
-      ISetting.create(:param => "at_erm_integration", :value => @at_erm_integration, :deleted => 0 )
-    else
-      @at_erm_integration = at_erm_integration.first.value.to_i
-    end
-    config[:at_erm_integration] = @at_erm_integration
-
-
-    at_simple_approvement = ISetting.active.where(:param => "at_simple_approvement")
-    if at_simple_approvement.count == 0
-      @at_simple_approvement = 0        
-      ISetting.create(:param => "at_simple_approvement", :value => @at_simple_approvement, :deleted => 0 )
-    else
-      @at_simple_approvement = at_simple_approvement.first.value.to_i
-    end
-    config[:at_simple_approvement] = @at_simple_approvement
-
-    at_project_id = ISetting.active.where(:param => "at_project_id")
-    if at_project_id.count == 0
-      @at_project_id = 1
-      ISetting.create(:param => "at_project_id", :value => @at_project_id, :deleted => 0 )
-    else
-      @at_project_id = at_project_id.first.value.to_i
-    end
-    config[:at_project_id] = @at_project_id
-
-    #tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id")
-    #if tr_new_emp_id.count == 0
-    #  @tr_new_emp_id = 1
-    #  ISetting.create(:param => "tr_new_emp_id", :value => @tr_new_emp_id, :deleted => 0 )
-    #else
-    #  @tr_new_emp_id = tr_new_emp_id.first.value.to_i
-    #end
-    #config[:tr_new_emp_id] = @tr_new_emp_id
-
-    tr_grant_id = ISetting.active.where(:param => "tr_grant_id")
-    if tr_grant_id.count == 0
-      @tr_grant_id = 1
-      ISetting.create(:param => "tr_grant_id", :value => @tr_grant_id, :deleted => 0 )
-    else
-      @tr_grant_id = tr_grant_id.first.value.to_i
-    end
-    config[:tr_grant_id] = @tr_grant_id
-
-    #tr_change_term_id = ISetting.active.where(:param => "tr_change_term_id")
-    #if tr_change_term_id.count == 0
-    #  @tr_change_term_id = 1
-    #  ISetting.create(:param => "tr_change_term_id", :value => @tr_change_term_id, :deleted => 0 )
-    #else
-    #  @tr_change_term_id = tr_change_term_id.first.value.to_i
-    #end
-    #config[:tr_change_term_id] = @tr_change_term_id
-
-    tr_revoke_id = ISetting.active.where(:param => "tr_revoke_id")
-    if tr_revoke_id.count == 0
-      @tr_revoke_id = 1
-      ISetting.create(:param => "tr_revoke_id", :value => @tr_revoke_id, :deleted => 0 )
-    else
-      @tr_revoke_id = tr_revoke_id.first.value.to_i
-    end
-    config[:tr_revoke_id] = @tr_revoke_id
-
-    #tr_dismissal_id = ISetting.active.where(:param => "tr_dismissal_id")
-    #if tr_dismissal_id.count == 0
-    #  @tr_dismissal_id = 1
-    #  ISetting.create(:param => "tr_dismissal_id", :value => @tr_dismissal_id, :deleted => 0 )
-    #else
-    #  @tr_dismissal_id = tr_dismissal_id.first.value.to_i
-    #end
-    #config[:tr_dismissal_id] = @tr_dismissal_id
-
-    #tr_template_agreement_id = ISetting.active.where(:param => "tr_template_agreement_id")
-    #if tr_template_agreement_id.count == 0
-    #  @tr_template_agreement_id = 1
-    #  ISetting.create(:param => "tr_template_agreement_id", :value => @tr_template_agreement_id, :deleted => 0 )
-    #else
-    #  @tr_template_agreement_id = tr_template_agreement_id.first.value.to_i
-    #end
-    #config[:tr_template_agreement_id] = @tr_template_agreement_id
-
-    cf_approved_id = ISetting.active.where(:param => "cf_approved_id")
-    if cf_approved_id.count == 0
-      @cf_approved_id = 0 
-      ISetting.create(:param => "cf_approved_id", :value =>  @cf_approved_id, :deleted => 0 )
-    else
-      @cf_approved_id = cf_approved_id.first.value.to_i
-    end
-    config[:cf_approved_id] = @cf_approved_id
-
-    cf_verified_id = ISetting.active.where(:param => "cf_verified_id")
-    if cf_verified_id.count == 0
-      @cf_verified_id = 0 
-      ISetting.create(:param => "cf_verified_id", :value =>  @cf_verified_id, :deleted => 0 )
-    else
-      @cf_verified_id = cf_verified_id.first.value.to_i
-    end
-    config[:cf_verified_id] = @cf_verified_id
-
-    cf_granting_id = ISetting.active.where(:param => "cf_granting_id")
-    if cf_granting_id.count == 0
-      @cf_granting_id = 0 
-      ISetting.create(:param => "cf_granting_id", :value =>  @cf_granting_id, :deleted => 0 )
-    else
-      @cf_granting_id = cf_granting_id.first.value.to_i
-    end
-    config[:cf_granting_id] = @cf_granting_id
-
-    cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id")
-    if cf_confirming_id.count == 0
-      @cf_confirming_id = 0 
-      ISetting.create(:param => "cf_confirming_id", :value =>  @cf_confirming_id, :deleted => 0 )
-    else
-      @cf_confirming_id = cf_confirming_id.first.value.to_i
-    end
-    config[:cf_confirming_id] = @cf_confirming_id
-
-    cf_revoked_id = ISetting.active.where(:param => "cf_revoked_id")
-    if cf_revoked_id.count == 0
-      @cf_revoked_id = 0 
-      ISetting.create(:param => "cf_revoked_id", :value =>  @cf_revoked_id, :deleted => 0 )
-    else
-      @cf_revoked_id = cf_revoked_id.first.value.to_i
-    end
-    config[:cf_revoked_id] = @cf_revoked_id
-
-    cf_deactivated_id = ISetting.active.where(:param => "cf_deactivated_id")
-    if cf_deactivated_id.count == 0
-      @cf_deactivated_id = 0 
-      ISetting.create(:param => "cf_deactivated_id", :value =>  @cf_deactivated_id, :deleted => 0 )
-    else
-      @cf_deactivated_id = cf_deactivated_id.first.value.to_i
-    end
-    config[:cf_deactivated_id] = @cf_deactivated_id
-
-    working_issue_status_id = ISetting.active.where(:param => "working_issue_status_id")
-    if working_issue_status_id.count == 0
-      @working_issue_status_id = 1
-      ISetting.create(:param => "working_issue_status_id", :value => @working_issue_status_id, :deleted => 0 )
-    else
-      @working_issue_status_id = working_issue_status_id.first.value.to_i
-    end
-    config[:working_issue_status_id] = @working_issue_status_id
-
-    granted_issue_status_id = ISetting.active.where(:param => "granted_issue_status_id")
-    if granted_issue_status_id.count == 0
-      @granted_issue_status_id = 1
-      ISetting.create(:param => "granted_issue_status_id", :value => @granted_issue_status_id, :deleted => 0 )
-    else
-      @granted_issue_status_id = granted_issue_status_id.first.value.to_i
-    end
-    config[:granted_issue_status_id] = @granted_issue_status_id
-
-    blocked_issue_status_id = ISetting.active.where(:param => "blocked_issue_status_id")
-    if blocked_issue_status_id.count == 0
-      @blocked_issue_status_id = 1
-      ISetting.create(:param => "blocked_issue_status_id", :value => @blocked_issue_status_id, :deleted => 0 )
-    else
-      @blocked_issue_status_id = blocked_issue_status_id.first.value.to_i
-    end
-    config[:blocked_issue_status_id] = @blocked_issue_status_id
-
-    cf_new_emp_first_day_id = ISetting.active.where(:param => "cf_new_emp_first_day_id")
-    if cf_new_emp_first_day_id.count == 0
-      @cf_new_emp_first_day_id = 0
-      ISetting.create(:param => "cf_new_emp_first_day_id", :value => @cf_new_emp_first_day_id, :deleted => 0 )
-    else
-      @cf_new_emp_first_day_id = cf_new_emp_first_day_id.first.value.to_i
-    end
-    config[:cf_new_emp_first_day_id] = @cf_new_emp_first_day_id
-
-    sec_group_id = ISetting.active.where(:param => "sec_group_id")
-    if sec_group_id.count == 0
-      if Group.all.count == 0
-        Group.new(:lastname => 'test').save
+  def self.set_default_project_values
+    ["tr_grant_id", "tr_revoke_id","cf_approved_id", "cf_verified_id", "cf_granting_id", "cf_confirming_id", "cf_deactivated_id","cf_revoked_id"].each do |key|
+      if ISetting.active.where(:param => key).empty?
+        settings = ISetting.create(:updated_by_id => 1)
+        settings[:deleted] = 0
+        settings[:param] = key
+        settings[:value] = "0"
       else
-        @sec_group_id = Group.all.first.id
+        settings = ISetting.active.where(:param => key).first
+        settings[:deleted] = 0
+        settings[:value] = "0"
+        settings[:updated_by_id] = 1
       end
-      ISetting.create(:param => "sec_group_id", :value => @sec_group_id, :deleted => 0 )
-    else
-      @sec_group_id = sec_group_id.first.value.to_i
+      settings.save
     end
-    config[:sec_group_id] = @sec_group_id
-
-    admin_group_id = ISetting.active.where(:param => "admin_group_id")
-    if admin_group_id.count == 0
-      if Group.all.count == 0
-        Group.new(:lastname => 'test').save
-      else
-        @admin_group_id = Group.all.first.id
-      end
-      ISetting.create(:param => "admin_group_id", :value => @admin_group_id, :deleted => 0 )
-    else
-      @admin_group_id = admin_group_id.first.value.to_i
-    end
-    config[:admin_group_id] = @admin_group_id
-
-    hr_group_id = ISetting.active.where(:param => "hr_group_id")
-    if hr_group_id.count == 0
-      @hr_group_id = Group.all.first.id
-      ISetting.create(:param => "hr_group_id", :value => @hr_group_id, :deleted => 0 )
-    else
-      @hr_group_id = hr_group_id.first.value.to_i
-    end
-    config[:hr_group_id] = @hr_group_id
-
-    cw_group_id = ISetting.active.where(:param => "cw_group_id")
-    if cw_group_id.count == 0
-      @cw_group_id = Group.all.first.id
-      ISetting.create(:param => "cw_group_id", :value => @cw_group_id, :deleted => 0 )
-    else
-      @cw_group_id = cw_group_id.first.value.to_i
-    end
-    config[:cw_group_id] = @cw_group_id
-
-    config
   end
+
+
+
+  def self.get_plugin_config
+
+      config = {}
+
+      config["at_erm_integration"] = ISetting.plugin_settings_ermi
+
+      ISetting.values_map.each do |key|
+        values = ISetting.active.where(:param => key)
+        if values.count == 0
+          config[key] = 0
+        else
+          config[key] = values.first.value.to_i
+        end
+      end
+      config
+    end
+
 
 
 end

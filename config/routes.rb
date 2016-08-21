@@ -40,6 +40,7 @@ match '/access_tickets/edit_resource/remove_role', :controller => 'iroles', :act
 get '/issues/access_tickets', :to => 'itickets#show_at_project', :as => 'show_at_project'
 
 get '/access_tickets/set_base_config', :to  => 'isettings#set_base_config', :as => 'set_base_config'
+get '/access_tickets/reset_config', :to  => 'isettings#reset_config', :as => 'reset_config'
 post '/access_tickets/available_users', :to => 'iaccesses#available_users', :as => 'available_users'
 post '/access_tickets/show_resources_list', 'iresources#show_resources_list', :as => 'show_resources_list'
 

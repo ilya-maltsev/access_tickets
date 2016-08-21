@@ -19,187 +19,30 @@
 
 class IsettingsController < ApplicationController
 
-  def set_basic_settings
 
-
-    if ISetting.active.where(:param => "at_erm_integration").count == 0
-      ISetting.create(:param => "at_erm_integration", :value => 0, :deleted => 0 )
+  def reset_config
+    if User.current.admin?
+      ISetting.active.each {|x| x.delete}
+      redirect_to Redmine::Utils::relative_url_root + "/settings/plugin/access_tickets", :status => 302 #root_url
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
     end
-
-    if ISetting.active.where(:param => "at_simple_approvement").count == 0
-      ISetting.create(:param => "at_simple_approvement", :value => 0, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_verified_id").count == 0
-      cf = CustomField.new(:name => l(:at_cf_verified_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_verified_id = cf[:id]
-      ISetting.create(:param => "cf_verified_id", :value =>  cf_verified_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_approved_id").count == 0
-      cf = CustomField.new(:name => l(:at_cf_approved_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_approved_id = cf[:id]
-      ISetting.create(:param => "cf_approved_id", :value =>  cf_approved_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_granting_id").count == 0
-      cf = CustomField.new(:name => l(:at_access_granting_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_granting_id = cf[:id]
-      ISetting.create(:param => "cf_granting_id", :value =>  cf_granting_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_confirming_id").count == 0
-      cf = CustomField.new(:name => l(:at_access_confirming_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_confirming_id = cf[:id]
-      ISetting.create(:param => "cf_confirming_id", :value => cf_confirming_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_revoked_id").count== 0
-      cf = CustomField.new(:name => l(:at_access_revoking_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_revoked_id = cf[:id]
-      ISetting.create(:param => "cf_revoked_id", :value =>  cf_revoked_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_deactivated_id").count == 0
-      cf = CustomField.new(:name => l(:at_access_deactivating_bs), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf_deact_id = cf[:id]
-      ISetting.create(:param => "cf_deactivated_id", :value =>  cf_deact_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cf_new_emp_first_day_id").count == 0
-      cf = CustomField.new(:name => l(:at_cf_new_emp_first_day), :field_format => 'bool', :default_value => 0, :is_required => false, :visible => true)
-      cf[:type] = "IssueCustomField"
-      cf.save
-      cf[:field_format] = "date"
-      cf.save
-      cf_new_emp_first_day_id = cf[:id]
-      ISetting.create(:param => "cf_new_emp_first_day_id", :value => cf_new_emp_first_day_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "tr_new_emp_id").count == 0
-      #tracker = Tracker.new(:name => l(:at_tr_new_emp_bs))
-      #tracker.save
-      #tr_new_emp_id = tracker[:id]
-      #tracker.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
-      ISetting.create(:param => "tr_new_emp_id", :value => 0, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "tr_grant_id").count == 0
-      tracker = Tracker.new(:name => l(:at_tr_grant_bs))
-      tracker.save
-      tr_grant_id = tracker[:id]
-      tracker.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
-      ISetting.create(:param => "tr_grant_id", :value => tr_grant_id, :deleted => 0 )
-    end
-
-    #if ISetting.active.where(:param => "tr_change_term_id").count == 0
-    #  tracker = Tracker.new(:name => l(:at_tr_change_term_bs))
-    #  tracker.save
-    #  tr_change_term_id = tracker[:id]
-    #  tracker.custom_field_ids = [cf_verified_id,cf_approved_id]
-    #  ISetting.create(:param => "tr_change_term_id", :value => tr_change_term_id, :deleted => 0 )
-    #end
-
-    if ISetting.active.where(:param => "tr_revoke_id").count== 0
-      tracker = Tracker.new(:name => l(:at_tr_revoke_bs))
-      tracker.save
-      tr_revoke_id = tracker[:id]
-      tracker.custom_field_ids = [cf_revoked_id,cf_deact_id]
-      ISetting.create(:param => "tr_revoke_id", :value => tr_revoke_id, :deleted => 0 )
-    end
-
-    #if ISetting.active.where(:param => "tr_dismissal_id").count == 0
-    #  tracker = Tracker.new(:name => l(:at_tr_dismissal_bs))
-    #  tracker.save
-    #  tr_dismissal_id = tracker[:id]
-    #  tracker.custom_field_ids = [cf_revoked_id,cf_deact_id]
-    #  ISetting.create(:param => "tr_dismissal_id", :value => tr_dismissal_id, :deleted => 0 )
-    #end
-
-    #if ISetting.active.where(:param => "tr_template_agreement_id").count == 0
-    #  tracker = Tracker.new(:name => l(:at_tr_template_agreement_bs))
-    #  tracker.save
-    #  tr_template_agreement_id = tracker[:id]
-    #  tracker.custom_field_ids = [cf_verified_id,cf_approved_id]
-    #  ISetting.create(:param => "tr_template_agreement_id", :value => tr_template_agreement_id, :deleted => 0 )
-    #end
-
-    if ISetting.active.where(:param => "working_issue_status_id").count == 0
-      is = IssueStatus.new(:name => l(:at_issue_in_progress_status))
-      is.save
-      working_issue_status_id = is[:id]
-      ISetting.create(:param => "working_issue_status_id", :value => working_issue_status_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "granted_issue_status_id").count == 0
-      is = IssueStatus.new(:name => l(:at_issue_resolved_status))
-      is.save
-      granted_issue_status_id = is[:id]
-      ISetting.create(:param => "granted_issue_status_id", :value => granted_issue_status_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "blocked_issue_status_id").count == 0
-      is = IssueStatus.new(:name => l(:at_issue_closed_status), :is_closed => true)
-      is.save
-      blocked_issue_status_id = is[:id]
-      ISetting.create(:param => "blocked_issue_status_id", :value => blocked_issue_status_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "sec_group_id").count == 0
-        group = Group.new(:lastname => l(:at_security_group))
-        group.save
-        sec_group_id = group[:id]
-        ISetting.create(:param => "sec_group_id", :value => sec_group_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "admin_group_id").count == 0
-        group = Group.new(:lastname => l(:at_admin_group))
-        group.save
-        admin_group_id = group[:id]
-        ISetting.create(:param => "admin_group_id", :value => sec_group_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "hr_group_id").count == 0
-        group = Group.new(:lastname => l(:at_hr_group))
-        group.save
-        hr_group_id = group[:id]
-        ISetting.create(:param => "hr_group_id", :value => sec_group_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "cw_group_id").count == 0
-        group = Group.new(:lastname => l(:at_constanly_watchers))
-        group.save
-        cw_group_id = group[:id]
-        ISetting.create(:param => "cw_group_id", :value => sec_group_id, :deleted => 0 )
-    end
-
-    if ISetting.active.where(:param => "at_project_id").count == 0
-      project = Project.new(:name => l(:at_access_tickets), :identifier => SecureRandom.hex(5), :is_public => 1, :enabled_module_names => [""], :trackers => Tracker.where(:id => [tr_grant_id,tr_revoke_id]))
-      project.save
-      project.enabled_modules.create(:name => "issue_tracking")
-      project.issue_custom_fields = CustomField.where(:id => [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id,cf_revoked_id,cf_deact_id])
-      at_project_id = project[:id]
-      ISetting.create(:param => "at_project_id", :value => at_project_id, :deleted => 0 )
-    end
-
   end
 
   def set_base_config
-    if ITicket.check_security_officer(User.current)
-      self.set_basic_settings()
-      redirect_to(:back)
+    if User.current.admin? && params[:parameters].present? && !ISetting.check_config()
+      rawData = JSON.parse(params[:parameters])
+      errors = {}
+      inputData = []
+      rawData.each do |object|
+        if object["key"].in?(ISetting.values_map()) || object["key"].in?(ISetting.bs_values_map())
+          inputData.push(object)
+        end
+      end
+      if inputData.count == ISetting.bs_values_map().count
+        ISetting.set_basic_settings(inputData)
+      end
+      redirect_to Redmine::Utils::relative_url_root + "/settings/plugin/access_tickets", :status => 302 #root_url
     else
       render_error({:message => :notice_file_not_found, :status => 404})
     end

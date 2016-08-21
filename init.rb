@@ -20,11 +20,7 @@
 
 require 'access_tickets/hooks'
 
-if ActiveRecord::Base.connection.table_exists? 'i_settings'
-  r = ActiveRecord::Base.connection.execute("SELECT count(*) FROM `i_settings` WHERE `i_settings`.`deleted` = 0 AND `i_settings`.`param` = 'at_erm_integration' AND `i_settings`.`value` = 1").to_a[0][0]
-else
-  r =0
-end
+
 
 ACCESS_TICKETS_VERSION_TYPE = "Light version"
 
@@ -37,42 +33,56 @@ Redmine::Plugin.register :access_tickets do
   author_url 'mailto:i.y.maltsev@yandex.ru'
   settings :partial => '/isettings/at_settings', :default => {} 
 
-  menu :top_menu, :access_tickets, {
-    'controller' => 'itickets', 'action' => "show_at_project"
-    },
-      :html => {:class => 'icon icon-roles'},
-       :caption => :at_access_tickets,
-       :if => Proc.new{ISetting.check_config() }
-
   Redmine::MenuManager.map :top_menu do |menu|
 
-    if r > 0
-      menu.push(:at_my_access_parent, 
-      {:controller => 'iaccesses', :action => 'accesses_list'}, 
-      {
-        :parent => :access_tickets,
-        :caption => :at_access_list,
-      })
+    menu.push(:access_tickets, 
+    {:controller => 'itickets', :action => 'show_at_project'}, 
+    {
+      :html => {:class => 'icon icon-roles'},
+      :caption => :at_access_tickets,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 0 && ISetting.check_config()}
+    })
 
-      menu.push(:at_resources_list_parent, 
-      {:controller => 'iresources', :action => 'resources_list'}, 
-      {
-        :parent => :access_tickets,
-        :caption => :at_resources_list,
-      })
 
-    else 
-      menu.push(:at_my_access, 
-      {:controller => 'iaccesses', :action => 'accesses_list'}, 
-      {
-        :caption => :at_access_list,
-      })
-      menu.push(:at_resources_list, 
-      {:controller => 'iresources', :action => 'resources_list'}, 
-      {
-        :caption => :at_resources_list,
-      })
-    end
+    menu.push(:at_my_access_parent, 
+    {:controller => 'iaccesses', :action => 'accesses_list'}, 
+    {
+      :parent => :access_tickets,
+      :caption => :at_access_list,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 0}
+    })
+
+    menu.push(:at_resources_list_parent, 
+    {:controller => 'iresources', :action => 'resources_list'}, 
+    {
+      :parent => :access_tickets,
+      :caption => :at_resources_list,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 0}
+    })
+
+
+    menu.push(:access_tickets_no_parent, 
+    {:controller => 'itickets', :action => 'show_at_project'}, 
+    {
+      :html => {:class => 'icon icon-roles'},
+      :caption => :at_access_tickets,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 1 && ISetting.check_config()}
+    })
+
+
+    menu.push(:at_my_access, 
+    {:controller => 'iaccesses', :action => 'accesses_list'}, 
+    {
+      :caption => :at_access_list,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 1}
+    })
+
+    menu.push(:at_resources_list, 
+    {:controller => 'iresources', :action => 'resources_list'}, 
+    {
+      :caption => :at_resources_list,
+      :if => Proc.new{ISetting.plugin_settings_ermi != 1}
+    })
 
 
 end

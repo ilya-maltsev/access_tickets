@@ -5,19 +5,323 @@
 }
 </style>
 
-<%= l(:at_base_config_desc) %>
+<%= l(:at_base_config_desc) %> "<%= l(:at_set_base_config) %>"
+
+
+<div style="margin-left:50px;padding:10px">
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_project_id, l(:at_plugin_project_sbs) + ':') %>
+    </div>
+    <%= select_tag('at_project_id', options_from_collection_for_select(Project.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_project_bs, l(:at_or_create_plugin_project)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('project_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_access_tickets), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_grant_id, l(:at_tr_grant_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_grant_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_grant, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_grant_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_tr_grant_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_revoke_id, l(:at_tr_revoke_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_revoke_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_revoke, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_revoke_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_tr_revoke_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+      <div class="param-label">
+        <%= label_tag(:access_tickets_cf_verified_id, l(:at_cf_verified_sbs) + ':') %>
+      </div>
+      <%= select_tag('cf_verified_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_verified_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_verified_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_cf_verified_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cf_approved_id, l(:at_cf_approved_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_approved_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_approved_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_approved_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_cf_approved_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cf_granting_id, l(:at_access_granting_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_granting_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_granting_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_granting_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_granted_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cf_confirming_id, l(:at_access_confirming_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_confirming_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_confirming_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_confirming_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_confirmed_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cf_revoked_id, l(:at_access_revoking_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_revoked_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_revoked_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_revoked_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_access_revoking_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cf_deactivated_id, l(:at_access_deactivating_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_deactivated_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "bool"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_deactivated_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_deactivated_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_access_deactivating_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:at_working_issue_status_id, l(:at_working_issue_status_sbs) + ':') %>
+    </div>
+    <%= select_tag('working_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_working_issue_status, l(:at_or_create_new_status)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('wis_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_issue_in_progress_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:at_granted_issue_status_id, l(:at_granted_issue_status_sbs) + ':') %>
+    </div>
+    <%= select_tag('granted_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_granted_issue_status, l(:at_or_create_new_status)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('gis_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_issue_resolved_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:at_blocked_issue_status_id, l(:at_blocked_issue_status_sbs) + ':') %>
+    </div>
+    <%= select_tag('blocked_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_blocked_issue_status, l(:at_or_create_new_status)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('bis_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_issue_closed_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_sec_group_id, l(:at_security_group_sbs) + ':') %>
+    </div>
+    <%= select_tag('sec_group_id', options_from_collection_for_select(Group.all, :id, :lastname), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_sec_group, l(:at_or_create_new_group)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('sec_group_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_security_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_admin_group_id, l(:at_resgranter_unit_sbs) + ':') %>
+    </div>
+    <%= select_tag('admin_group_id', options_from_collection_for_select(Group.all | User.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_admin_group, l(:at_or_create_new_group)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('admin_group_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_admin_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_hr_group_id, l(:at_hr_group_sbs) + ':') %>
+    </div>
+    <%= select_tag('hr_group_id', options_from_collection_for_select(Group.all, :id, :lastname), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_hr_group, l(:at_or_create_new_group)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('hr_group_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_hr_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_cw_group_id, l(:at_constanly_watchers_sbs) + ':') %>
+    </div>
+    <%= select_tag('cw_group_id', options_from_collection_for_select(Group.all, :id, :lastname), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cw_group, l(:at_or_create_new_group)) %>
+    </div>
+    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cw_group_name', nil, :title => l(:at_enter_name), :placeholder => l(:at_constanly_watchers), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
+    </div>
+
+  </div>
+
+</div>
+
 
 <script type="text/javascript">
 
+
+var ws_ch_opts = {width:"250px", disable_search: false, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
+
+var ms_ch_opts = {width:"250px", disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
+
+$('#at_simple_approvement').chosen(ms_ch_opts);
+
+
+$('#at_project_id').chosen(ws_ch_opts);
+
+$('#tr_new_emp_id').chosen(ws_ch_opts);
+$('#tr_grant_id').chosen(ws_ch_opts);
+$('#tr_change_term_id').chosen(ws_ch_opts);
+$('#tr_revoke_id').chosen(ws_ch_opts);
+$('#tr_dismissal_id').chosen(ws_ch_opts);
+$('#tr_template_agreement_id').chosen(ws_ch_opts);
+$('#sec_group_id').chosen(ws_ch_opts);
+$('#admin_group_id').chosen(ws_ch_opts);
+$('#hr_group_id').chosen(ws_ch_opts);
+$('#cw_group_id').chosen(ws_ch_opts);
+$('#cf_new_emp_first_day_id').chosen(ws_ch_opts);
+$('#cf_verified_id').chosen(ws_ch_opts);
+$('#cf_approved_id').chosen(ws_ch_opts);
+$('#cf_granting_id').chosen(ws_ch_opts);
+$('#cf_confirming_id').chosen(ws_ch_opts);
+
+
+$('#cf_revoked_id').chosen(ws_ch_opts);
+$('#cf_deactivated_id').chosen(ws_ch_opts);
+
+$('#working_issue_status_id').chosen(ws_ch_opts);
+$('#granted_issue_status_id').chosen(ws_ch_opts);
+$('#blocked_issue_status_id').chosen(ws_ch_opts);
+
+function clear_input(obj) { 
+  $(obj).parent().find('div.new-input input').val('');
+}
+
+
+
 $( document ).ready(function() {
+
+    $('div.new-input input').on( 'input', function () { 
+    $(this).parent().parent().find('select').find("option:selected").removeAttr("selected");
+    $(this).parent().parent().find('select').trigger("chosen:updated");
+  });
+
+
   $(document).attr("title", "<%= l(:at_params) %>");
   $('div#settings form input[type="submit"]').hide();
   $('div#settings').append('<button class="button-1 nomargin-bottom" id="set_base_config" name="button" style="float: left;margin-left:10px;height:21px;padding:0px 2px !important;" type="button"><%=j l(:at_set_base_config) %></button>');
-  $("#set_base_config").click(function(e) { 
+
+
+$("#set_base_config").click(function(e) { 
+
+  var sendData = new Array();
+  var form_errors = 0;
+  $.each($('div.param-line'),function(){
+    if ($(this).find('select').val() == ""  ) {
+      if ($(this).find('div.new-input input').val() == "" ) {
+        form_errors++;
+        $(this).find('.param-label').addClass("error_param");
+      } else {
+        $(this).find('.param-label').removeClass("error_param");
+        var param = {};
+        var key = $(this).find('div.new-input input').attr('id');
+        var value = $(this).find('div.new-input input').val();
+        param["key"] = key;
+        param["value"] = value;
+        sendData.push(param);
+
+      }
+    } else {
+      var param = {};
+      var key = $(this).find('select').attr('id');
+      var value = $(this).find('select').val();
+      param["key"] = key;
+      param["value"] = value;
+      sendData.push(param);
+    }
+  });
+  //console.log(JSON.stringify(sendData));
+  if (form_errors == 0) {
+    
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
-    window.open("/access_tickets/set_base_config","_self");
-  });
+    window.open("<%= Redmine::Utils::relative_url_root %>/access_tickets/set_base_config?parameters=" + JSON.stringify(sendData),"_self");
+  }
+
+});
+
+
 
 });
 

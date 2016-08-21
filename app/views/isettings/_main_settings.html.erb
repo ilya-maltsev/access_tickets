@@ -5,163 +5,155 @@
 }
 </style>
 
-<% config = ISetting.basic_config() %>
+<% config = ISetting.get_plugin_config() %>
 
 <div style="margin-left:50px;padding:10px">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_project_id, l(:at_plugin_project) + ':') %>
     </div>
-    <%= select_tag('at_project_id', options_from_collection_for_select(Project.all, :id, :name, :selected => config[:at_project_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('at_project_id', options_from_collection_for_select(Project.all, :id, :name, :selected => config["at_project_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_tr_grant_id, l(:at_tr_grant) + ':') %>
     </div>
-    <%= select_tag('tr_grant_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config[:tr_grant_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('tr_grant_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_grant_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
-
-
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_tr_revoke_id, l(:at_tr_revoke) + ':') %>
     </div>
-    <%= select_tag('tr_revoke_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config[:tr_revoke_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('tr_revoke_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_revoke_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-
-
-  <div style="margin-bottom:5px;width:50%;">
-      <div class="param-label">
-        <%= label_tag(:access_tickets_cf_approved_id, l(:at_cf_approved) + ':') %>
-      </div>
-      <%= select_tag('cf_approved_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_approved_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
-  </div>
-
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_verified_id, l(:at_cf_verified) + ':') %>
       </div>
-      <%= select_tag('cf_verified_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_verified_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('cf_verified_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_verified_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+      <div class="param-label">
+        <%= label_tag(:access_tickets_cf_approved_id, l(:at_cf_approved) + ':') %>
+      </div>
+      <%= select_tag('cf_approved_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_approved_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_granting_id, l(:at_access_granting) + ':') %>
       </div>
-      <%= select_tag('cf_granting_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_granting_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('cf_granting_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_granting_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_confirming_id, l(:at_access_confirming) + ':') %>
       </div>
-      <%= select_tag('cf_confirming_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_confirming_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('cf_confirming_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_confirming_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_revoked_id, l(:at_access_revoking) + ':') %>
       </div>
-      <%= select_tag('cf_revoked_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_revoked_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('cf_revoked_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_revoked_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_deactivated_id, l(:at_access_deactivating) + ':') %>
       </div>
-      <%= select_tag('cf_deactivated_id', options_from_collection_for_select(Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).first.issue_custom_fields.all, :id, :name, :selected => config[:cf_deactivated_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('cf_deactivated_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_deactivated_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:at_working_issue_status_id, l(:at_working_issue_status) + ':') %>
       </div>
-      <%= select_tag('working_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config[:working_issue_status_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('working_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config["working_issue_status_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:at_granted_issue_status_id, l(:at_granted_issue_status) + ':') %>
       </div>
-      <%= select_tag('granted_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config[:granted_issue_status_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('granted_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config["granted_issue_status_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:at_blocked_issue_status_id, l(:at_blocked_issue_status) + ':') %>
       </div>
-      <%= select_tag('blocked_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config[:blocked_issue_status_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+      <%= select_tag('blocked_issue_status_id', options_from_collection_for_select(IssueStatus.all, :id, :name, :selected => config["blocked_issue_status_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-
-
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_sec_group_id, l(:at_security_group) + ':') %>
     </div>
-    <%= select_tag('sec_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config[:sec_group_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('sec_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config["sec_group_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_admin_group_id, l(:at_resgranter_unit) + ':') %>
     </div>
-    <%= select_tag('admin_group_id', options_from_collection_for_select(Group.all | User.all, :id, :name, :selected => config[:admin_group_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('admin_group_id', options_from_collection_for_select(Group.all | User.all, :id, :name, :selected => config["admin_group_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_hr_group_id, l(:at_hr_group) + ':') %>
     </div>
-    <%= select_tag('hr_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config[:hr_group_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('hr_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config["hr_group_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_cw_group_id, l(:at_constanly_watchers) + ':') %>
     </div>
-    <%= select_tag('cw_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config[:cw_group_id]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('cw_group_id', options_from_collection_for_select(Group.all, :id, :lastname, :selected => config["cw_group_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-  <div style="margin-bottom:5px;width:50%;">
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div  class="param-label">
       <%= label_tag(:access_tickets_erm_integration, l(:at_erm_integration) + ':') %>
     </div>
-    <%= select_tag('at_erm_integration', options_for_select([[l(:at_yes), 1], [l(:at_no), 0]], :selected => config[:at_erm_integration]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+    <%= select_tag('at_erm_integration', options_for_select([[l(:at_yes), 1], [l(:at_no), 0]], :selected => config["at_erm_integration"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_plugin_settings_value(this)"} ) %>
   </div>
-
-
-
-
 </div>
 
+
+
 <script type="text/javascript">
+
+
+  $('div#settings').append('<button class="button-1 nomargin-bottom at_background_red" id="reset_config" name="button" style="float: left;margin-left:10px;height:31px;padding:0px 2px !important;" type="button"><%=j l(:at_reset_config) %></button>');
+
 $(document).attr("title", "<%= l(:at_params) %>");
 
 var ws_ch_opts = {width:"250px", disable_search: false, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
 var ms_ch_opts = {width:"250px", disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
-$('#at_simple_approvement').chosen(ms_ch_opts);
 
 $('#at_erm_integration').chosen(ms_ch_opts);
 $('#at_project_id').chosen(ws_ch_opts);
-
-$('#tr_new_emp_id').chosen(ws_ch_opts);
 $('#tr_grant_id').chosen(ws_ch_opts);
-$('#tr_change_term_id').chosen(ws_ch_opts);
 $('#tr_revoke_id').chosen(ws_ch_opts);
-$('#tr_dismissal_id').chosen(ws_ch_opts);
-$('#tr_template_agreement_id').chosen(ws_ch_opts);
 $('#sec_group_id').chosen(ws_ch_opts);
 $('#admin_group_id').chosen(ws_ch_opts);
 $('#hr_group_id').chosen(ws_ch_opts);
 $('#cw_group_id').chosen(ws_ch_opts);
-$('#cf_new_emp_first_day_id').chosen(ws_ch_opts);
 $('#cf_verified_id').chosen(ws_ch_opts);
 $('#cf_approved_id').chosen(ws_ch_opts);
 $('#cf_granting_id').chosen(ws_ch_opts);
@@ -181,7 +173,19 @@ function set_settings_value(obj){
   var senddata = {};
   var key = $(obj).attr('id');
   senddata[key] = $(obj).val();
-  $.post("access_tickets_isettings/set_settings_value", senddata, function( data ) {
+  $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets_isettings/set_settings_value", senddata, function( data ) {
+    }, "json");
+}
+
+
+function set_plugin_settings_value(obj){
+  var senddata = {};
+  var key = $(obj).attr('id');
+  var value = $(obj).val();
+  senddata["authenticity_token"] = $('input[name="authenticity_token"]').val();
+  senddata["settings"] = {};
+  senddata["settings"][key] = value;
+  $.post("access_tickets", senddata, function( data ) {
     }, "json");
 }
 
