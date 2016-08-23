@@ -56,7 +56,7 @@ class ISetting < ActiveRecord::Base
     at_erm_integration
   end
 
-  def self.save_settings_value(key,value)
+  def self.save_settings_value(key,value, user_id = 1)
     if ISetting.active.where(:param => key).empty?
       settings = ISetting.create(:updated_by_id => user_id)
       settings[:deleted] = 0
@@ -79,6 +79,8 @@ class ISetting < ActiveRecord::Base
   end
 
 def self.set_basic_settings(params)
+
+  ISetting.active.update_all(:deleted =>  1)
 
     if ISetting.active.where(:param => "at_simple_approvement").count == 0
       ISetting.create(:param => "at_simple_approvement", :value => 0, :deleted => 0 )

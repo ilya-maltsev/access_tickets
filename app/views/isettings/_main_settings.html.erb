@@ -173,7 +173,7 @@ function set_settings_value(obj){
   var senddata = {};
   var key = $(obj).attr('id');
   senddata[key] = $(obj).val();
-  $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets_isettings/set_settings_value", senddata, function( data ) {
+  $.post("<%= Redmine::Utils::relative_url_root %>/settings/plugin/access_tickets_isettings/set_settings_value", senddata, function( data ) {
     }, "json");
 }
 
