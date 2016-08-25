@@ -21,6 +21,27 @@
 module Access_Tickets
     class Hooks  < Redmine::Hook::ViewListener
 
+
+      def controller_issues_new_before_save(context)
+        autoset_watchers(context)
+      end
+
+      def autoset_watchers(context)
+        if context[:params][:issue] && ISetting.check_config()
+          settings = ISetting.get_plugin_config()
+          if context[:issue].project_id == settings["at_project_id"]
+            group_ids = []
+            if context[:issue].tracker_id.in?([settings["tr_grant_id"], settings["tr_revoke_id"]])
+              group_ids = [settings["admin_group_id"],settings["sec_group_id"],settings["cw_group_id"]]
+            end
+            group_ids.each do |group_id|
+              context[:issue].watcher_user_ids = context[:issue].watcher_user_ids | User.active.in_group(group_id).map(&:id)
+            end
+            context[:issue].watcher_user_ids = context[:issue].watcher_user_ids.push(context[:issue].author_id)
+          end
+        end
+      end
+
       def view_issues_show_description_bottom(context={})
         if context[:issue].project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i
           if context[:issue].tracker_id == ISetting.active.where(:param => "tr_grant_id").first.value.to_i
@@ -34,10 +55,6 @@ module Access_Tickets
           end
         end
       end
-
-      #def view_issues_new_top(context={})
-      #  context[:controller].send(:render_to_string, :partial => 'ticket_table/table_new_issue', :locals => context)
-      #end
 
     end
 end
