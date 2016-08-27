@@ -191,5 +191,10 @@ function set_plugin_settings_value(obj){
 
 $( document ).ready(function() {
   $('div#settings input[type="submit"]').hide();
+  $("#reset_config").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%= Redmine::Utils::relative_url_root %>/access_tickets/reset_config","_self");
+});
 });
 </script>
