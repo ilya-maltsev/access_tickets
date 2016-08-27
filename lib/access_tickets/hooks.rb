@@ -28,8 +28,8 @@ module Access_Tickets
 
       def autoset_watchers(context)
         if context[:params][:issue] && ISetting.check_config()
-          settings = ISetting.get_plugin_config()
-          if context[:issue].project_id == settings["at_project_id"]
+          if context[:issue].project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i
+            settings = ISetting.get_plugin_config()
             group_ids = []
             if context[:issue].tracker_id.in?([settings["tr_grant_id"], settings["tr_revoke_id"]])
               group_ids = [settings["admin_group_id"],settings["sec_group_id"],settings["cw_group_id"]]
