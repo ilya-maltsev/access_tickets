@@ -1,5 +1,5 @@
 # access_tickets
-Access tickets is solution for Accounting of access  based on Redmine plugin.
+Access tickets is Access Request System based on Redmine plugin.
 This plugin made to account access to some assets such as websites, servers and other IT entities.
 
 # About
