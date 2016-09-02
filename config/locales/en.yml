@@ -77,7 +77,7 @@ en:
   at_revoke_confirmation: "Revoke confirmation"
   at_revoke_all_grants: "Revoke all grants"
   at_revoke_grants_by_dismissal: "Revoke all grants by dismissal"
-  фt_need_to_revoke_access: "Need to revoke access"
+  at_need_to_revoke_access: "Need to revoke access"
   at_plugin_project: "Plugin project"
   at_need_to_approve: "Need to appove by resource owner"
   at_need_to_verified: "Need to verify by security service"
