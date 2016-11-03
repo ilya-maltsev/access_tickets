@@ -319,7 +319,7 @@
 
 
 <% if @issue.tracker_id != ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-  <% if (@issue.at_granting_status[8] == 1 || @issue.at_granting_status[9] == 1) && issue.at_granting_status[0..1] == [1,1] %>
+  <% if (@issue.at_granting_status[8] == 1 || @issue.at_granting_status[9] == 1) && @issue.at_granting_status[0..1] == [1,1] %>
     $('#show_ticket').DataTable().column(6).visible( true );
   <% end %>
 <% end %>
