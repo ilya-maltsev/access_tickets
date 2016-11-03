@@ -470,7 +470,7 @@ function show_available_resources() {
     $('#items_list').append("<option value=''><%=j l(:at_select_resource) %></option>");
     $('#items_list').attr("data-placeholder","<%=j l(:at_select_resource) %>");
     $.each(iresources,function(i){
-      $('#items_list').append('<option value=' + iresources[i].i_resource.id + '>' + iresources[i].i_resource.name + '</option>');
+      $('#items_list').append('<option value=' + iresources[i].id + '>' + iresources[i].name + '</option>');
     });
     $('#items_list').trigger("chosen:updated");
   }, "json");

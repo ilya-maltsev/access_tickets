@@ -132,17 +132,11 @@ function update_edittable(data){
       $("#role_id_" + ticket["uid"]).attr('disabled','disabled');
 
 
-      <% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-        if (ticket["i_res_has_entities"] == true) {
-          $("#entity_id" + ticket["uid"]).attr('disabled','disabled');
-        }
-      <% end %>
+
       if (ticket["s_date"] == "") {
-      <% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-        $("#s_date_" + ticket["uid"]).val("<%=j @s_date %>");
-      <% else %>
+
         $("#s_date_" + ticket["uid"]).val($.datepicker.formatDate('dd.mm.yy', new Date()));
-      <% end %>
+
       } else if (ticket["s_date"] == ""){
         $("#s_date_" + ticket["uid"]).val();
       } else {
@@ -208,9 +202,9 @@ function update_edittable(data){
         $.each(ticket["i_entities"],function(e){
           var ipv4 = "";
           if (ticket["i_res_has_ip"] == true) {
-            ipv4 = ' [' + this["i_entity"]["ipv4"] + ']';
+            ipv4 = ' [' + this["ipv4"] + ']';
           }
-          $("#entity_id_" + ticket["uid"]).append('<option value=' + this["i_entity"]["id"] + '>' + this["i_entity"]["name"] + ipv4 + '</option>');
+          $("#entity_id_" + ticket["uid"]).append('<option value=' + this["id"] + '>' + this["name"] + ipv4 + '</option>');
         });
 
         
@@ -218,7 +212,7 @@ function update_edittable(data){
         $('#entity_id_' + ticket["uid"] + '_chosen').attr('style','width:100%');
 
         $.each(ticket["i_entity"],function(){
-          $('#entity_id_' + ticket["uid"] + ' option[value='+this["i_entity"]["id"]+']').attr('selected','selected');
+          $('#entity_id_' + ticket["uid"] + ' option[value='+this["id"]+']').attr('selected','selected');
         });
 
         $("#entity_id_" + ticket["uid"]).trigger("chosen:updated");
@@ -326,7 +320,7 @@ function show_exist_accesses_box(data) {
     modal: true,
     position: 'center',
     buttons: [{ 
-    text: "Закрыть",
+    text: "<%=j l(:at_cancel) %>",
     class: "button-5",
     click: function () {
                 $(this).dialog('close');
@@ -358,18 +352,6 @@ function save_tickets(obj){
       }
     }, "json");
   } else {
-    <% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-    $.post("access_tickets/edit_ticket_table/save", { issue_id: <%=j @issue_id %>, group_id: $("select#group_id").val(), template_id: $("select#template_list").val(),i_tickets: JSON.stringify(obj), version: $('#at_versions').val() }, function( data ) {
-      if (data[3].length > 0) {
-        $( "#msgBox" ).dialog('destroy').remove();
-        show_exist_accesses_box(data[3]);
-      } else {
-        $( "#msgBox" ).dialog('destroy').remove();
-        $( "#ajax-modal" ).before($('#ajax-indicator').clone())
-        location.reload();
-      }
-    }, "json");
-    <% else %>
     $.post("access_tickets/edit_ticket_table/save", { issue_id: <%=j @issue_id %>, i_tickets: JSON.stringify(obj), version: $('#at_versions').val() }, function( data ) {
       if (data[3].length > 0) {
         show_exist_accesses_box(data[3]);
@@ -379,7 +361,8 @@ function save_tickets(obj){
         location.reload();
       }
     }, "json");
-    <% end %>
+
+
 
   }
 
@@ -396,7 +379,7 @@ function show_roles(obj){
     $("#role_id_" + uid).append("<option value=''><%=j l(:at_select_role) %></option>");
     $("#role_id_" + uid).attr("data-placeholder","<%=j l(:at_select_role) %>");
     $.each(i_roles,function(i){
-      $("#role_id_" + uid).append('<option value=' + i_roles[i].i_role.id + '>' + i_roles[i].i_role.name + '</option>');
+      $("#role_id_" + uid).append('<option value=' + i_roles[i].id + '>' + i_roles[i].name + '</option>');
     });
     $("#role_id_" + uid).trigger("chosen:updated");
   }, "json");
@@ -423,9 +406,9 @@ function show_ientities(obj){
         $.each(ientities, function(i) {
           var ipv4 = "";
           if (data.has_ip == true) {
-            ipv4 = ' [' +ientities[i].i_entity.ipv4 + ']';
+            ipv4 = ' [' +ientities[i].ipv4 + ']';
           }
-          $('#entity_id_' + uid).append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + ipv4 + '</option>');
+          $('#entity_id_' + uid).append('<option value=' + ientities[i].id + '>' + ientities[i].name + ipv4 + '</option>');
         });
         $('#entity_id_' + uid).trigger('chosen:updated');
       } else {
@@ -581,10 +564,10 @@ $('#msgBox').dialog({
       if (Rows.length > 0) {
         $('#edit_ticket tbody tr').each(function(){
           if ( $(this).find('.user_id').chosen().val() == null ) {
-          <% if @tracker_id != ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
+
             table_errors++;
             $(this).find('div#user_id_chosen ul').css('border-color','#F78282');
-          <% end %>
+
           }
           if ($(this).find('.resource_id').chosen().val() < 1) {
             table_errors++;
@@ -722,9 +705,6 @@ $('#edit_ticket').DataTable().clear().draw();
 
 
 
-<% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-  $('#edit_ticket').DataTable().column(1).visible( false );
-<% end %>
 
 
  
@@ -732,7 +712,7 @@ $('#edit_ticket').DataTable().clear().draw();
   
   $(".ui-dialog-titlebar").after('<div id="ticket_action" style="" class="dataTables_wrapper"></div>');
 
-  <% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i || ( @tracker_id == ISetting.active.where(:param => "tr_grant_id").first.value.to_i && ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 1 ) %>
+  <% if @tracker_id == ISetting.active.where(:param => "tr_grant_id").first.value.to_i && ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 1  %>
   $('#ticket_action').append('<div id="group_box" style="text-align: center;display:inline-block;float: left;margin-right:10px;" title="<%= l(:at_select_group) %>"></div>');
   $('#group_box').append('<%=j select_tag("group_id", options_from_collection_for_select(Group.where(:id => IGrouplider.group_ids(User.current.id)), :id, :name), {:style=>"width: 300px; margin-top: 4px;float: left;margin-left:10px;", :class => "", :onchange => "show_group_templates(this)", :prompt => l(:at_select_group), "data-placeholder" => l(:at_select_group)} ) %>');
   $('#group_id').chosen(ch_opts);
@@ -824,13 +804,6 @@ if (issue_itickets.length > 0) {
     row.find('#e_date').attr("id","e_date_" + ticket["uid"]);
 
 
-    <% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-      $("#resource_id_" + ticket["uid"]).attr('disabled','disabled');
-      $("#role_id_" + ticket["uid"]).attr('disabled','disabled');
-      if (ticket["has_entities"] == true) {
-        $("#entity_id_" + ticket["uid"]).attr('disabled','disabled');
-      }
-    <% end %>
     row.find('#description').val(this["description"]);
 
     $("#s_date_" + ticket["uid"]).val(this["s_date"]);
@@ -853,7 +826,7 @@ if (issue_itickets.length > 0) {
     });
 
     $.each(this["i_resource_roles"],function(){
-      $("#role_id_" + ticket["uid"]).append('<option value=' + this["i_role"]["id"] + '>' + this["i_role"]["name"] + '</option>');
+      $("#role_id_" + ticket["uid"]).append('<option value=' + this["id"] + '>' + this["name"] + '</option>');
     });
 
 
@@ -866,13 +839,13 @@ if (issue_itickets.length > 0) {
         var ipv4 = "";
         //if ( this["i_entity"]["ipv4"] != "" ) {
         if (ticket["has_ip"] == true) {
-          ipv4 = ' [' + this["i_entity"]["ipv4"] + ']';
+          ipv4 = ' [' + this["ipv4"] + ']';
         }
-        $("#entity_id_" + ticket["uid"]).append('<option value=' + this["i_entity"]["id"] + '>' + this["i_entity"]["name"] + ipv4 + '</option>');
+        $("#entity_id_" + ticket["uid"]).append('<option value=' + this["id"] + '>' + this["name"] + ipv4 + '</option>');
       });
 
       $.each(ticket["i_entity"],function(){
-       $('#entity_id_' + ticket["uid"] + ' option[value='+this["i_entity"]["id"]+']').attr('selected','selected');
+       $('#entity_id_' + ticket["uid"] + ' option[value='+this["id"]+']').attr('selected','selected');
       });
     }
 

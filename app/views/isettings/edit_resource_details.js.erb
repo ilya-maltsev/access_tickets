@@ -41,8 +41,8 @@ function import_entities() {
 
 function show_role(obj) {
   $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_role", { role_id : $(obj).val() }, function( data ) {
-    $("#at_irole_name").val(data.irole.i_role.name);
-    $("#role_description").val(data.irole.i_role.description);
+    $("#at_irole_name").val(data.irole.name);
+    $("#role_description").val(data.irole.description);
   }, "json");
 }
 
@@ -52,7 +52,7 @@ function remove_role() {
   $('#role_id').empty();
   $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
   $.each(data,function(i){
-     $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+     $('#role_id').append('<option value=' + data[i].id + '>' + data[i].name + '</option>');
   });
   $('#role_id').trigger("chosen:updated");
   $('#at_irole_name').val('');
@@ -74,10 +74,10 @@ function update_entities_table(data) {
   if (data.ientities.length > 0) {
     $.each(data.ientities,function(i){
       var id, name, ip, desc;
-      id = this.i_entity["id"];
-      name = this.i_entity["name"];
-      ipv4 = this.i_entity["ipv4"];
-      description = this.i_entity["description"];
+      id = this["id"];
+      name = this["name"];
+      ipv4 = this["ipv4"];
+      description = this["description"];
       $('#entity_list').DataTable().row.add([
       '<input class="at_input" disabled="disabled" id="edit_entity_name" name="edit_entity_name" maxlength="64" style="text-align: center !important;width: 100%;" title="<%= l(:at_enter_name) %>" type="" value="' + name +  '" def_value="' + name +  '"/>',
       '<input class="at_input" disabled="disabled" id="edit_entity_ipv4" name="edit_entity_ipv4" maxlength="16" style="text-align: center !important;width: 100%;" title="<%= l(:at_enter_ipv4) %>" type="" value="' + ipv4 +  '" def_value="' + ipv4 +  '"/>',
@@ -313,14 +313,14 @@ $('#msgBox').dialog({
 
   <% if @resource_editable == true %>
   buttons: [{ 
-    text: "Отменить",
+    text: "<%=j l(:at_cancel) %>",
     class: "button-4",
     click: function () {
                 $(this).dialog('close');
             }, 
   },
   {
-    text: "Сохранить",
+    text: "<%=j l(:at_save) %>",
     class: "button-5",
     click: function() {
       var result_name = validate_name_len($("#edit_resource_name").val(), 65); 
@@ -379,19 +379,14 @@ $(document.body).on('focus', '.search-field input', function() {
 showModal('msgBox');
 
 
-
-<% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-  $('#entity_list').DataTable().column(1).visible( false );
-<% end %>
-
 <% if @resource.has_entities %> 
   if (ies.length > 0) {
     $.each(ies,function(i){
       var id, name, ip, desc;
-      id = this.i_entity["id"];
-      name = this.i_entity["name"];
-      ipv4 = this.i_entity["ipv4"];
-      description = this.i_entity["description"];
+      id = this["id"];
+      name = this["name"];
+      ipv4 = this["ipv4"];
+      description = this["description"];
       $('#entity_list tbody').append('<tr><td><input class="at_input" disabled="disabled" id="edit_entity_name" name="edit_entity_name"" style="width: 100%;" title="<%= l(:at_enter_name) %>" type="" maxlength="64" value="' + name +  '" def_value="' + name +  '"/></td>' +
       '<td><input class="at_input" disabled="disabled" id="edit_entity_ipv4" name="edit_entity_ipv4" style="width: 100%;" title="<%= l(:at_enter_ipv4) %>" type="" maxlength="16" value="' + ipv4 +  '" def_value="' + ipv4 +  '"/></td>' +
       '<td><input class="at_input" disabled="disabled" id="edit_entity_desc" name="edit_entity_desc" style="width: 100%;" title="<%= l(:at_enter_desc) %>" type="" maxlength="128" value="' + description +  '" def_value="' + description +  '"/></td>' +
@@ -598,7 +593,7 @@ $("#at_irole_add").click(function(e) {
   $('#role_id').empty();
   $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
   $.each(data,function(i){
-     $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+     $('#role_id').append('<option value=' + data[i].id + '>' + data[i].name + '</option>');
   }); 
   $('#role_id').trigger("chosen:updated");
   $('#at_irole_name').val('');
@@ -615,7 +610,7 @@ $("#at_irole_edit").click(function(e) {
     $('#role_id').empty();
     $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
     $.each(data,function(i){
-       $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+       $('#role_id').append('<option value=' + data[i].id + '>' + data[i].name + '</option>');
     });
     $('#role_id').trigger("chosen:updated");
     $("#at_irole_name").val('');

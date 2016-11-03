@@ -31,7 +31,7 @@ class IAccess < ActiveRecord::Base
   belongs_to :ientity, :class_name => "IEntity", :foreign_key => "i_entity_id"
   belongs_to :revoker, :class_name => "User", :foreign_key => "revoked_by_id"
   belongs_to :r_creater, :class_name => "User", :foreign_key => "r_created_by_id"
-  has_one :iretimeaccess, :class_name => "IRetimeaccess", :conditions => { :deleted => 0 }
+  has_one :iretimeaccess, -> { where deleted: false }, :class_name => "IRetimeaccess"
 
 
   before_create :default
@@ -178,7 +178,7 @@ class IAccess < ActiveRecord::Base
         users_nosort.push(rev_user)
       end
     end
-    users_list = users_nosort.sort_by! {|u| u[:id]}
+    users_list = users_nosort.to_a.sort_by! {|u| u[:id]}
     #users_list.insert(0, first_option)
 
   end
@@ -237,9 +237,9 @@ class IAccess < ActiveRecord::Base
     end
     accesses = []
     #user_ids = User.all.map(&:id)
-    user_ids = ITicket.active.includes(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").map(&:user_id).uniq
+    user_ids = ITicket.active.joins(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").map(&:user_id).uniq
     user_ids.each do |user_id|
-      r_uids = ITicket.active.includes(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").where(:user_id => user_id).map(&:r_uid).uniq
+      r_uids = ITicket.active.joins(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").where(:user_id => user_id).map(&:r_uid).uniq
       r_uids.each do |r_uid|
         ientities = []
         access = {}
@@ -309,9 +309,9 @@ class IAccess < ActiveRecord::Base
     end
     accesses = []
     #user_ids = User.all.map(&:id)
-    user_ids = ITicket.active.includes(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.deactivated_by_id IS NOT NULL").map(&:user_id).uniq
+    user_ids = ITicket.active.joins(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.deactivated_by_id IS NOT NULL").map(&:user_id).uniq
     user_ids.each do |user_id|
-      r_uids = ITicket.active.includes(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.deactivated_by_id IS NOT NULL").where(:user_id => user_id).map(&:r_uid).uniq
+      r_uids = ITicket.active.joins(:iaccesses).where(:i_resource_id => resource_id).where("i_accesses.deactivated_by_id IS NOT NULL").where(:user_id => user_id).map(&:r_uid).uniq
       r_uids.each do |r_uid|
         ientities = []
         access = {}
@@ -394,9 +394,9 @@ class IAccess < ActiveRecord::Base
     end
     accesses = []
     if rev_issue_id.nil?
-      r_uids = ITicket.active.includes(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").where(:user_id => user_id).map(&:r_uid).uniq
+      r_uids = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").where(:user_id => user_id).map(&:r_uid).uniq
     else
-      r_uids = ITicket.active.includes(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL").where("i_accesses.rev_issue_id" => rev_issue_id).map(&:r_uid).uniq
+      r_uids = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL").where("i_accesses.rev_issue_id" => rev_issue_id).map(&:r_uid).uniq
     end
     r_uids.each do |r_uid|
       ientities = []
@@ -410,7 +410,7 @@ class IAccess < ActiveRecord::Base
       if rev_issue_id.nil?
         itickets = ITicket.active.where(:r_uid => r_uid, :user_id => user_id)
       else
-        itickets = ITicket.active.includes(:iaccesses).where(:r_uid => r_uid, "i_accesses.rev_issue_id" => rev_issue_id)
+        itickets = ITicket.active.joins(:iaccesses).where(:r_uid => r_uid, "i_accesses.rev_issue_id" => rev_issue_id)
       end
       user_name = User.find(itickets.first[:user_id]).name
       user_obj = {}
@@ -504,7 +504,7 @@ class IAccess < ActiveRecord::Base
       tz = "Minsk"
     end
     accesses = []
-    r_uids = ITicket.active.includes(:iaccesses).where("i_accesses.deactivated_by_id IS NOT NULL").where(:user_id => user_id).map(&:r_uid).uniq
+    r_uids = ITicket.active.joins(:iaccesses).where("i_accesses.deactivated_by_id IS NOT NULL").where(:user_id => user_id).map(&:r_uid).uniq
     r_uids.each do |r_uid|
       ientities = []
       access = {}
@@ -752,7 +752,7 @@ class IAccess < ActiveRecord::Base
 
 
   def self.revoke_grant_for_tickets(issue_id, granter_id, r_uid = nil)
-    tr_new_employee = Issue.find(issue_id).tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+    tr_new_employee = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
     if r_uid.nil? #|| tr_new_employee
       itickets = ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => granter_id).map(&:i_resource_id))
     else

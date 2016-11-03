@@ -43,19 +43,28 @@ class IResource < ActiveRecord::Base
   has_many :itickets, :class_name => "ITicket"
   validates :name, length: { in: 2..64 }
   validates :description, length: { in: 0..256 }
-  before_create :default
+  #before_create :default
   after_create :set_default_params
+  before_validation(on: :create) do
+    self.deleted = 0
+    self.has_ip = 0
+    self.has_entities = 0
+    self.description = ""
+    self.updated_by_id = User.current.id
+  end
 
   def delete
     self.deleted = true
     self.save
   end
 
-  def default
-    self.deleted = 0
-    self.has_ip = 0
-    self.has_entities = 0
-  end
+
+
+  #def default
+  #  self.deleted = 0
+  #  self.has_ip = 0
+  #  self.has_entities = 0
+  #end
 
   def set_default_params
     self.iresowners.create(:user_id => User.current.id)
@@ -128,7 +137,7 @@ class IResource < ActiveRecord::Base
         else
           object[:roles] = []
         end     
-        object[:roles] = object[:roles].sort_by! {|r| r[:name]} 
+        object[:roles] = object[:roles].to_a.sort_by! {|r| r[:name]} 
         if resource.iresowners.count > 0
           object[:resowners] = resource.iresowners.map(&:user_id) - [1]
           object[:resowners].each do |resowner|
@@ -140,7 +149,7 @@ class IResource < ActiveRecord::Base
         else
           object[:resowners] = []
         end 
-        object[:iresowners] = object[:iresowners].sort_by! {|r| r[:name]} 
+        object[:iresowners] = object[:iresowners].to_a.sort_by! {|r| r[:name]} 
         if resource.iresgranters.count > 0
           object[:resgranters] = resource.iresgranters.map(&:user_id) - [1]
           object[:resgranters].each do |resgranter|
@@ -152,7 +161,7 @@ class IResource < ActiveRecord::Base
         else
           object[:resgranters] = []
         end 
-        object[:iresgranters] = object[:iresgranters].sort_by! {|r| r[:name]} 
+        object[:iresgranters] = object[:iresgranters].to_a.sort_by! {|r| r[:name]} 
         object[:i_entities] = []
         if resource[:has_entities] == true
           if resource.ientities.active.count > 0

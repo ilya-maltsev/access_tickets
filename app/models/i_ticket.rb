@@ -30,12 +30,22 @@ class ITicket < ActiveRecord::Base
   belongs_to :approver, :class_name => "User", :foreign_key => "approved_by_id"
   belongs_to :verifier, :class_name => "User", :foreign_key => "verified_by_id"
   belongs_to :creater, :class_name => "User", :foreign_key => "created_by_id"
-  has_many :iaccesses, :class_name => "IAccess", :conditions => { :deleted => 0 }
+  has_many :iaccesses, -> { where deleted: false }, :class_name => "IAccess"
   has_many :itickentities, :class_name => "ITickentity"
   has_many :ientities, through: :itickentities, :class_name => "IEntity"
 
-  before_create :default
+  #before_create :default
   validates :description, length: { in: 0..128 }
+  before_validation(on: :create) do
+    self.created_by_id = User.current.id
+    self.deleted = 0
+    if self.description.nil?
+      self.description = ""
+    end
+  end
+
+
+
 
   def self.resowner_for_unapproval_issue(issue_id)
     unapproval_res_id = ITicket.active.where('i_tickets.verified_by_id IS NOT NULL and i_tickets.approved_by_id IS NULL').where(:issue_id => issue_id).first[:i_resource_id]
@@ -50,7 +60,7 @@ class ITicket < ActiveRecord::Base
 
 
   def self.may_be_set_ticket_user(issue_id, user_id)
-    if ITicket.check_issue_status(issue_id)[0..1] == [1,1] && ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => user_id).map(&:i_resource_id)).count > 0 && Issue.find(issue_id).tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i  && IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0 
+    if ITicket.check_issue_status(issue_id)[0..1] == [1,1] && ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => user_id).map(&:i_resource_id)).count > 0 && IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0 
       true
     else
       false
@@ -67,7 +77,7 @@ class ITicket < ActiveRecord::Base
         tickets.push(object)
       end
     end
-    {:ticktets => tickets, :exist_accesses => exist_accesses}
+    {:tickets => tickets, :exist_accesses => exist_accesses}
   end
 
   def self.tickets_user_id(issue_id)
@@ -96,6 +106,9 @@ class ITicket < ActiveRecord::Base
   def default
     self.created_by_id = User.where(:login => User.current.login).first.id
     self.deleted = 0
+    if self.description.nil?
+      self.description = ""
+    end
   end
 
   def self.ticket_versions(issue_id,current_user_id)
@@ -124,7 +137,7 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.ticket_last_version(issue_id)
-    version = ITicket.joins(:creater).find(:all, :conditions => { "issue_id" => issue_id }, :select => "firstname,lastname,created_at,t_uid" ).sort_by(&:created_at).last
+    version = ITicket.joins(:creater).where(:issue_id => issue_id).select([:firstname,:lastname,:created_at,:t_uid]).sort_by(&:created_at).last
   end
 
   def self.tickets_list(issue_id, current_user_id = nil)
@@ -334,7 +347,7 @@ class ITicket < ActiveRecord::Base
   def self.reject_tickets_by_security(issue_id, user_id)
     
     tracker_id = Issue.find(issue_id).tracker_id
-    tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+    tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
     if tracker_id == tr_new_emp_id 
       ITicket.active.where(:issue_id => issue_id).update_all(:verified_by_id => nil, :verified_at => nil, :user_id => 0, :approved_by_id => nil, :approved_at => nil)
     else
@@ -509,7 +522,7 @@ class ITicket < ActiveRecord::Base
   def self.may_be_revoked_by_owner_status(issue_id, owner_id, r_uid = nil)
     if ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count > 0 
         tracker_id = Issue.find(issue_id).tracker_id
-        tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+        tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
         tr_grant_id = ISetting.active.where(:param => "tr_grant_id").first.value.to_i
         if tracker_id == tr_new_emp_id
           IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0

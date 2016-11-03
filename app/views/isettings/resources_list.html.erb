@@ -306,17 +306,17 @@ function update_resources_list(data) {
       if (iroles.length > 0) {
         if (iroles.length < 5) {
           $.each(iroles, function(i) {
-            role = '<span class="nowrap"><a id = "'+ this.i_role.id + '" onclick="show_role_description(this);" class="role_details" title="<%= l(:at_show_role_description) %>">'+ this.i_role.name + '</a></span>';
+            role = '<span class="nowrap"><a id = "'+ this.id + '" onclick="show_role_description(this);" class="role_details" title="<%= l(:at_show_role_description) %>">'+ this.name + '</a></span>';
             roles = roles + role + "<br>";
           });
         } else {
           for (var i = 0; i < 4; i++) {
-            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            role = '<span class="nowrap"><a id = "'+ iroles[i].id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].name + '</a></span>';
             roles = roles + role + "<br>";
           }
           roles = roles + '<a onclick="expand(this);" class="expand" title="<%=j l(:at_show_all_list) %>">>></a><div class="hidden_roles" style="display:none">';
           for (var i = 4; i < iroles.length; i++) {
-            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            role = '<span class="nowrap"><a id = "'+ iroles[i].id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].name + '</a></span>';
             roles = roles + role + "<br>";
           }
           roles = roles + '</div><a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%=j l(:at_cut_down_list) %>"><<</a>';

@@ -26,15 +26,19 @@ class IRole < ActiveRecord::Base
   belongs_to :updated_by, :class_name => "User", :foreign_key => "updated_by_id"
   validates :name, length: { in: 2..32 }
   validates :description, length: { in: 0..255 }
-  before_create :default
-
+  #before_create :default
+  before_validation(on: :create) do
+    self.deleted = 0
+    self.description = ""
+    self.updated_by_id = User.current.id
+  end
 
   def delete     
     self.deleted = true
     self.save
   end
 
-  def default
-	 self.deleted = 0
-  end
+  #def default
+	# self.deleted = 0
+  #end
 end

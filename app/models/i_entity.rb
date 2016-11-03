@@ -41,8 +41,12 @@ class IEntity < ActiveRecord::Base
   validates :description, length: { in: 0..128 }
   validates :ipv4, length: { in: 0..15 }
   #validates :type, inclusion: { in: ["Object", "Group"], message: "%{value} is not a valid type" }],
-  before_create :default
+  #before_create :default
   before_save :set_updater
+  before_validation(on: :create) do
+    self.deleted = 0
+    #self.updated_by_id = User.current.id
+  end
 
 def self.import(i_resource_id, file, user_id)
     iresource = IResource.find(i_resource_id)

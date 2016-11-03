@@ -17,159 +17,200 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 match 'access_tickets', :controller => 'itickets', :action => 'show_at_project', :via => :get
-
 
 match '/access_tickets/access_templates', :controller => 'iaccesses', :action => 'access_templates', :via => :get
 
 match '/access_tickets/accesses_list', :controller => 'iaccesses', :action => 'accesses_list', :via => :get
+
 match '/access_tickets/show_accesses', :controller => 'iaccesses', :action => 'show_accesses', :via => :post
 
 match '/access_tickets/show_resources_list', :controller => 'iresources', :action => 'show_resources_list', :via => :post
 
+match '/access_tickets/resources_list', :controller => 'iresources', :action => 'resources_list', :via => :get
+
+match '/access_tickets/edit_resource/add_role', :controller => 'iroles', :action => 'add_role', :via => :post
+
+match '/access_tickets/edit_resource/edit_role', :controller => 'iroles', :action => 'edit_role', :via => :post
+
+match '/access_tickets/edit_resource/remove_role', :controller => 'iroles', :action => 'remove_role', :via => :post
+
+match '/issues/access_tickets', :controller => 'itickets', :action => 'show_at_project', :via => :get
+
+match '/access_tickets/set_base_config', :controller => 'isettings', :action => 'set_base_config', :via => :get
+
+match '/access_tickets/reset_config', :controller => 'isettings', :action => 'reset_config', :via => :get
+
+match '/access_tickets/available_users', :controller => 'iaccesses', :action => 'available_users', :via => :post
+
+match '/access_tickets/show_resources_list', :controller => 'iresources', :action => 'show_resources_list', :via => :post
+
+match '/access_tickets/save_resource', :controller => 'iresources', :action => 'save_resource', :via => :post
+
+match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
+
+match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
+
+match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
+
+match '/access_tickets/show_resource/ientity_show_list', :controller => 'ientities', :action => 'ientity_show_list', :via => :post
+
+match '/access_tickets/show_resource/export_entities', :controller => 'ientities', :action => 'export_entities', :via => :get
+
+match '/access_tickets/edit_resource/import_entities', :controller => 'ientities', :action => 'import_entities', :via => :post
+
+match '/access_tickets/show_role_description', :controller => 'iroles', :action => 'show_role_description', :via => :post
+
+match '/access_tickets/show_role', :controller => 'iroles', :action => 'show_role', :via => :post
+
+match '/access_tickets/edit_resource/add_entity', :controller => 'ientities', :action => 'add_entity', :via => :post
+
+match '/access_tickets/edit_resource/save_entity', :controller => 'ientities', :action => 'save_entity', :via => :post
+
+match '/access_tickets/edit_resource/remove_entity', :controller => 'ientities', :action => 'remove_entity', :via => :post
+
+match '/access_tickets/edit_resource/set_granters', :controller => 'iresources', :action => 'set_granters', :via => :post
+
+match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
+
+match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
+
+match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
+
+match '/access_tickets/edit_resource/set_has_entities', :controller => 'iresources', :action => 'set_has_entities', :via => :post
+
+match '/access_tickets/edit_resource/set_has_ip', :controller => 'iresources', :action => 'set_has_ip', :via => :post
+
+match '/access_tickets/edit_resource/set_groups_availability', :controller => 'iresources', :action => 'set_groups_availability', :via => :post
+
+match '/access_tickets/show_resource/groups_availability', :controller => 'iresources', :action => 'groups_availability', :via => :post
+
+match '/access_tickets/show_resource/groups_availability', :controller => 'iresources', :action => 'groups_availability', :via => :post
+
+match '/access_tickets/show_resource', :controller => 'iresources', :action => 'show_resource', :via => :post
+
+match '/access_tickets/edit_resource', :controller => 'iresources', :action => 'edit_resource', :via => :post
+
+match '/access_tickets/remove_resource', :controller => 'iresources', :action => 'remove_resource', :via => :post
+
+match '/settings/plugin/access_tickets_iresources/show', :controller => 'iresources', :action => 'ir_show', :via => :post
+
+match '/settings/plugin/access_tickets_iresources/add', :controller => 'iresources', :action => 'ir_add', :via => :post
+
+match '/settings/plugin/access_tickets_iresources/edit', :controller => 'iresources', :action => 'ir_edit', :via => :post
+
+match '/settings/plugin/access_tickets_iresources/remove', :controller => 'iresources', :action => 'ir_remove', :via => :post
+
+match '/settings/plugin/access_tickets_iresources/show_details', :controller => 'iresources', :action => 'show_details', :via => :post
 
 match '/access_tickets/resources_list', :controller => 'iresources', :action => 'resources_list', :via => :get
 
+match '/settings/plugin/access_tickets_isettings/set_settings_value', :controller => 'isettings', :action => 'set_settings_value', :via => :post
 
-match '/access_tickets/edit_resource/add_role', :controller => 'iroles', :action => 'add_role', :via => :post
-match '/access_tickets/edit_resource/edit_role', :controller => 'iroles', :action => 'edit_role', :via => :post
-match '/access_tickets/edit_resource/remove_role', :controller => 'iroles', :action => 'remove_role', :via => :post
+match '/settings/plugin/access_tickets_isettings/show_group_details', :controller => 'isettings', :action => 'show_group_details', :via => :post
 
+match '/settings/plugin/access_tickets_isettings/set_group_liders', :controller => 'isettings', :action => 'set_group_liders', :via => :post
 
-get '/issues/access_tickets', :to => 'itickets#show_at_project', :as => 'show_at_project'
+match '/settings/plugin/access_tickets_isettings/set_group_templates', :controller => 'isettings', :action => 'set_group_templates', :via => :post
 
-get '/access_tickets/set_base_config', :to  => 'isettings#set_base_config', :as => 'set_base_config'
-get '/access_tickets/reset_config', :to  => 'isettings#reset_config', :as => 'reset_config'
-post '/access_tickets/available_users', :to => 'iaccesses#available_users', :as => 'available_users'
-post '/access_tickets/show_resources_list', 'iresources#show_resources_list', :as => 'show_resources_list'
+match '/issues/access_tickets/edit_revoking_table', :controller => 'iaccesses', :action => 'edit_revoking_table', :via => :post
 
-post '/access_tickets/save_resource', :to => 'iresources#save_resource', :as => 'save_resource'
-post '/access_tickets/add_resource', :to => 'iresources#add_resource', :as => 'add_resource'
+match '/issues/access_tickets/edit_revoking_table/save', :controller => 'iaccesses', :action => 'save_revoking_table', :via => :post
 
-post '/access_tickets/show_resource/ientity_show_list', :to => 'ientities#ientity_show_list', :as => 'ientity_show_list'
-get '/access_tickets/show_resource/export_entities', :to => 'ientities#export_entities', :as => 'export_entities'
-post '/access_tickets/edit_resource/import_entities', :to => 'ientities#import_entities', :as => 'import_entities'
+match '/issues/access_tickets/show_last_users', :controller => 'itickets', :action => 'show_last_users', :via => :post
 
-post '/access_tickets/show_role_description', :to => 'iroles#show_role_description', :as => 'show_role_description'
-post '/access_tickets/show_role', :to => 'iroles#show_role', :as => 'show_role'
+match '/issues/access_tickets/edit_ticket_table', :controller => 'itickets', :action => 'edit_ticket_table', :via => :post
 
-post '/access_tickets/edit_resource/add_entity', :to => 'ientities#add_entity', :as => 'add_entity'
-post '/access_tickets/edit_resource/save_entity', :to => 'ientities#save_entity', :as => 'save_entity'
-post '/access_tickets/edit_resource/remove_entity', :to => 'ientities#remove_entity', :as => 'remove_entity'
+match '/issues/access_tickets/edit_ticket_table_ta', :controller => 'itickets', :action => 'edit_ticket_table_ta', :via => :post
 
+match '/issues/access_tickets/edit_ticket_table/save_ta', :controller => 'itickets', :action => 'edit_ticket_table_save_ta', :via => :post
 
-post '/access_tickets/edit_resource/set_granters', :to => 'iresources#set_granters', :as => 'set_granters'
+match '/issues/access_tickets/edit_retiming_table', :controller => 'iretimeaccesses', :action => 'edit_retiming_table', :via => :post
 
-post '/access_tickets/edit_resource/set_owners', :to => 'iresources#set_owners', :as => 'set_owners'
+match '/issues/access_tickets/edit_retiming_table/save', :controller => 'iretimeaccesses', :action => 'save_retiming_table', :via => :post
 
-post '/access_tickets/edit_resource/set_has_entities', :to => 'iresources#set_has_entities', :as => 'set_has_entities'
+match '/issues/access_tickets/verify_retiming', :controller => 'iretimeaccesses', :action => 'verify_retiming', :via => :get
 
-post '/access_tickets/edit_resource/set_has_ip', :to => 'iresources#set_has_ip', :as => 'set_has_ip'
+match '/issues/access_tickets/reject_retiming', :controller => 'iretimeaccesses', :action => 'reject_retiming', :via => :get
 
-post '/access_tickets/edit_resource/set_groups_availability', :to => 'iresources#set_groups_availability', :as => 'set_groups_availability'
+match '/issues/access_tickets/approve_retiming', :controller => 'iretimeaccesses', :action => 'approve_retiming', :via => :get
 
-post '/access_tickets/show_resource/groups_availability', :to => 'iresources#groups_availability', :as => 'groups_availability'
+match '/issues/access_tickets/revoke_retiming', :controller => 'iretimeaccesses', :action => 'revoke_retiming', :via => :get
 
-post '/access_tickets/show_resource', :to => 'iresources#show_resource', :as => 'show_resource'
+match '/issues/access_tickets/verify_template', :controller => 'iticktemplates', :action => 'verify_template', :via => :get
 
-post '/access_tickets/edit_resource', :to => 'iresources#edit_resource', :as => 'edit_resource'
+match '/issues/access_tickets/reject_template', :controller => 'iticktemplates', :action => 'reject_template', :via => :get
 
-post '/access_tickets/remove_resource', :to => 'iresources#remove_resource', :as => 'remove_resource'
+match '/issues/access_tickets/approve_template', :controller => 'iticktemplates', :action => 'approve_template', :via => :get
 
+match '/issues/access_tickets/revoke_template', :controller => 'iticktemplates', :action => 'revoke_template', :via => :get
 
-post '/settings/plugin/access_tickets_iresources/show', :to => 'iresources#ir_show', :as => 'ir_show'
-post '/settings/plugin/access_tickets_iresources/add', :to => 'iresources#ir_add', :as => 'ir_add'
-post '/settings/plugin/access_tickets_iresources/edit', :to => 'iresources#ir_edit', :as => 'ir_edit'
-post '/settings/plugin/access_tickets_iresources/remove', :to => 'iresources#ir_remove', :as => 'ir_remove'
-post '/settings/plugin/access_tickets_iresources/show_details', :to => 'iresources#show_details', :as => 'show_details'
+match '/access_tickets/set_issue_template', :controller => 'iticktemplates', :action => 'set_issue_template', :via => :get
 
+match '/access_tickets/show_template', :controller => 'iticktemplates', :action => 'show_template', :via => :post
 
-get  '/access_tickets/resources_list', 'iresources#resources_list', :as => 'resources_list'
+match '/access_tickets/remove_template', :controller => 'iticktemplates', :action => 'remove_template', :via => :post
 
-post '/settings/plugin/access_tickets_isettings/set_settings_value', :to => 'isettings#set_settings_value', :as => 'set_settings_value'
+match '/access_tickets/add_template', :controller => 'iticktemplates', :action => 'add_template', :via => :post
 
-post '/settings/plugin/access_tickets_isettings/show_group_details', :to => 'isettings#show_group_details', :as => 'show_group_details'
-post '/settings/plugin/access_tickets_isettings/set_group_liders', :to => 'isettings#set_group_liders', :as => 'set_group_liders'
-post '/settings/plugin/access_tickets_isettings/set_group_templates', :to => 'isettings#set_group_templates', :as => 'set_group_templates'
+match '/access_tickets/edit_template', :controller => 'iticktemplates', :action => 'edit_template', :via => :post
 
-post '/issues/access_tickets/edit_revoking_table', :to => 'iaccesses#edit_revoking_table', :as => 'edit_revoking_table'
-post '/issues/access_tickets/edit_revoking_table/save', :to => 'iaccesses#save_revoking_table', :as => 'save_revoking_table'
-post '/issues/access_tickets/show_last_users', :to => 'itickets#show_last_users', :as => 'show_last_users'
-post '/issues/access_tickets/edit_ticket_table', :to => 'itickets#edit_ticket_table', :as => 'edit_ticket_table'
-post '/issues/access_tickets/edit_ticket_table_ta', :to => 'itickets#edit_ticket_table_ta', :as => 'edit_ticket_table_ta'
-post '/issues/access_tickets/edit_ticket_table/save_ta', :to => 'itickets#edit_ticket_table_save_ta', :as => 'edit_ticket_table_save_ta'
+match '/access_tickets/save_template', :controller => 'iticktemplates', :action => 'save_template', :via => :post
 
-post '/issues/access_tickets/edit_retiming_table', :to => 'iretimeaccesses#edit_retiming_table', :as => 'edit_retiming_table'
-post '/issues/access_tickets/edit_retiming_table/save', :to => 'iretimeaccesses#save_retiming_table', :as => 'save_retiming_table'
+match '/issues/access_tickets/edit_ticket_table/add_row', :controller => 'itickets', :action => 'edit_ticket_table_add_row', :via => :post
 
+match '/issues/access_tickets/edit_ticket_table/save', :controller => 'itickets', :action => 'edit_ticket_table_save', :via => :post
 
-get '/issues/access_tickets/verify_retiming', :to => 'iretimeaccesses#verify_retiming', :as => 'verify_retiming'
-get '/issues/access_tickets/reject_retiming', :to => 'iretimeaccesses#reject_retiming', :as => 'reject_retiming'
+match '/issues/access_tickets/edit_ticket_table/show', :controller => 'itickets', :action => 'ticket_table_show', :via => :post
 
-get '/issues/access_tickets/approve_retiming', :to => 'iretimeaccesses#approve_retiming', :as => 'approve_retiming'
-get '/issues/access_tickets/revoke_retiming', :to => 'iretimeaccesses#revoke_retiming', :as => 'revoke_retiming'
+match '/issues/access_tickets/edit_ticket_table/show_version', :controller => 'itickets', :action => 'ticket_table_show_version', :via => :post
 
+match '/issues/access_tickets/edit_ticket_table/set_tickets_user', :controller => 'itickets', :action => 'set_tickets_user', :via => :get
 
-get '/issues/access_tickets/verify_template', :to => 'iticktemplates#verify_template', :as => 'verify_template'
-get '/issues/access_tickets/reject_template', :to => 'iticktemplates#reject_template', :as => 'reject_template'
+match '/issues/access_tickets/approve_tickets', :controller => 'itickets', :action => 'approve_tickets', :via => :get
 
-get '/issues/access_tickets/approve_template', :to => 'iticktemplates#approve_template', :as => 'approve_template'
-get '/issues/access_tickets/revoke_template', :to => 'iticktemplates#revoke_template', :as => 'revoke_template'
+match '/issues/access_tickets/revoke_tickets', :controller => 'itickets', :action => 'revoke_tickets', :via => :get
 
-get '/access_tickets/set_issue_template',:to => 'iticktemplates#set_issue_template', :as => 'set_issue_template'
+match '/issues/access_tickets/verify_tickets', :controller => 'itickets', :action => 'verify_tickets', :via => :get
 
-post '/access_tickets/show_template',:to => 'iticktemplates#show_template', :as => 'show_template'
-post '/access_tickets/remove_template',:to => 'iticktemplates#remove_template', :as => 'remove_template'
-post '/access_tickets/add_template',:to => 'iticktemplates#add_template', :as => 'add_template'
-post '/access_tickets/edit_template',:to => 'iticktemplates#edit_template', :as => 'edit_template'
-post '/access_tickets/save_template',:to => 'iticktemplates#save_template', :as => 'save_template'
+match '/issues/access_tickets/reject_tickets', :controller => 'itickets', :action => 'reject_tickets', :via => :get
 
+match '/issues/access_tickets/verify_tickets', :controller => 'itickets', :action => 'verify_tickets', :via => :post
 
+match '/issues/access_tickets/reject_tickets', :controller => 'itickets', :action => 'reject_tickets', :via => :post
 
-post '/issues/access_tickets/edit_ticket_table/add_row', :to => 'itickets#edit_ticket_table_add_row', :as => 'edit_ticket_table_add_row'
-post '/issues/access_tickets/edit_ticket_table/save', :to => 'itickets#edit_ticket_table_save', :as => 'edit_ticket_table_save'
-post '/issues/access_tickets/edit_ticket_table/show', :to => 'itickets#ticket_table_show', :as => 'ticket_table_show'
-post '/issues/access_tickets/edit_ticket_table/show_version', :to => 'itickets#ticket_table_show_version', :as => 'ticket_table_show_version'
-get '/issues/access_tickets/edit_ticket_table/set_tickets_user', :to => 'itickets#set_tickets_user', :as => 'set_tickets_user'
+match '/access_tickets/access_templates', :controller => 'iaccesses', :action => 'access_templates', :via => :get
 
-get '/issues/access_tickets/approve_tickets', :to => 'itickets#approve_tickets', :as => 'approve_tickets'
-get '/issues/access_tickets/revoke_tickets', :to => 'itickets#revoke_tickets', :as => 'revoke_tickets'
+match '/access_tickets/accesses_list', :controller => 'iaccesses', :action => 'accesses_list', :via => :get
 
-get '/issues/access_tickets/verify_tickets', :to => 'itickets#verify_tickets', :as => 'verify_tickets'
-get '/issues/access_tickets/reject_tickets', :to => 'itickets#reject_tickets', :as => 'reject_tickets'
+match '/access_tickets/show_accesses', :controller => 'iaccesses', :action => 'show_accesses', :via => :post
 
-post '/issues/access_tickets/verify_tickets', :to => 'itickets#verify_tickets', :as => 'verify_tickets'
-post '/issues/access_tickets/reject_tickets', :to => 'itickets#reject_tickets', :as => 'reject_tickets'
+match '/issues/access_tickets/show_group_templates', :controller => 'iticktemplates', :action => 'show_group_templates', :via => :post
 
-get  '/access_tickets/access_templates', 'iaccesses#access_templates', :as => 'access_templates'
+match '/issues/access_tickets/show_template_versions', :controller => 'iticktemplates', :action => 'show_template_versions', :via => :post
 
-get  '/access_tickets/accesses_list', 'iaccesses#accesses_list', :as => 'accesses_list'
+match '/issues/access_tickets/set_dismissal_user', :controller => 'iaccesses', :action => 'set_dismissal_user', :via => :get
 
-post '/access_tickets/show_accesses', 'iaccesses#show_accesses', :as => 'show_accesses'
+match '/issues/access_tickets/grant_access', :controller => 'iaccesses', :action => 'grant_access', :via => :get
 
+match '/issues/access_tickets/revoke_grant', :controller => 'iaccesses', :action => 'revoke_grant', :via => :get
 
-post '/issues/access_tickets/show_group_templates', :to => 'iticktemplates#show_group_templates', :as => 'show_group_templates'
+match '/issues/access_tickets/grant_single_access', :controller => 'iaccesses', :action => 'grant_single_access', :via => :post
 
-post '/issues/access_tickets/show_template_versions', :to => 'iticktemplates#show_template_versions', :as => 'show_template_versions'
+match '/issues/access_tickets/revoke_single_grant', :controller => 'iaccesses', :action => 'revoke_single_grant', :via => :post
 
+match '/issues/access_tickets/confirm_access', :controller => 'iaccesses', :action => 'confirm_access', :via => :get
 
+match '/issues/access_tickets/revoke_confirmation', :controller => 'iaccesses', :action => 'revoke_confirmation', :via => :get
 
-get '/issues/access_tickets/set_dismissal_user', :to => 'iaccesses#set_dismissal_user', :as => 'set_dismissal_user'
+match '/issues/access_tickets/confirm_revoking', :controller => 'iaccesses', :action => 'confirm_revoking', :via => :get
 
-get '/issues/access_tickets/grant_access', :to => 'iaccesses#grant_access', :as => 'grant_access'
-get '/issues/access_tickets/revoke_grant', :to => 'iaccesses#revoke_grant', :as => 'revoke_grant'
+match '/issues/access_tickets/refuse_confirmation_revoking', :controller => 'iaccesses', :action => 'refuse_confirmation_revoking', :via => :get
 
-post '/issues/access_tickets/grant_single_access', :to => 'iaccesses#grant_single_access', :as => 'grant_single_access'
-post '/issues/access_tickets/revoke_single_grant', :to => 'iaccesses#revoke_single_grant', :as => 'revoke_single_grant'
+match '/issues/access_tickets/deactivate_grants', :controller => 'iaccesses', :action => 'deactivate_grants', :via => :get
 
-get '/issues/access_tickets/confirm_access', :to => 'iaccesses#confirm_access', :as => 'confirm_access'
-get '/issues/access_tickets/revoke_confirmation', :to => 'iaccesses#revoke_confirmation', :as => 'revoke_confirmation'
+match '/issues/access_tickets/refuse_deactivating_grants', :controller => 'iaccesses', :action => 'refuse_deactivating_grants', :via => :get
 
-get '/issues/access_tickets/confirm_revoking', :to => 'iaccesses#confirm_revoking', :as => 'confirm_revoking'
-get '/issues/access_tickets/refuse_confirmation_revoking', :to => 'iaccesses#refuse_confirmation_revoking', :as => 'refuse_confirmation_revoking'
-get '/issues/access_tickets/deactivate_grants', :to => 'iaccesses#deactivate_grants', :as => 'deactivate_grants'
-get '/issues/access_tickets/refuse_deactivating_grants', :to => 'iaccesses#refuse_deactivating_grants', :as => 'refuse_deactivating_grants'
-post '/issues/access_tickets/deactivate_single_grant', :to => 'iaccesses#deactivate_grants', :as => 'deactivate_grants'
-post '/issues/access_tickets/activate_single_grant', :to => 'iaccesses#refuse_deactivating_grants', :as => 'refuse_deactivating_grants'
+match '/issues/access_tickets/deactivate_single_grant', :controller => 'iaccesses', :action => 'deactivate_grants', :via => :post
 
+match '/issues/access_tickets/activate_single_grant', :controller => 'iaccesses', :action => 'refuse_deactivating_grants', :via => :post

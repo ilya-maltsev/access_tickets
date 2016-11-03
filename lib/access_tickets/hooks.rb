@@ -45,12 +45,12 @@ module Access_Tickets
       def view_issues_show_description_bottom(context={})
         if context[:issue].project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i
           if context[:issue].tracker_id == ISetting.active.where(:param => "tr_grant_id").first.value.to_i
-            context[:issue][:at_granting_status] =  ITicket.check_issue_status(context[:issue].id, User.current.id)
-            context[:controller].send(:render_to_string, :partial => 'ticket_table/table_issue_grant', :locals => context)
+            at_granting_status =  ITicket.check_issue_status(context[:issue].id, User.current.id)
+            context[:controller].send(:render_to_string, :partial => 'ticket_table/table_issue_grant', :locals => {:context => context, :at_granting_status => at_granting_status})
           else
             if context[:issue].tracker_id == ISetting.active.where(:param => "tr_revoke_id").first.value.to_i || context[:issue].tracker_id == ISetting.active.where(:param => "tr_dismissal_id").first.value.to_i
-              context[:issue][:at_revoking_status] = IAccess.check_revoking_status(context[:issue].id, User.current.id)
-              context[:controller].send(:render_to_string, :partial => 'ticket_table/table_issue_revoke', :locals => context)
+              at_revoking_status = IAccess.check_revoking_status(context[:issue].id, User.current.id)
+              context[:controller].send(:render_to_string, :partial => 'ticket_table/table_issue_revoke', :locals => {:context => context, :at_revoking_status => at_revoking_status})
             end
           end
         end

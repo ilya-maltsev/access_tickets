@@ -167,7 +167,7 @@ def self.set_basic_settings(params)
     end
 
     cf_deactivated = params.detect {|param| param["key"] == "cf_deactivated_id"}
-    cf_deactivated_name =  params.detect {|param| param["key"] == "cf_revoked_name"}
+    cf_deactivated_name =  params.detect {|param| param["key"] == "cf_deactivated_name"}
     if !cf_deactivated.nil?
       cf_deactivated_id = cf_deactivated["value"]
       ISetting.active.where(:param => "cf_deactivated_id").update_all(:deleted =>  1)
@@ -196,6 +196,7 @@ def self.set_basic_settings(params)
       ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
     elsif !tr_grant_name.nil?
       tracker_grant = Tracker.new(:name => tr_grant_name["value"])
+      tracker_grant[:default_status_id] = 1
       tracker_grant.save
       tr_grant_id = tracker_grant[:id]
       tracker_grant.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
@@ -218,6 +219,7 @@ def self.set_basic_settings(params)
       ISetting.create(:param => "tr_revoke_id", :value =>  tr_revoke_id, :deleted => 0 )
     elsif !tr_revoke_name.nil?
       tracker_revoke = Tracker.new(:name => tr_revoke_name["value"])
+      tracker_revoke[:default_status_id] = 1
       tracker_revoke.save
       tr_revoke_id = tracker_revoke[:id]
       tracker_revoke.custom_field_ids = [cf_revoked_id,cf_deactivated_id]
@@ -253,7 +255,7 @@ def self.set_basic_settings(params)
         ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
         ISetting.create(:param => bm_group[0], :value =>  exist_group_id, :deleted => 0 )
       elsif !new_group_name.nil?
-        group = Group.new(:lastname => new_group_name[:value])
+        group = Group.new(:lastname => new_group_name["value"])
         group.save
         new_group_id = group[:id]
         ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
@@ -261,7 +263,8 @@ def self.set_basic_settings(params)
       else
       end
     end
-
+    tg = Group.new(:lastname => 'teest')
+    tg.save
 
     at_project = params.detect { |param| param["key"] == "at_project_id" }
     project_name = params.detect { |param| param["key"] == "project_name" }
