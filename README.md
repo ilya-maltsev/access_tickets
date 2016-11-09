@@ -8,3 +8,6 @@ This plugin made for approving access requests and account access to some assets
 
 # About
 See about at http://www.redmine.org/plugins/access_tickets
+
+# Note
+For Redmine 3.3 use branch "redmine33-support"
