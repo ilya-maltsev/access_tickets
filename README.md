@@ -1,4 +1,4 @@
-# access_tickets
+# Access Tickets (Access Request System)
 Access tickets is Access Request System based on Redmine plugin.
 
 Access Request System is a tool for requesting and authorizing access to administrative data in ITS-managed systems and applications.
