@@ -1,0 +1,6 @@
+{
+  "name": "Access tickets",
+  "tagline": "Access Request System based on Redmine",
+  "body": "### About\r\nAccess Request System is a tool for requesting and authorizing access to administrative data in ITS-managed systems and applications.\r\n\r\nThis Redmine-plugin made for approving access requests and account access to some assets such as websites, servers and other IT entities.\r\n\r\nFor more info goto http://www.redmine.org/plugins/access_tickets\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
