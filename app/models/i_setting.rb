@@ -24,7 +24,7 @@ class ISetting < ActiveRecord::Base
   attr_accessible :param, :value, :updated_at, :updated_by_id, :deleted
 
   def self.check_config
-    if ISetting.active.all.count == ISetting.values_map.count
+    if ISetting.active.all.count == ISetting.values_map.count && Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).count > 0
       true
     else
       false
@@ -167,7 +167,7 @@ def self.set_basic_settings(params)
     end
 
     cf_deactivated = params.detect {|param| param["key"] == "cf_deactivated_id"}
-    cf_deactivated_name =  params.detect {|param| param["key"] == "cf_revoked_name"}
+    cf_deactivated_name =  params.detect {|param| param["key"] == "cf_deactivated_name"}
     if !cf_deactivated.nil?
       cf_deactivated_id = cf_deactivated["value"]
       ISetting.active.where(:param => "cf_deactivated_id").update_all(:deleted =>  1)
@@ -179,50 +179,6 @@ def self.set_basic_settings(params)
       cf_deactivated_id = cf[:id]
       ISetting.active.where(:param => "cf_deactivated_id").update_all(:deleted =>  1)
       ISetting.create(:param => "cf_deactivated_id", :value =>  cf_deactivated_id, :deleted => 0 )
-    else
-    end
-
-    tr_grant = params.detect {|param| param["key"] == "tr_grant_id"}
-    tr_grant_name =  params.detect {|param| param["key"] == "tr_grant_name"}
-    if !tr_grant.nil?
-      tr_grant_id = tr_grant["value"]
-      tracker_grant = Tracker.find(tr_grant_id)
-      [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id].each do |cf_id|
-        if cf_id.in?(tracker_grant.custom_field_ids)
-          tracker_grant.custom_field_ids << cf_id
-        end
-      end
-      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
-      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
-    elsif !tr_grant_name.nil?
-      tracker_grant = Tracker.new(:name => tr_grant_name["value"])
-      tracker_grant.save
-      tr_grant_id = tracker_grant[:id]
-      tracker_grant.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
-      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
-      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
-    else
-    end
-
-    tr_revoke = params.detect {|param| param["key"] == "tr_revoke_id"}
-    tr_revoke_name =  params.detect {|param| param["key"] == "tr_revoke_name"}
-    if !tr_revoke.nil?
-      tr_revoke_id = tr_revoke["value"]
-      tracker_revoke = Tracker.find(tr_revoke_id)
-      [cf_revoked_id,cf_deactivated_id].each do |cf_id|
-        if cf_id.in?(tracker_revoke.custom_field_ids)
-          tracker_revoke.custom_field_ids << cf_id
-        end
-      end
-      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
-      ISetting.create(:param => "tr_revoke_id", :value =>  tr_revoke_id, :deleted => 0 )
-    elsif !tr_revoke_name.nil?
-      tracker_revoke = Tracker.new(:name => tr_revoke_name["value"])
-      tracker_revoke.save
-      tr_revoke_id = tracker_revoke[:id]
-      tracker_revoke.custom_field_ids = [cf_revoked_id,cf_deactivated_id]
-      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
-      ISetting.create(:param => "tr_revoke_id", :value => tr_revoke_id, :deleted => 0 )
     else
     end
 
@@ -244,6 +200,60 @@ def self.set_basic_settings(params)
       end
     end
 
+    tr_grant = params.detect {|param| param["key"] == "tr_grant_id"}
+    tr_grant_name =  params.detect {|param| param["key"] == "tr_grant_name"}
+    if !tr_grant.nil?
+      tr_grant_id = tr_grant["value"]
+      tracker_grant = Tracker.find(tr_grant_id)
+      [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id].each do |cf_id|
+        if cf_id.in?(tracker_grant.custom_field_ids)
+          tracker_grant.custom_field_ids << cf_id
+        end
+      end
+      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
+    elsif !tr_grant_name.nil?
+      tracker_grant = Tracker.new(:name => tr_grant_name["value"])
+      tracker_grant[:position] = 1
+      if ActiveRecord::Base.connection.column_exists?(:trackers, :default_status_id)
+        tracker_grant[:default_status_id] = IssueStatus.first.id
+      end
+      tracker_grant.save
+      #tracker_grant.update_attributes(:name => tr_grant_name["value"])
+      tr_grant_id = tracker_grant[:id]
+      tracker_grant.custom_field_ids = [cf_verified_id,cf_approved_id,cf_granting_id,cf_confirming_id]
+      ISetting.active.where(:param => "tr_grant_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_grant_id", :value =>  tr_grant_id, :deleted => 0 )
+    else
+    end
+
+    tr_revoke = params.detect {|param| param["key"] == "tr_revoke_id"}
+    tr_revoke_name =  params.detect {|param| param["key"] == "tr_revoke_name"}
+    if !tr_revoke.nil?
+      tr_revoke_id = tr_revoke["value"]
+      tracker_revoke = Tracker.find(tr_revoke_id)
+      [cf_revoked_id,cf_deactivated_id].each do |cf_id|
+        if cf_id.in?(tracker_revoke.custom_field_ids)
+          tracker_revoke.custom_field_ids << cf_id
+        end
+      end
+      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_revoke_id", :value =>  tr_revoke_id, :deleted => 0 )
+    elsif !tr_revoke_name.nil?
+      tracker_revoke = Tracker.new(:name => tr_revoke_name["value"])
+      tracker_revoke[:position] = 1
+      if ActiveRecord::Base.connection.column_exists?(:trackers, :default_status_id)
+        tracker_revoke[:default_status_id] = IssueStatus.first.id
+      end
+      tracker_revoke.save
+      #tracker_revoke.update_attributes(:name => tr_revoke_name["value"])
+      tr_revoke_id = tracker_revoke[:id]
+      tracker_revoke.custom_field_ids = [cf_revoked_id,cf_deactivated_id]
+      ISetting.active.where(:param => "tr_revoke_id").update_all(:deleted =>  1)
+      ISetting.create(:param => "tr_revoke_id", :value => tr_revoke_id, :deleted => 0 )
+    else
+    end
+
 
     [["cw_group_id","cw_group_name"],["sec_group_id","sec_group_name"],["admin_group_id","admin_group_name"],["hr_group_id","hr_group_name"]].each do |bm_group|
       exist_group = params.detect {|param| param["key"] == bm_group[0]}
@@ -253,7 +263,7 @@ def self.set_basic_settings(params)
         ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
         ISetting.create(:param => bm_group[0], :value =>  exist_group_id, :deleted => 0 )
       elsif !new_group_name.nil?
-        group = Group.new(:lastname => new_group_name[:value])
+        group = Group.new(:lastname => new_group_name["value"])
         group.save
         new_group_id = group[:id]
         ISetting.active.where(:param => bm_group[0]).update_all(:deleted =>  1)
@@ -261,8 +271,6 @@ def self.set_basic_settings(params)
       else
       end
     end
-
-
     at_project = params.detect { |param| param["key"] == "at_project_id" }
     project_name = params.detect { |param| param["key"] == "project_name" }
     if !at_project.nil?

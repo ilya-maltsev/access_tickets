@@ -74,9 +74,6 @@ function uncheck_single_row(obj) {
 
 
 
-
-//$("#msgBox").append('  ');
-
 $("#msgBox").html(' \
   <table id ="edit_ticket" class="list entities issues issues_index context-menu-container"> \
 	<thead><tr> \
@@ -101,19 +98,10 @@ $("#msgBox").html(' \
 $('#msgBox').prop('title', '<%=j l(:at_revoking_changing) %>');
 
 
-//$.post("access_tickets/edit_ticket_table/show", { issue_id : <%=j @issue_id %> }, function( data ) {
-//  console.log(data);
-//}, "json");
-
 $('#msgBox').dialog({
-  //autoOpen: false,
   resizable: false,
-  //autoResize: true,
-  //show: "clip",
-  //hide: "clip",
   height: '600',
   width: '1120',
-  //autoOpen: false,
   modal: true,
   position: 'center',
   buttons: [{ 
@@ -146,18 +134,12 @@ $('#msgBox').dialog({
             sendData.push(access);
           }
         });
-        //console.log(JSON.stringify(sendData));
         $.post("access_tickets/edit_revoking_table/save", { issue_id: <%=j @issue_id %>, r_user_id: <%=j @r_user_id %>, i_tickets: JSON.stringify(sendData) }, function( data ) {
-          //$('#show_ticket').DataTable().clear().draw();
-          //console.log(data);
-          //revoking(data);
-          //update_datatable(data);
           $( "#ajax-modal" ).before($('#ajax-indicator').clone());
           location.reload();
         }, "json");
       } 
       $( "#msgBox" ).dialog( "close" );
-      ///console.log(sendData);
     } 
   }]
 
@@ -179,23 +161,12 @@ showModal('msgBox');
 $('#edit_ticket').DataTable({
     "bPaginate": true,
     "bFilter": true, 
-    //"processing": false,
-    //"serverSide": true,
-   
     "createdRow" : function( row, data, index ) {
-
-        // Add identity if it specified
-        //if( data.hasOwnProperty("id") ) {
-        //    row.id = "row-" + data.id;
-        //} 
-        //var count = 
         if (index > 0) {
           var IDs = [];
           $("#edit_ticket").find("tr").each(function(){ 
             IDs.push(this.id); 
           });
-          //console.log(IDs);
-          //console.log(Math.max.apply(Math,IDs));
           row.id = Math.max.apply(Math,IDs) + 1;
         } else {
           row.id = index;
@@ -203,23 +174,21 @@ $('#edit_ticket').DataTable({
     },
     "bInfo": false,
     "bPaginate": false,
-    //"iDisplayLength": 4,
-    "lengthMenu": [[4, -1 ], [4, "Все"]],
+    "lengthMenu": [[4, -1 ], [4, "<%= l(:at_all) %>"]],
     "bSort" : true,
     "oLanguage": {
-		"sInfo": "Показаны от _START_ до _END_ из _TOTAL_ записей",
-
-		"sInfoFiltered": "(отсортировано из _MAX_ записей)",
-		"sInfoEmpty": "Нет совпадений для отображения",
-		"sZeroRecords": "Записи отсутствуют",
+		"sInfo": "<%= l(:at_sInfo) %>",
+		"sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+		"sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+		"sZeroRecords": "<%= l(:at_ZeroRecords) %>",
                 "sSearch": "",
 		"oPaginate": {
-            "sFirst": "В начало",
-            "sNext": "Вперед",
-            "sLast": "В конец",
-            "sPrevious": "Назад"
+            "sFirst": "<%= l(:at_sFirst) %>",
+            "sNext": "<%= l(:at_sNext) %>",
+            "sLast": "<%= l(:at_sLast) %>",
+            "sPrevious": "<%= l(:at_sPrevious) %>"
 		},
-		"sLengthMenu": "Показать _MENU_ записей",
+		"sLengthMenu": "<%= l(:at_sLengthMenu) %>",
     "columns": [
         {"sClass": "dom"},
         {},
@@ -232,34 +201,19 @@ $('#edit_ticket').DataTable({
 });
 
 
-
-
-//$('#edit_ticket').DataTable().column(1).visible( false );
-
-
-
-
 if (issue_itickets) {
 
   $('#edit_ticket').DataTable().clear().draw();
 
   var description;
-  //console.log(issue_itickets);
+
   $.each(issue_itickets,function(i){
-    //console.log(this["users"]);
     var actions,description,checkbox;
     actions = '<input id="'+ this["r_uid"] +'" type="checkbox" class="single_checker" onclick="check_single_row(this)">';
-
-    
-    //console.log(this["ientities"][0].caption);
-
     if (this["ientities"].length > 0) {
-
-        //description = this["ientities"];
         description = "";
         $.each(this["ientities"],function(i){
           checkbox = '<input id="'+ this["id"] +'" type="checkbox" class="entity_checker" onclick="uncheck_single_row(this)">';
-          //console.log(this["caption"]);
           description = description + '<label class="entity_caption">' + checkbox +  this["caption"] + '</label>' + '<br>';
         });
     } else {

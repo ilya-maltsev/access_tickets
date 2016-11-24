@@ -126,10 +126,7 @@
 
   $('#show_expired_accesses').DataTable({
     "bPaginate": false,
-    //"bFilter": false, 
     "bInfo": false,
-
-    //"lengthMenu": [[5, 10, -1], ["5 записей", "10 записей", "Все записи"]],
     "oLanguage": {
       "sInfo": "<%= l(:at_sInfo) %>",
       "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
@@ -166,10 +163,7 @@ $('#wrapper').append('<div id="msgBox"></div>');
 
   $('#show_access').DataTable({
     "bPaginate": false,
-    //"bFilter": false, 
     "bInfo": false,
-
-    //"lengthMenu": [[5, 10, -1], ["5 записей", "10 записей", "Все записи"]],
     "oLanguage": {
       "sInfo": "<%= l(:at_sInfo) %>",
       "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
@@ -277,10 +271,6 @@ $('#exp_search_e_date').on( 'input', function () {
     <% else %>
       $('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 5px;float: right;margin-left:10px;"><%= l(:at_employee) %>:</label>');
     <% end %>
-
-    
-    
-
     $('#items_list').append("<option value=''><%=j l(:at_select_employee) %></option>");
     $('#items_list').attr("data-placeholder","<%=j l(:at_select_employee) %>");
     <% for user in @users_list %>
@@ -288,7 +278,6 @@ $('#exp_search_e_date').on( 'input', function () {
     <% end %>
 
     $('#items_list option[value=<%= User.current.id %>]').attr('selected','selected');
-    ///$('#items_list').trigger("chosen:updated");
   <% end %>
 
 $('#show_access').DataTable().column(7).visible( false );
@@ -322,11 +311,8 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
 
   function update_accesses_list_table(data){
     $('#show_access').DataTable().clear().draw();
-    
-
     $.each(data[0],function(i){
       var description,checkbox,e_date,resource,users;
-      //console.log(this["deactivated_at"]);
       users = '';
       $.each(this["users_ids"], function(i) {
         user = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
@@ -334,7 +320,6 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       });
       resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
       if (this["ientities"].length > 0) {
-        //description = this["ientities"].join('<br>');
         description = "";
         $.each(this["ientities"],function(i){
           description = description + this["caption"] + '<br>';
@@ -362,7 +347,6 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
     }
     $.each(data[1],function(i){
       var description,actions,e_date,resource,users;
-      //console.log(this["deactivated_at"]);
       users = '';
       $.each(this["users_ids"], function(i) {
         user = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
@@ -374,9 +358,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       } else {
         e_date = this["e_date"];
       }
-
       if (this["ientities"].length > 0) {
-        //description = this["ientities"].join('<br>');
         description = "";
         $.each(this["ientities"],function(i){
           description = description + this["caption"] + '<br>';
@@ -405,13 +387,10 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
   function show_items_list(obj) {
 <% if @is_security || @is_resgranter || @is_resowner %>
     if ($('#sw_type').val() == 0) {
-      
       $.post("show_accesses", { user_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
       }, "json");
     } else {
-      
-
       $.post("show_accesses", { resource_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
       }, "json");        
@@ -434,10 +413,7 @@ function set_showing_type(obj) {
     $("#search_e_date").val('');
     $('#show_access').DataTable().columns().search('').draw();
     $('#show_access').DataTable().clear().draw();
-
-
   if ($(obj).val() == 0) {
-    
     $('#show_access').DataTable().column(1).visible( false );
     $('#show_access').DataTable().column(2).visible( true );
     show_available_users();
@@ -445,9 +421,7 @@ function set_showing_type(obj) {
     $('#show_access').DataTable().column(1).visible( true );
     $('#show_access').DataTable().column(2).visible( false );
     show_available_resources();
-
   }
-
 }
 
 function show_available_users() {
@@ -470,16 +444,20 @@ function show_available_resources() {
     $('#items_list').append("<option value=''><%=j l(:at_select_resource) %></option>");
     $('#items_list').attr("data-placeholder","<%=j l(:at_select_resource) %>");
     $.each(iresources,function(i){
-      $('#items_list').append('<option value=' + iresources[i].i_resource.id + '>' + iresources[i].i_resource.name + '</option>');
+      var resource_id, resource_name;
+      if (iresources[i].i_resource !== undefined) {
+        resource_id = iresources[i].i_resource.id;
+        resource_name = iresources[i].i_resource.name;
+      } else {
+        resource_id = iresources[i].id;
+        resource_name = iresources[i].name;
+      }
+      $('#items_list').append('<option value=' + resource_id+ '>' + resource_name + '</option>');
     });
     $('#items_list').trigger("chosen:updated");
   }, "json");
-      
-  
 }
-
 <% end %>
-
 
 
 function hide_revoked_accesses(obj) {
@@ -498,7 +476,6 @@ function hide_revoked_accesses(obj) {
 }
 
 
-
 var ch_opts = {width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
 $('#items_list').chosen(ch_opts);
 
@@ -509,13 +486,6 @@ $('#sw_type_chosen').attr("style","float:right;margin-left:10px;width:20%");
 $('#items_list_chosen').attr("style","float:right;margin-left:10px;width:50%");
 $('#show_access_filter label input[type=search]').hide();
 $('#show_expired_accesses_filter label input[type=search]').hide();
-
-
-
-
-
-
-
 
 </script>
 

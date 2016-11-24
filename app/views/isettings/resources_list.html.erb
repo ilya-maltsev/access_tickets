@@ -146,7 +146,7 @@ function validate_name_len(name, len) {
   if ( name.length < len ) {
     return true;
   } else {
-    return "Название может содержать до " + len + " символов";
+    return "<%=j l(:at_name) %><%=j l(:at_can_include) %><%=j l(:at_to) %>" + len + "<%=j l(:at_symbols) %>";
   }
 }
 
@@ -154,7 +154,7 @@ function validate_desc_len(desc, len) {
   if ( desc.length < len ) {
     return true;
   } else {
-    return "Описание может содержать до " + len + " символов";
+    return "<%=j l(:at_description) %><%=j l(:at_can_include) %><%=j l(:at_to) %>" + len + "<%=j l(:at_symbols) %>";
   }
 }
 
@@ -171,14 +171,14 @@ function show_confirm_dialog(title, warning, code) {
     height:200,
     resizable: false,
     buttons: [{ 
-      text: "Нет",
+      text: "<%=j l(:at_no) %>",
       class: "button-4",
       click: function () {
         confirm_result =  false;
         $(this).dialog('close');
       }, 
     },  {
-      text: "Да",
+      text: "<%=j l(:at_yes) %>",
       class: "button-6",
       click: function() {
         confirm_result = true;
@@ -213,24 +213,12 @@ $(document.body).on('click', 'button.icon-del', function() {
 var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
 
 $('#resources_list').DataTable({
-    //"bPaginate": false,
-    //"bFilter": false, 
-    //"processing": false,
-    //"serverSide": true,
     "createdRow" : function( row, data, index ) {
-
-        // Add identity if it specified
-        //if( data.hasOwnProperty("id") ) {
-        //    row.id = "row-" + data.id;
-        //} 
-        //var count = 
         if (index > 0) {
           var IDs = [];
           $("#resources_list").find("tr").each(function(){ 
             IDs.push(this.id); 
           });
-          //console.log(IDs);
-          //console.log(Math.max.apply(Math,IDs));
           row.id = Math.max.apply(Math,IDs) + 1;
         } else {
           row.id = index;
@@ -238,9 +226,6 @@ $('#resources_list').DataTable({
     },
     "bInfo": false,
     "bPaginate": false,
-    //"bFilter": false, 
-    //"iDisplayLength": 4,
-    //"lengthMenu": [[4, -1 ], [4, "Все"]],
     "lengthMenu": [[5, 10, -1], ["5 <%= l(:at_entries) %>", "10 <%= l(:at_entries) %>", "<%= l(:at_all_entries) %>"]],
     "bSort" : false,
     "oLanguage": {
@@ -282,41 +267,55 @@ $('#resources_list').DataTable({
   }
 
 function update_resources_list(data) {
-  //console.log(data);
   if (data.iresources.length > 0) {
     
     $('#resources_list').DataTable().clear().draw();
     $.each(data.iresources,function(i){
       var id, name, roles, resowners, resgranters, actions;
       id = this["id"];
-      //name = this["name"];
       name = '<span class="nowrap"><a id="'+ this.id + '" onclick="show_resource(this);" class="resource_details" title="<%= l(:at_show_resource_details) %>">'+ this.name + '</a></span>';
       roles = "";
       resowners = "";
       resgranters = "";
-      //if (this["iroles"].length > 0) {
-      //  roles = "";
-      //  $.each(this["iroles"], function(i) {
-      //    roles = roles + this + "<br>";
-      //  });
-      //} else {
-      //  roles = "";
-      //}
-      iroles = this["roles"];
+      var iroles = this["roles"];
       if (iroles.length > 0) {
+
         if (iroles.length < 5) {
           $.each(iroles, function(i) {
-            role = '<span class="nowrap"><a id = "'+ this.i_role.id + '" onclick="show_role_description(this);" class="role_details" title="<%= l(:at_show_role_description) %>">'+ this.i_role.name + '</a></span>';
+            var role_id, role_name;
+            if (this.i_role !== undefined) {
+              role_id = this.i_role.id;
+              role_name = this.i_role.name;
+            } else {
+              role_id = this.id;
+              role_name = this.name;
+            }
+            role = '<span class="nowrap"><a id = "'+ role_id + '" onclick="show_role_description(this);" class="role_details" title="<%= l(:at_show_role_description) %>">'+ role_name + '</a></span>';
             roles = roles + role + "<br>";
           });
         } else {
+          var role_id, role_name;
           for (var i = 0; i < 4; i++) {
-            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            if (iroles[i].i_role !== undefined) {
+              role_id = iroles[i].i_role.id;
+              role_name = iroles[i].i_role.name;
+            } else {
+              role_id = iroles[i].id;
+              role_name = iroles[i].name;
+            }
+            role = '<span class="nowrap"><a id = "'+ role_id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ role_name + '</a></span>';
             roles = roles + role + "<br>";
           }
           roles = roles + '<a onclick="expand(this);" class="expand" title="<%=j l(:at_show_all_list) %>">>></a><div class="hidden_roles" style="display:none">';
           for (var i = 4; i < iroles.length; i++) {
-            role = '<span class="nowrap"><a id = "'+ iroles[i].i_role.id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ iroles[i].i_role.name + '</a></span>';
+            if (iroles[i].i_role !== undefined) {
+              role_id = iroles[i].i_role.id;
+              role_name = iroles[i].i_role.name;
+            } else {
+              role_id = iroles[i].id;
+              role_name = iroles[i].name;
+            }
+            role = '<span class="nowrap"><a id = "'+ role_id + '" class="role_details" onclick="show_role_description(this);" title="<%= l(:at_show_role_description) %>">'+ role_name + '</a></span>';
             roles = roles + role + "<br>";
           }
           roles = roles + '</div><a onclick="cut_down(this);" style="display:none" class="cut_down" title="<%=j l(:at_cut_down_list) %>"><<</a>';

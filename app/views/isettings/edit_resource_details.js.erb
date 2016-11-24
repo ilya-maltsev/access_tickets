@@ -1,8 +1,6 @@
 <% if @resource.has_entities %>
   var ies = $.parseJSON('<%=j raw @ies %>');
 <% end %>
-//console.log(ies);
-//console.log('<%= @resource.has_entities ? 1 : 0 %>');
 var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
 $(document.body).on('click', 'button.icon-del', function() {
   $('#entity_list').DataTable().row( $(this).parents('tr') ).remove().draw();
@@ -29,7 +27,7 @@ function export_entities() {
 
 function import_entities() {
   var title, warning, code;
-  title = 'Импорт из csv-файла';
+  title = '<%= l(:at_import_csv)%>';
   warning = '<form accept-charset="UTF-8" action="<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource/import_entities.json" id="entities_import_form" enctype="multipart/form-data" method="post"><input name="authenticity_token" type="hidden" value="<%=j form_authenticity_token %>"/><input style="display:none" name="resource_id" id="resource_id" value="'+ $("#edit_resource_name").attr("res_id") +'"><input id="csvfile" name="csvfile" type="file"><input style="display:none" type="submit"></form>';
   code ='$("#entities_import_form").submit()';
   show_confirm_dialog(title, warning, code);
@@ -41,8 +39,16 @@ function import_entities() {
 
 function show_role(obj) {
   $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_role", { role_id : $(obj).val() }, function( data ) {
-    $("#at_irole_name").val(data.irole.i_role.name);
-    $("#role_description").val(data.irole.i_role.description);
+    var role_description, role_name;
+    if (data.irole.i_role !== undefined) {
+      role_description = data.irole.i_role.description;
+      role_name = data.irole.i_role.name;
+    } else {
+      role_description = data.irole.description;
+      role_name = data.irole.name;
+    }
+    $("#at_irole_name").val(role_name);
+    $("#role_description").val(role_description);
   }, "json");
 }
 
@@ -52,7 +58,15 @@ function remove_role() {
   $('#role_id').empty();
   $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
   $.each(data,function(i){
-     $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    var role_id, role_name;
+    if (data[i].i_role !== undefined) {
+      role_id = data[i].i_role.id;
+      role_name = data[i].i_role.name;
+    } else {
+      role_id = data[i].id;
+      role_name = data[i].name;
+    }
+    $('#role_id').append('<option value=' + role_id + '>' + role_name + '</option>');
   });
   $('#role_id').trigger("chosen:updated");
   $('#at_irole_name').val('');
@@ -64,7 +78,6 @@ function set_groups_for_resources(obj){
   if ( $("select#resugroup_id option").filter(":selected").val() == 'null' ) {
   } else {
     $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource/set_groups_availability", { resource_id : $("#edit_resource_name").attr("res_id"), iresugroups: $(obj).val() }, function( data ) {
-      //console.log(data);
     }, "json");
   }
 }
@@ -73,11 +86,18 @@ function update_entities_table(data) {
   $('#entity_list').DataTable().clear().draw();
   if (data.ientities.length > 0) {
     $.each(data.ientities,function(i){
-      var id, name, ip, desc;
-      id = this.i_entity["id"];
-      name = this.i_entity["name"];
-      ipv4 = this.i_entity["ipv4"];
-      description = this.i_entity["description"];
+      var id, name, ipv4, description;
+      if (this.i_entity !== undefined) {
+        id = this.i_entity["id"];
+        name = this.i_entity["name"];
+        ipv4 = this.i_entity["ipv4"];
+        description = this.i_entity["description"];
+      } else {
+        id = this["id"];
+        name = this["name"];
+        ipv4 = this["ipv4"];
+        description = this["description"];
+      }
       $('#entity_list').DataTable().row.add([
       '<input class="at_input" disabled="disabled" id="edit_entity_name" name="edit_entity_name" maxlength="64" style="text-align: center !important;width: 100%;" title="<%= l(:at_enter_name) %>" type="" value="' + name +  '" def_value="' + name +  '"/>',
       '<input class="at_input" disabled="disabled" id="edit_entity_ipv4" name="edit_entity_ipv4" maxlength="16" style="text-align: center !important;width: 100%;" title="<%= l(:at_enter_ipv4) %>" type="" value="' + ipv4 +  '" def_value="' + ipv4 +  '"/>',
@@ -96,19 +116,19 @@ function validate_entity(name, ipv4, desc) {
           if (/^\d+\.\d+\.\d+\.\d+$/.test(ipv4)) {
             return true;
           } else {
-            return "IP-адрес должен быть в формате 'a.b.c.d'";
+            return "<%=j l(:at_ipv4) %> <%=j l(:at_must_be_in_format) %> 'a.b.c.d'";
           }
         } else {
-          return "IP-адрес может содержать от 7 до 15 символов";
+          return "<%=j l(:at_ipv4) %><%=j l(:at_can_include) %><%=j l(:at_fr) %>7 <%=j l(:at_to) %>5<%=j l(:at_symbols) %>";
         }
       } else {
         return true;
       }
     } else {
-      return "Название может содержать от 5 до 64 символов";
+      return "<%=j l(:at_name) %><%=j l(:at_can_include) %><%=j l(:at_fr) %>5 <%=j l(:at_to) %>64<%=j l(:at_symbols) %>";
     }
   } else {
-    return "Описание может содержать до 128 символов";
+    return "<%=j l(:at_description) %><%=j l(:at_can_include) %><%=j l(:at_to) %>128<%=j l(:at_symbols) %>";
   }
 }
 
@@ -135,9 +155,6 @@ function save_entity(obj) {
   var name = $(obj).parents("tr").find("#edit_entity_name").val();
   var ipv4 = $(obj).parents("tr").find("#edit_entity_ipv4").val();
   var desc = $(obj).parents("tr").find("#edit_entity_desc").val();
-  //console.log(name);
-  //console.log(ipv4);
-  //console.log(desc);
   var result = validate_entity(name,ipv4,desc);
   if ( result == true ) {
     $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource/save_entity", { res_id : $("#edit_resource_name").attr("res_id"), name : name, ipv4: ipv4, description: desc, ie_id: $(obj).attr("id") }, function( data ) {
@@ -166,9 +183,6 @@ function remove_entity(ie_id) {
       if (data.status == 1) {
         update_entities_table(data);
         $('#entity_list').DataTable().draw();
-        //$('#entity_list').DataTable().columns(0).search('').draw();
-        //$('#entity_list').DataTable().columns(1).search('').draw();
-        //$('#entity_list').DataTable().columns(2).search('').draw();
       }
     }, "json");
 }
@@ -257,9 +271,6 @@ function set_has_entities(obj){
   }, "json");
 }
 
-
-//$("#msgBox").append('  ');
-
 $("#msgBox").html(' \
   <table id ="entity_list" class="list entities issues issues_index context-menu-container"> \
 	<thead > \
@@ -284,43 +295,30 @@ $("#msgBox").html(' \
 
 
 
-//$('#e_date').datepicker(dpOptions);
-//$('#s_date').attr("placeholder", "<%=j l(:at_begining) %>");
-//$('#e_date').attr("placeholder", "<%=j l(:at_ending) %>");
-//$('#msgBox').prop('title', '<%= @box_label %>');
-
-
 $('#ticket_action').remove();
 $('#version_box').remove();
 $('#msgBox').dialog({
-  //autoOpen: false,
   resizable: false,
-  //autoResize: true,
-  //show: "clip",
-  //hide: "clip",
 <% if @resource_editable == false %>
   title: '<%=j l(:at_resource_details) %>',
 <% else %>
   title: '<%=j l(:at_change_resource_details) %>',
 <% end %>
-
-
   height: '740',
   width: '960',
-  //autoOpen: false,
   modal: true,
   position: 'top',
 
   <% if @resource_editable == true %>
   buttons: [{ 
-    text: "Отменить",
+    text: "<%=j l(:at_cancel) %>",
     class: "button-4",
     click: function () {
                 $(this).dialog('close');
             }, 
   },
   {
-    text: "Сохранить",
+    text: "<%=j l(:at_save) %>",
     class: "button-5",
     click: function() {
       var result_name = validate_name_len($("#edit_resource_name").val(), 65); 
@@ -343,10 +341,8 @@ $('#msgBox').dialog({
   }],
   close: function( event, ui ) {
     $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resources_list", { }, function( data ) {
-      //console.log(data);
       update_resources_list(data);
       if ( $('#confirmDialogBox').is(':visible') )
-        //$('#confirmDialogBox').dialog('isOpen') 
       {
         $('#confirmDialogBox').dialog('close');
       }
@@ -354,7 +350,7 @@ $('#msgBox').dialog({
   } 
   <% else %>
   buttons: [{ 
-    text: "Закрыть",
+    text: "<%=j l(:at_close) %>",
     class: "button-4",
     click: function () {
                 $(this).dialog('close');
@@ -379,19 +375,21 @@ $(document.body).on('focus', '.search-field input', function() {
 showModal('msgBox');
 
 
-
-<% if @tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
-  $('#entity_list').DataTable().column(1).visible( false );
-<% end %>
-
 <% if @resource.has_entities %> 
   if (ies.length > 0) {
     $.each(ies,function(i){
-      var id, name, ip, desc;
-      id = this.i_entity["id"];
-      name = this.i_entity["name"];
-      ipv4 = this.i_entity["ipv4"];
-      description = this.i_entity["description"];
+      var id, name, ipv4, description;
+      if (this.i_entity !== undefined) {
+        id = this.i_entity["id"];
+        name = this.i_entity["name"];
+        ipv4 = this.i_entity["ipv4"];
+        description = this.i_entity["description"];
+      } else {
+        id = this["id"];
+        name = this["name"];
+        ipv4 = this["ipv4"];
+        description = this["description"];
+      }
       $('#entity_list tbody').append('<tr><td><input class="at_input" disabled="disabled" id="edit_entity_name" name="edit_entity_name"" style="width: 100%;" title="<%= l(:at_enter_name) %>" type="" maxlength="64" value="' + name +  '" def_value="' + name +  '"/></td>' +
       '<td><input class="at_input" disabled="disabled" id="edit_entity_ipv4" name="edit_entity_ipv4" style="width: 100%;" title="<%= l(:at_enter_ipv4) %>" type="" maxlength="16" value="' + ipv4 +  '" def_value="' + ipv4 +  '"/></td>' +
       '<td><input class="at_input" disabled="disabled" id="edit_entity_desc" name="edit_entity_desc" style="width: 100%;" title="<%= l(:at_enter_desc) %>" type="" maxlength="128" value="' + description +  '" def_value="' + description +  '"/></td>' +
@@ -411,27 +409,8 @@ showModal('msgBox');
 
   
 $('#entity_list').DataTable({
-    //"bPaginate": false,
-    //"bFilter": false, 
-    //"processing": false,
-    //"serverSide": true,
-    /*"createdRow" : function( row, data, index ) {
-        if (index > 0) {
-          var IDs = [];
-          $("#entity_list").find("tr").each(function(){ 
-            IDs.push(this.id); 
-          });
-          row.id = Math.max.apply(Math,IDs) + 1;
-        } else {
-          row.id = index;
-        }   
-    },*/
     "bInfo": false,
-    //"bPaginate": false,
-    //"iDisplayLength": 4,
     "lengthMenu": [[4, -1 ], [4, "Все"]],
-    //"bScrollCollapse" : true,
-    //"bSort" : false,
     "oLanguage": {
     "sInfo": "<%= l(:at_sInfo) %>",
 
@@ -470,12 +449,12 @@ $('#entity_list').DataTable({
   $('#resource_attr').append('<div style="height:30px;width : 150px;display:inline-block;text-align:right"><label style="" for="resource_name"><%= l(:at_resource_name) %>:</label></div><div style="display:inline-block;"><%=j text_field_tag("edit_resource_name", @resource.name, :title => l(:at_resource_name), :res_id => @resource.id,:placeholder => l(:at_resource_name), :style=>"width:340px;margin-left:10px;", :maxlength => "64", :class => "at_input"  ) %></div>');
 
 
-  $('#resource_attr').append('<div id="label_switch_entities" style="width:15%;display:inline-block;margin-left:10px"><%=j label_tag(:has_entities_id, l(:at_has_entities)) %>:</div>');
+  $('#resource_attr').append('<div align="center" id="label_switch_entities" style="width:15%;display:inline-block;margin-left:10px"><%=j label_tag(:has_entities_id, l(:at_has_entities)) %>:</div>');
   $('#resource_attr').append('<div id="switch_entities" style="display:inline-block;width:70px;vertical-align:top;"></div>');
   $('#switch_entities').append("<%=j select_tag('sw_has_entities', options_for_select([[l(:at_yes), 1], [l(:at_no), 0]], :selected => @resource.has_entities ? 1 : 0), {:style=>'', :include_blank => true, :onchange => 'set_has_entities(this)'} ) %>");
 
 
-  $('#resource_attr').append('<div id="label_switch_ip" style="width:12%;display:inline-block;margin-left:10px"><%=j label_tag(:has_ip_id, l(:at_has_ip)) %>:</div>');
+  $('#resource_attr').append('<div align="center" id="label_switch_ip" style="width:12%;display:inline-block;margin-left:10px"><%=j label_tag(:has_ip_id, l(:at_has_ip)) %>:</div>');
   $('#resource_attr').append('<div id="switch_ip" style="display:inline-block;width:70px;vertical-align:top;"></div>');
   $('#switch_ip').append("<%=j select_tag('sw_has_ip', options_for_select([[l(:at_yes), 1], [l(:at_no), 0]], :selected => @resource.has_ip ? 1 : 0), {:style=>'', :include_blank => true, :onchange => 'set_has_ip(this)'} ) %>");
 
@@ -598,14 +577,19 @@ $("#at_irole_add").click(function(e) {
   $('#role_id').empty();
   $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
   $.each(data,function(i){
-     $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    var role_id, role_name;
+    if (data[i].i_role !== undefined) {
+      role_id = data[i].i_role.id;
+      role_name = data[i].i_role.name;
+    } else {
+      role_id = data[i].id;
+      role_name = data[i].name;
+    }
+    $('#role_id').append('<option value=' + role_id + '>' + role_name + '</option>');
   }); 
   $('#role_id').trigger("chosen:updated");
   $('#at_irole_name').val('');
   $('#role_description').val('');
-
-
-  //console.log(data);
   }, "json");
 
 });
@@ -615,7 +599,15 @@ $("#at_irole_edit").click(function(e) {
     $('#role_id').empty();
     $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
     $.each(data,function(i){
-       $('#role_id').append('<option value=' + data[i].i_role.id + '>' + data[i].i_role.name + '</option>');
+    var role_id, role_name;
+    if (data[i].i_role !== undefined) {
+      role_id = data[i].i_role.id;
+      role_name = data[i].i_role.name;
+    } else {
+      role_id = data[i].id;
+      role_name = data[i].name;
+    }
+    $('#role_id').append('<option value=' + role_id + '>' + role_name + '</option>');
     });
     $('#role_id').trigger("chosen:updated");
     $("#at_irole_name").val('');
@@ -651,15 +643,6 @@ $('#add_entity_desc').on( 'input', function () {
 $('#msgBox').prop('title', '<%=j l(:at_retiming_changing) %>');
   $("#edit_resource_name").attr("disabled","disabled");
   $("#description").attr("disabled","disabled");
-  
-//  $("#sw_has_entities").attr("disabled","disabled");
-//  $("#sw_has_ip").attr("disabled","disabled");
-  //$('#at_irole_remove').hide();
-  //$('#at_irole_add').hide();
-  //$('#at_irole_name').hide();
-  //$('#at_irole_edit').hide();
-  //$('#owners_action').hide();
-  //$('#granters_action').hide();
 
   $('#role_id').trigger("chosen:updated");
 

@@ -92,14 +92,8 @@ class IticketsController < ApplicationController
     @last_year = @current_year + 10
     @issue_id = params[:issue_id]
     @tracker_id = Issue.find(@issue_id).tracker_id
-    tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
-    tr_new_emp_is_date = !CustomValue.where("custom_values.value !=''").where(:customized_type => "Issue",:customized_id => @issue_id, :custom_field_id => ISetting.active.where(:param => "cf_new_emp_first_day_id").first.value.to_i).empty?
-    if @tracker_id == tr_new_emp_id 
-      if tr_new_emp_is_date
-        @s_date = CustomValue.where(:customized_type => "Issue",:customized_id => @issue_id, :custom_field_id => ISetting.active.where(:param => "cf_new_emp_first_day_id").first.value.to_i).first.value.to_datetime.strftime("%d.%m.%Y")
-      end
-    end
     @itickets = []
+    tr_new_emp_id = 0
     if ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 0 || (ITicket.check_security_officer(User.current) && @tracker_id != tr_new_emp_id )
       @itickets = ITicket.edit_tickets_list(@issue_id).to_json
     end
@@ -154,8 +148,8 @@ class IticketsController < ApplicationController
       inputData = ITicket.verify_tickets_for_duplicates(vData)
       exist_accesses = inputData[:exist_accesses]
       t_uid = SecureRandom.hex(5)
-      if !inputData[:ticktets].empty?
-        inputData[:ticktets].each do |object|
+      if !inputData[:tickets].empty?
+        inputData[:tickets].each do |object|
           r_uid = SecureRandom.hex(5)
           object["user_id"].each do |user|
 
@@ -309,7 +303,7 @@ class IticketsController < ApplicationController
     user_id = User.current.id
     if ITicket.may_be_revoked_by_owner_status(issue_id, user_id, r_uid)
       tracker_id = Issue.find(issue_id).tracker_id
-      tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+      tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
       if tracker_id == tr_new_emp_id
         ITicket.reject_tickets_by_security(issue_id, user_id)
         ITicket.check_itickets_for_approved(issue_id)

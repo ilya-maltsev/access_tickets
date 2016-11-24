@@ -21,7 +21,7 @@
 class IGrouplider < ActiveRecord::Base
 
   belongs_to :user, :class_name => "User", :foreign_key => "user_id"
-  belongs_to :group, :class_name => "Group", :foreign_key => "group_id"#, :conditions => { :type => "Group" }
+  belongs_to :group, :class_name => "Group", :foreign_key => "group_id"
 
 
   def self.lider_for_user(user_id, lider_id)
@@ -75,7 +75,7 @@ class IGrouplider < ActiveRecord::Base
     if users_nosort.detect{|w| w[:id] == option[:id]}.nil?
       users_nosort.push(option)
     end
-    users_nosort.sort_by! {|u| u[:name]}
+    users_nosort.to_a.sort_by! {|u| u[:name]}
   end
 
   def self.is_group_lider(user_id)

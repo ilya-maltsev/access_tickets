@@ -5,14 +5,7 @@
 <style>
 
 
-
-
-
-
-
-
-
-<% if ISetting.active.where(:param => "at_erm_integration", :value => 1).count > 0 %>
+<% if ISetting.plugin_settings_ermi == 1 %>
 /*------for Erm ------*/
 
 

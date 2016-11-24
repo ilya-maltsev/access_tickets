@@ -87,5 +87,5 @@ Redmine::Plugin.register :access_tickets do
 
 end
 
-
 end
+
