@@ -27,12 +27,12 @@ function export_entities() {
 
 function import_entities() {
   var title, warning, code;
-  title = '<%= l(:at_import_csv)%>';
+  title = '<%= l(:at_import_csv) %>';
   warning = '<form accept-charset="UTF-8" action="<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_resource/import_entities.json" id="entities_import_form" enctype="multipart/form-data" method="post"><input name="authenticity_token" type="hidden" value="<%=j form_authenticity_token %>"/><input style="display:none" name="resource_id" id="resource_id" value="'+ $("#edit_resource_name").attr("res_id") +'"><input id="csvfile" name="csvfile" type="file"><input style="display:none" type="submit"></form>';
   code ='$("#entities_import_form").submit()';
   show_confirm_dialog(title, warning, code);
-  $('.button-4').text('<%= l(:at_close)%>');
-  $('.button-6').text('<%= l(:at_save)%>');
+  $('.button-4').text('<%= l(:at_close) %>');
+  $('.button-6').text('<%= l(:at_save) %>');
   $('.button-6').attr('class','button-5 ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only');
   $('#confirmDialogBox').parent().attr('style','outline: 0px; z-index: 1011; height: auto; width: 500px; top: 243.5px; left: 766px; display: block;');
 }
