@@ -25,8 +25,12 @@ class IentitiesController < ApplicationController
     else 
       if params[:res_id].present?
         iresource = IResource.where(:id => params[:res_id]).first
-        if iresource.has_entities == true && IResource.available_for_user(params[:res_id], User.current.id)
-          ies = iresource.ientities.active.select(['i_entities.id',:name, :ipv4])
+        if iresource.has_entities && IResource.available_for_user(params[:res_id], User.current.id)
+          if iresource.has_ip
+            ies = iresource.ientities.active.select(['i_entities.id',:name, :ipv4])
+          else
+            ies = iresource.ientities.active.select(['i_entities.id',:name])
+          end
         else
           ies = []
         end
