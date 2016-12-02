@@ -29,7 +29,7 @@ Redmine::Plugin.register :access_tickets do
   author 'Maltsev Ilya' 
   description 'Access management plugin for Redmine'
   version ACCESS_TICKETS_VERSION_TYPE
-  url ''
+  url 'https://github.com/iymaltsev/access_tickets/'
   author_url 'mailto:i.y.maltsev@yandex.ru'
   settings :partial => '/isettings/at_settings', :default => {} 
 
@@ -74,14 +74,14 @@ Redmine::Plugin.register :access_tickets do
     {:controller => 'iaccesses', :action => 'accesses_list'}, 
     {
       :caption => :at_access_list,
-      :if => Proc.new{ISetting.plugin_settings_ermi != 1}
+      :if => Proc.new{ISetting.plugin_settings_ermi != 1 && ISetting.check_config()}
     })
 
     menu.push(:at_resources_list, 
     {:controller => 'iresources', :action => 'resources_list'}, 
     {
       :caption => :at_resources_list,
-      :if => Proc.new{ISetting.plugin_settings_ermi != 1}
+      :if => Proc.new{ISetting.plugin_settings_ermi != 1 && ISetting.check_config()}
     })
 
 
