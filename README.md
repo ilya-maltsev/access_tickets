@@ -12,8 +12,6 @@ See about at http://www.redmine.org/plugins/access_tickets
 # Screenshots
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
 
-![screenshot](http://www.redmine.org/attachments/download/17184/access_list.png)
-
 ![screenshot](http://www.redmine.org/attachments/download/16509/resources_list.png)
 
 ![screenshot](http://www.redmine.org/attachments/download/16510/change_resource_details.png)
