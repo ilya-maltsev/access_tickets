@@ -15,6 +15,7 @@ Clone from GitHub
 ```sh
 cd <redmine_root_directory>/plugins
 git clone https://github.com/iymaltsev/access_tickets.git access_tickets
+rake redmine:plugins:migrate
 ```
 Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory.
 
