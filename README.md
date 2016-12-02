@@ -17,7 +17,7 @@ git clone https://github.com/iymaltsev/access_tickets.git access_tickets
 ```
 Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory.
 
-# Screenshots
+### Screenshots
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
 
 ![screenshot](http://www.redmine.org/attachments/download/16509/resources_list.png)
