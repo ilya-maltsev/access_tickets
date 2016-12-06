@@ -104,6 +104,11 @@ function update_entities_table(data) {
       '<input class="at_input" disabled="disabled" id="edit_entity_desc" name="edit_entity_desc" maxlength="128" style="text-align: center !important;width: 100%;" title="<%= l(:at_enter_desc) %>" type="" value="' + description +  '" def_value="' + description +  '"/>', 
       '<a id="' + id + '" style="display:none" class="icon-save" title="<%=j l(:at_save) %>" onclick="save_entity(this);"></a><a id ="' + id + '" style="" class="icon-cf" title="<%=j l(:at_edit) %>" onclick="edit_entity(this);"></a><a id="' + id + '" style="" class="icon-close" title="<%=j l(:at_remove) %>" onclick="confirm_remove_entity(this);"></a>']).draw();
     });
+    if (data.ientities.length < 5) {
+      $('div.paging_simple_numbers').hide();
+    } else {
+      $('div.paging_simple_numbers').show();
+    }
   }
 }
 
@@ -670,7 +675,9 @@ $('#msgBox').attr('style','width: auto; min-height: 0px; height: 310px;');
 
 
   <% if @resource.has_entities %>
-
+    if (ies.length < 5) {
+      $('div.paging_simple_numbers').hide();
+    }
   <% else %>
     $('#msgBox').hide();
     $('#msgBox').parent().attr('style',$('#msgBox').parent().attr('style') + 'top:50px');
