@@ -30,10 +30,10 @@ Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/ma
 
 ### Screenshots from extended version
 
-![screenshot](http://www.redmine.org/attachments/download/17167/access_templates.png)
+![screenshot](http://www.redmine.org/attachments/download/17223/ex-access-templates.png)
 
-![screenshot](http://www.redmine.org/attachments/download/17168/access_by_template.png)
+![screenshot](http://www.redmine.org/attachments/download/17224/ex-access-by-template.png)
 
-![screenshot](http://www.redmine.org/attachments/download/17169/Change_access_expire.png)
+![screenshot](http://www.redmine.org/attachments/download/17225/ex-change-access-expire.png)
 
-![screenshot](http://www.redmine.org/attachments/download/17170/template_agreement.png)
+![screenshot](http://www.redmine.org/attachments/download/17226/ex-template-agreement.png)
