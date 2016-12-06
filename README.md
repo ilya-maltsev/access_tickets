@@ -26,3 +26,5 @@ Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/ma
 
 ![screenshot](http://www.redmine.org/attachments/download/16510/change_resource_details.png)
 
+![screenshot](http://www.redmine.org/attachments/download/17222/access_list.png)
+
