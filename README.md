@@ -27,7 +27,7 @@ Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/ma
 ### Screenshots
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
 
-![screenshot](http://www.redmine.org/attachments/download/17263/Workflow_grant.jpg)
+![screenshot](http://www.redmine.org/attachments/download/17265/Workflow_grant.jpg)
 
 ![screenshot](http://www.redmine.org/attachments/download/16509/resources_list.png)
 
