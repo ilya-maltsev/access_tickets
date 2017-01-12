@@ -5,11 +5,15 @@ Access Request System is a tool for requesting and authorizing access to adminis
 
 This plugin made for approving access requests and account access to some assets such as websites, servers and other IT entities.
 
+For more info goto http://www.redmine.org/plugins/access_tickets
+
 Access tickets это решение для учета доступа, основанное на базе плагина для Redmine.
 
 Данное решение предназначено для согласования и учета доступа к веб-сайтам, серверам, базам данных и прочим информационным ресурсам.
 
 Данное решение поможет вам учесть доступ пользователей к ресурсам, провести аудит доступа пользователей и вовремя отключить доступ уволенным сотрудникам.
+
+Для получения более подробной информации перейдите по адресу: http://www.redmine.org/plugins/access_tickets
 
 # About
 See about at http://www.redmine.org/plugins/access_tickets
