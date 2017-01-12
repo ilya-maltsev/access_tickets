@@ -15,9 +15,6 @@ Access tickets это решение для учета доступа, осно�
 
 Для получения более подробной информации перейдите по адресу: http://www.redmine.org/plugins/access_tickets
 
-# About
-See about at http://www.redmine.org/plugins/access_tickets
-
 ### Installation:
 
 Clone from GitHub
