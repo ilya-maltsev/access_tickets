@@ -25,6 +25,13 @@ rake redmine:plugins:migrate
 ```
 Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory.
 
+Before start using this plugin needs to set base parameters of access_tickets via URL /settings/plugin/access_tickets.
+
+And then set the group leaders (Groupliders can view the access of workers consisting in the respective groups)
+
+Перед началом использования данного плагина необходимо установить его базовые параметры через URL /settings/plugin/access_tickets
+А затем установить руководителей групп (Руководители групп могут просматривать доступа работников, состоящих в соответствующих группах)
+
 ### Screenshots
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
 
