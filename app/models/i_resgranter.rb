@@ -32,9 +32,4 @@ class IResgranter < ActiveRecord::Base
     IResgranter.where(:user_id => user_id, :i_resource_id => resource_id).count > 0
   end
 
-  def self.is_granter_for_issue(user_id, issue_id)
-    ungranted_res_id = ITicket.active.joins(:iaccesses).where('i_accesses.granted_by_id is NULL').where(:issue_id => issue_id).map(&:i_resource_id).uniq
-    user_id.in?(IResgranter.where(:i_resource_id => ungranted_res_id).map(&:user_id).uniq )
-  end
-
 end
