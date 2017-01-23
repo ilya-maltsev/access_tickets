@@ -406,8 +406,16 @@ class IAccess < ActiveRecord::Base
       access[:i_entities_id] = []
       if rev_issue_id.nil?
         itickets = ITicket.active.where(:r_uid => r_uid, :user_id => user_id)
+        access[:revoked_by_id] = itickets.first.iaccesses.first[:revoked_by_id]
+        access[:revoked_at] = itickets.first.iaccesses.first[:revoked_at]
+        access[:deactivated_by_id] = itickets.first.iaccesses.first[:deactivated_by_id]
+        access[:deactivated_at] = itickets.first.iaccesses.first[:deactivated_at]
       else
         itickets = ITicket.active.joins(:iaccesses).where(:r_uid => r_uid, "i_accesses.rev_issue_id" => rev_issue_id)
+        access[:revoked_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_by_id]
+        access[:revoked_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_at]
+        access[:deactivated_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
+        access[:deactivated_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]
       end
       user_name = User.find(itickets.first[:user_id]).name
       user_obj = {}
@@ -425,13 +433,11 @@ class IAccess < ActiveRecord::Base
       end
       access[:s_date] = itickets.first[:s_date].strftime("%d.%m.%Y")
       access[:e_date] = itickets.first[:e_date].strftime("%d.%m.%Y")
-      access[:revoked_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_by_id]
-      access[:revoked_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_at]#.in_time_zone(tz).to_s(:atf)
       if !access[:revoked_by_id].nil?
         access[:revoked_at] = access[:revoked_at].in_time_zone(tz).to_s(:atf)
       end
       access[:deactivated_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
-      access[:deactivated_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]#.in_time_zone(tz).to_s(:atf)
+      access[:deactivated_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]
       if !access[:deactivated_by_id].nil?
         access[:deactivated_at] = access[:deactivated_at].in_time_zone(tz).to_s(:atf)#.strftime("%H:%M %d.%m.%Y")
       end
