@@ -49,10 +49,6 @@ match '/access_tickets/save_resource', :controller => 'iresources', :action => '
 
 match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
 
-match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
-
-match '/access_tickets/add_resource', :controller => 'iresources', :action => 'add_resource', :via => :post
-
 match '/access_tickets/show_resource/ientity_show_list', :controller => 'ientities', :action => 'ientity_show_list', :via => :post
 
 match '/access_tickets/show_resource/export_entities', :controller => 'ientities', :action => 'export_entities', :via => :get
