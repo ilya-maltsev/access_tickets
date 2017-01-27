@@ -69,17 +69,11 @@ match '/access_tickets/edit_resource/set_granters', :controller => 'iresources',
 
 match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
 
-match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
-
-match '/access_tickets/edit_resource/set_owners', :controller => 'iresources', :action => 'set_owners', :via => :post
-
 match '/access_tickets/edit_resource/set_has_entities', :controller => 'iresources', :action => 'set_has_entities', :via => :post
 
 match '/access_tickets/edit_resource/set_has_ip', :controller => 'iresources', :action => 'set_has_ip', :via => :post
 
 match '/access_tickets/edit_resource/set_groups_availability', :controller => 'iresources', :action => 'set_groups_availability', :via => :post
-
-match '/access_tickets/show_resource/groups_availability', :controller => 'iresources', :action => 'groups_availability', :via => :post
 
 match '/access_tickets/show_resource/groups_availability', :controller => 'iresources', :action => 'groups_availability', :via => :post
 
