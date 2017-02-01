@@ -431,6 +431,8 @@ class IAccess < ActiveRecord::Base
         access[:i_roles].push(IRole.find(iticket[:i_role_id]).name)
         access[:i_roles_id].push(iticket[:i_role_id])
       end
+      access[:i_roles] = access[:i_roles].uniq
+      access[:i_roles_id] = access[:i_roles_id].uniq      
       access[:s_date] = itickets.first[:s_date].strftime("%d.%m.%Y")
       access[:e_date] = itickets.first[:e_date].strftime("%d.%m.%Y")
       if !access[:revoked_by_id].nil?
