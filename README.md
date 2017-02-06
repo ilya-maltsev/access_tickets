@@ -28,9 +28,13 @@ Clone from GitHub:
 ```sh
 cd <redmine_root_directory>/plugins
 git clone https://github.com/iymaltsev/access_tickets.git access_tickets
-rake redmine:plugins:migrate
 ```
 Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory (/var/lib/redmine/plugins/access_tickets).
+
+And migrate plugins:
+```sh
+rake redmine:plugins:migrate
+```
 Before start using this plugin needs to set base parameters of access_tickets via URL /settings/plugin/access_tickets.
 And then set the group leaders (Groupliders can view the access of workers consisting in the respective groups)
 ###
@@ -40,9 +44,14 @@ RU:
 ```sh
 cd <redmine_root_directory>/plugins
 git clone https://github.com/iymaltsev/access_tickets.git access_tickets
-rake redmine:plugins:migrate
+
 ```
 Либо скачать [ZIP-архив](https://github.com/iymaltsev/access_tickets/archive/master.zip) и извлеч его содержимое в папку "access_tickets" (/var/lib/redmine/plugins/access_tickets).
+
+И выполнить миграцию плагина:
+```sh
+rake redmine:plugins:migrate
+```
 Перед началом использования данного плагина необходимо установить его базовые параметры через URL /settings/plugin/access_tickets
 А затем установить руководителей групп (Руководители групп могут просматривать доступа работников, состоящих в соответствующих группах)
 
