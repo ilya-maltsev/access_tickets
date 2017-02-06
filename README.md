@@ -1,4 +1,7 @@
 # Access Tickets (Access Request System)
+###
+EN:
+###
 Access tickets is Access Request System based on Redmine plugin.
 
 Access Request System is a tool for requesting and authorizing access to administrative data in ITS-managed systems and applications.
@@ -6,7 +9,9 @@ Access Request System is a tool for requesting and authorizing access to adminis
 This plugin made for approving access requests and account access to some assets such as websites, servers and other IT entities.
 
 For any questions of this plugin (example for full plugin version with access templates & simply approvement features) you can send email i.y.maltsev@yandex.ru
-
+###
+RU:
+###
 Access tickets это решение для учета доступа, основанное на базе плагина для Redmine.
 
 Данное решение предназначено для согласования и учета доступа к веб-сайтам, серверам, базам данных и прочим информационным ресурсам.
@@ -16,19 +21,28 @@ Access tickets это решение для учета доступа, осно�
 По любым вопросам об этом плагине ( например, для получения полной версии плагина с шаблонами доступа и многими другими полезными функциями), вы можете связаться со мной по электронной почте i.y.maltsev@yandex.ru
 
 ### Installation:
-
-Clone from GitHub
+###
+EN:
+###
+Clone from GitHub:
 ```sh
 cd <redmine_root_directory>/plugins
 git clone https://github.com/iymaltsev/access_tickets.git access_tickets
 rake redmine:plugins:migrate
 ```
-Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory.
-
+Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory (/var/lib/redmine/plugins/access_tickets).
 Before start using this plugin needs to set base parameters of access_tickets via URL /settings/plugin/access_tickets.
-
 And then set the group leaders (Groupliders can view the access of workers consisting in the respective groups)
-
+###
+RU:
+###
+Склонировать исходный код с GitHub:
+```sh
+cd <redmine_root_directory>/plugins
+git clone https://github.com/iymaltsev/access_tickets.git access_tickets
+rake redmine:plugins:migrate
+```
+Либо скачать [ZIP-архив](https://github.com/iymaltsev/access_tickets/archive/master.zip) и извлеч его содержимое в папку "access_tickets" (/var/lib/redmine/plugins/access_tickets).
 Перед началом использования данного плагина необходимо установить его базовые параметры через URL /settings/plugin/access_tickets
 А затем установить руководителей групп (Руководители групп могут просматривать доступа работников, состоящих в соответствующих группах)
 
