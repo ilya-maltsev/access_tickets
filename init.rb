@@ -22,7 +22,7 @@ require 'access_tickets/hooks'
 
 
 
-ACCESS_TICKETS_VERSION_TYPE = "Light version"
+ACCESS_TICKETS_VERSION_TYPE = "1.1.6"
 
 Redmine::Plugin.register :access_tickets do
   name 'Access tickets' 
