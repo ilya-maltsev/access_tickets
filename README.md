@@ -1,4 +1,5 @@
 # Access Tickets (Access Request System)
+[![Rate at redmine.org](http://img.shields.io/badge/rate%20at-redmine.org-blue.svg?style=flat)](http://www.redmine.org/plugins/access_tickets)
 ###
 EN:
 ###
