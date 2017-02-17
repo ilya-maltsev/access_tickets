@@ -226,9 +226,9 @@ $('#users_list').chosen(ch_opts);
   $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
 <% end %>
   
-<% if at_revoking_status[2] < 11 %>
+if ($('#show_ticket').DataTable().data().length < 11 ) {
   $('div.paging_simple_numbers').hide();
-<% end %>
+}
   
   function revoking(data){
 
