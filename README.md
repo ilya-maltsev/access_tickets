@@ -8,7 +8,7 @@ Access Request System is a tool for requesting and authorizing access to adminis
 
 This plugin made for approving access requests and account access to some assets such as websites, servers and other IT entities.
 
-For any questions of this plugin (example for full plugin version with access templates & simply approvement features) you can send email i.y.maltsev@yandex.ru
+For any questions of this plugin (and for get full plugin version with access templates & simply approvement features, lists of expired access rights & etc) you can send email i.y.maltsev@yandex.ru
 ###
 RU:
 ###
@@ -18,7 +18,7 @@ Access tickets это решение для учета доступа, осно�
 
 Данное решение поможет вам учесть доступ пользователей к ресурсам, провести аудит доступа пользователей и вовремя отключить доступ уволенным сотрудникам.
 
-По любым вопросам об этом плагине ( например, для получения полной версии плагина с шаблонами доступа и многими другими полезными функциями), вы можете связаться со мной по электронной почте i.y.maltsev@yandex.ru
+По любым вопросам об этом плагине (например, для получения полной версии плагина с шаблонами доступа, списками истекших прав доступа и многими другими полезными функциями), вы можете связаться со мной по электронной почте i.y.maltsev@yandex.ru
 
 ### Installation:
 ###
