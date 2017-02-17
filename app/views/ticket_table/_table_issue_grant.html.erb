@@ -152,7 +152,6 @@
 
   $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_confirm_access" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_confirm_all) %></button>');
 
-
 <% if at_granting_status[0] == 1 %>
   $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_verified_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
 <% else %>
@@ -277,9 +276,9 @@
   $('#show_ticket').DataTable().column(6).visible( false );
 <% end %>
   
-<% if at_granting_status[4] < 11 %>
+if ($('#show_ticket').DataTable().data().length < 11 ) {
   $('div.paging_simple_numbers').hide();
-<% end %>
+}
 
   function granting(data){
 
