@@ -39,6 +39,7 @@ rake redmine:plugins:migrate NAME=access_tickets
 Before start using this plugin needs to set base parameters of access_tickets via URL /settings/plugin/access_tickets.
 And then set the group leaders (Groupliders can view the access of workers consisting in the respective groups)
 Groups of users, for which leaders are set to be available for selection in the "Availability" when editing a resource.
+Users who are in the selected group when editing a resource, the resource will be able to choose when completing an access request.
 ###
 RU:
 ###
@@ -56,7 +57,8 @@ rake redmine:plugins:migrate NAME=access_tickets
 ```
 Перед началом использования данного плагина необходимо установить его базовые параметры через URL /settings/plugin/access_tickets
 А затем установить руководителей групп (Руководители групп могут просматривать доступа работников, состоящих в соответствующих группах).
-Группы пользователей, для который установлены руководители будут доступны для выбора в меню "Доступен для групп" при редактировании ресурса.
+Группы пользователей, для который установлены руководители, будут доступны для выбора в меню "Доступен для групп" при редактировании ресурса.
+Пользователи, состоящие в выбранных группах при редактировании ресурса, смогут выбрать данный ресурс при заполенении запроса доступа.
 
 ### Screenshots
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
