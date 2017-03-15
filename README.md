@@ -61,6 +61,7 @@ rake redmine:plugins:migrate NAME=access_tickets
 Пользователи, состоящие в выбранных группах при редактировании ресурса, смогут выбрать данный ресурс при заполенении запроса доступа.
 
 ### Screenshots
+
 ![screenshot](http://www.redmine.org/attachments/download/17059/Concept_s.jpg)
 
 ![screenshot](http://www.redmine.org/attachments/download/17265/Workflow_grant.jpg)
