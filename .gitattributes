@@ -1,2 +1,2 @@
-assets/javascripts/jquery.chosen.js linguist-vendored=true
-assets/javascripts/jquery.validate.js linguist-vendored=true
+assets/javascripts/jquery.chosen.js linguist-vendored=false
+assets/javascripts/jquery.validate.js linguist-vendored=false
