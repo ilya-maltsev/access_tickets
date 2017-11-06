@@ -70,7 +70,7 @@ rake redmine:plugins:migrate NAME=access_tickets
 Группы пользователей, для который установлены руководители, будут доступны для выбора в меню "Доступен для групп" при редактировании ресурса.
 Пользователи, состоящие в выбранных группах при редактировании ресурса, смогут выбрать данный ресурс при заполнении запроса доступа.
 
-### Пример установки плагина можно посмотреть в [wiki](https://github.com/iymaltsev/access_tickets/wiki/Example-install-plugin-to-Bitnami-Redmine-stack).
+### Пример установки и базовой настройки плагина можно посмотреть в [wiki](https://github.com/iymaltsev/access_tickets/wiki/Example-install-plugin-to-Bitnami-Redmine-stack).
 
 Для удаления плагина выполните следующие команды:
 ```sh
