@@ -50,7 +50,7 @@
         </td>
         <td><%=raw access[:i_roles]*"<br>" %></td>
         <td>
-        <% if !access[:description].nil? %>
+        <% if access[:ientities].empty? %>
           <%= access[:description] %>
         <% else %>
           <% for entity in access[:ientities] %>
