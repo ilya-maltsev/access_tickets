@@ -35,7 +35,7 @@
         </td>
         <td><%=raw ticket[:i_roles]*"<br>" %></td>
         <td>
-        <% if !ticket[:description] == '' %>
+        <% if ticket[:ientities].empty? %>
           <%= ticket[:description] %>
         <% else %>
             <%=raw ticket[:ientities]*"<br>" %>
