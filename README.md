@@ -1,12 +1,15 @@
-# Access Tickets (Access Request System)
+Access Tickets 
+======
+
+----
+
 [![Rate at redmine.org](http://img.shields.io/badge/rate%20at-redmine.org-blue.svg?style=flat)](http://www.redmine.org/plugins/access_tickets)
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/accesstickets)
 
+----
 
-###
-EN:
-###
+
 Access tickets is Access Request System based on Redmine plugin.
 
 Access Request System is a tool for requesting and authorizing access to administrative data in ITS-managed systems and applications.
@@ -14,69 +17,10 @@ Access Request System is a tool for requesting and authorizing access to adminis
 This plugin made for approving access requests and account access to some assets such as websites, servers and other IT entities.
 
 For any questions of this plugin (and for get full plugin version with access templates & simply approvement features, lists of expired access rights & etc) you can send email i.y.maltsev@yandex.ru
-###
-RU:
-###
-Access tickets это решение для учета доступа, основанное на базе плагина для Redmine.
 
-Данное решение предназначено для согласования и учета доступа к веб-сайтам, серверам, базам данных и прочим информационным ресурсам.
 
-Данное решение поможет вам учесть доступ пользователей к ресурсам, провести аудит доступа пользователей и вовремя отключить доступ уволенным сотрудникам.
+#### [Access tickets](https://github.com/iymaltsev/access_tickets/wiki) | [Домашняя страница](https://github.com/iymaltsev/access_tickets/wiki/%D0%94%D0%BE%D0%BC%D0%B0%D1%88%D0%BD%D1%8F%D1%8F-%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0)
 
-По любым вопросам об этом плагине (например, для получения полной версии плагина с шаблонами доступа, списками истекших прав доступа и многими другими полезными функциями) вы можете связаться со мной по электронной почте i.y.maltsev@yandex.ru
-
-### Installation:
-###
-EN:
-###
-Clone from GitHub:
-```sh
-cd <redmine_root_directory>/plugins
-git clone https://github.com/iymaltsev/access_tickets.git access_tickets
-```
-Or download [ZIP-archive](https://github.com/iymaltsev/access_tickets/archive/master.zip) and extract it into "access_tickets" directory (/var/lib/redmine/plugins/access_tickets).
-
-And migrate plugin:
-```sh
-rake redmine:plugins:migrate NAME=access_tickets
-```
-Before start using this plugin needs to set base parameters of access_tickets via URL /settings/plugin/access_tickets.
-And then set the group leaders (Groupliders can view the access of workers consisting in the respective groups)
-Groups of users, for which leaders are set to be available for selection in the "Availability" when editing a resource.
-Users who are in the selected group when editing a resource, the resource will be able to choose when completing an access request.
-
-Removing plugin:
-```sh
-rake redmine:plugins:migrate NAME=access_tickets VERSION=0 RAILS_ENV=production
-rm -rf <redmine_root_directory>/plugins/access_tickets
-```
-###
-RU:
-###
-Склонировать исходный код с GitHub:
-```sh
-cd <redmine_root_directory>/plugins
-git clone https://github.com/iymaltsev/access_tickets.git access_tickets
-
-```
-Либо скачать [ZIP-архив](https://github.com/iymaltsev/access_tickets/archive/master.zip) и извлеч его содержимое в папку "access_tickets" (/var/lib/redmine/plugins/access_tickets).
-
-И выполнить миграцию плагина:
-```sh
-rake redmine:plugins:migrate NAME=access_tickets
-```
-Перед началом использования данного плагина необходимо установить его базовые параметры через URL /settings/plugin/access_tickets
-А затем установить руководителей групп (Руководители групп могут просматривать доступа работников, состоящих в соответствующих группах).
-Группы пользователей, для который установлены руководители, будут доступны для выбора в меню "Доступен для групп" при редактировании ресурса.
-Пользователи, состоящие в выбранных группах при редактировании ресурса, смогут выбрать данный ресурс при заполнении запроса доступа.
-
-### Пример установки и базовой настройки плагина можно посмотреть в [wiki](https://github.com/iymaltsev/access_tickets/wiki/Example-install-plugin-to-Bitnami-Redmine-stack).
-
-Для удаления плагина выполните следующие команды:
-```sh
-rake redmine:plugins:migrate NAME=access_tickets VERSION=0 RAILS_ENV=production
-rm -rf <redmine_root_directory>/plugins/access_tickets
-```
 ### Screenshots
 
 ![screenshot](http://www.redmine.org/attachments/download/16509/resources_list.png)
