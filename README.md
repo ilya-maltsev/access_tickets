@@ -28,8 +28,6 @@ For any questions of this plugin (and for get full plugin version with access te
 
 ![screenshot](http://www.redmine.org/attachments/download/17222/access_list.png)
 
-### Screenshots from extended version
-
 ![screenshot](http://www.redmine.org/attachments/download/17223/ex-access-templates.png)
 
 ![screenshot](http://www.redmine.org/attachments/download/17224/ex-access-by-template.png)
