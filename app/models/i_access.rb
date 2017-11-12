@@ -438,8 +438,14 @@ class IAccess < ActiveRecord::Base
       if !access[:revoked_by_id].nil?
         access[:revoked_at] = access[:revoked_at].in_time_zone(tz).to_s(:atf)
       end
-      access[:deactivated_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
-      access[:deactivated_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]
+      rev_access = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first
+      if !rev_access.nil?
+        access[:deactivated_by_id] = rev_access[:deactivated_by_id]
+        access[:deactivated_at] = rev_access[:deactivated_at]
+      else 
+        access[:deactivated_by_id] = nil
+        access[:deactivated_at] = nil
+      end
       if !access[:deactivated_by_id].nil?
         access[:deactivated_at] = access[:deactivated_at].in_time_zone(tz).to_s(:atf)#.strftime("%H:%M %d.%m.%Y")
       end
