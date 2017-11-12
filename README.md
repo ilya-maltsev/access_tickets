@@ -28,4 +28,4 @@ For any questions of this plugin (and for get full plugin version with access te
 
 ![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant13.jpg)
 
-![screenshot](http://www.redmine.org/attachments/download/17222/access_list.png)
+![screenshot](https://github.com/iymaltsev/access_tickets/blob/images/How-to-grant/al.jpg)
