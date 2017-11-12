@@ -26,6 +26,8 @@ For any questions of this plugin (and for get full plugin version with access te
 
 ![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant1-1.jpg)
 
-![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant13.jpg)
+![screenshot](https://github.com/iymaltsev/access_tickets/blob/images/How-to-grant/grant-edit.jpg)
+
+![screenshot](https://github.com/iymaltsev/access_tickets/blob/images/How-to-grant/revoke-edit.jpg)
 
 ![screenshot](https://github.com/iymaltsev/access_tickets/blob/images/How-to-grant/al.jpg)
