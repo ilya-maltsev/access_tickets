@@ -240,7 +240,7 @@ ru:
   at_issue_in_progress_status: "В работе"
   at_issue_resolved_status: "Выполнена"
   at_issue_closed_status: "Завершена"
-  at_erm_integration: "Дизайн для EasyRedmine"
+  at_erm_integration: "Кастомный дизайн"
   at_all_entities_of_res: "Все экземпляры для ресурса '"
   at_was_successfull_imported: "' были успешно импортированы"
   at_foll_items_of_res: "Следующие экземпляры для ресурса '"
