@@ -240,7 +240,7 @@ en:
   at_issue_in_progress_status: "In progress"
   at_issue_resolved_status: "Resolved"
   at_issue_closed_status: "Closed"
-  at_erm_integration: "EasyRedmine theme"
+  at_erm_integration: "Custom theme"
   at_all_entities_of_res: "All entities of the resource '"
   at_was_successfull_imported: "' have been successfully imported"
   at_foll_items_of_res: "The following entities of the resource '"
