@@ -22,16 +22,10 @@ For any questions of this plugin (and for get full plugin version with access te
 
 ### Screenshots
 
-![screenshot](http://www.redmine.org/attachments/download/16509/resources_list.png)
+![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant1.jpg)
 
-![screenshot](http://www.redmine.org/attachments/download/16510/change_resource_details.png)
+![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant1-1.jpg)
+
+![screenshot](https://github.com/iymaltsev/access_tickets/raw/images/How-to-grant/howtogrant13.jpg)
 
 ![screenshot](http://www.redmine.org/attachments/download/17222/access_list.png)
-
-![screenshot](http://www.redmine.org/attachments/download/17223/ex-access-templates.png)
-
-![screenshot](http://www.redmine.org/attachments/download/17224/ex-access-by-template.png)
-
-![screenshot](http://www.redmine.org/attachments/download/17225/ex-change-access-expire.png)
-
-![screenshot](http://www.redmine.org/attachments/download/17226/ex-template-agreement.png)
