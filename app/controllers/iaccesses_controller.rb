@@ -197,14 +197,11 @@ class IaccessesController < ApplicationController
       if !inputData.empty?
         inputData.each do |ticket|
           if ticket["entities"].empty?
-            if !IResource.find(ITicket.where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).first[:i_resource_id]).has_entities
-              ids = IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).select("i_accesses.id").map(&:id)
-              IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now)
-            end
+            ids = IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).select("i_accesses.id").map(&:id)
           else
             ids = IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"], "i_accesses.i_entity_id" => ticket["entities"]).select("i_accesses.id").map(&:id)
-            IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now)
           end
+          IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now) 
         end
       end
       issue = Issue.find(issue_id)
