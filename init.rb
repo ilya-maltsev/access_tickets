@@ -19,14 +19,14 @@
 
 require 'access_tickets/hooks'
 
-ACCESS_TICKETS_VERSION_TYPE = "Full version"
+ACCESS_TICKETS_VERSION_TYPE = "2.0"
 
 Redmine::Plugin.register :access_tickets do
   name 'Access tickets' 
   author 'Maltsev Ilya' 
   description 'Access management plugin for Redmine'
   version ACCESS_TICKETS_VERSION_TYPE
-  url ''
+  url 'https://github.com/iymaltsev/access_tickets/'
   author_url 'mailto:i.y.maltsev@yandex.ru'
   settings :partial => '/isettings/at_settings', :default => {} 
 
