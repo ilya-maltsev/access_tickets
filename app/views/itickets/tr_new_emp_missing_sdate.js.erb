@@ -1,0 +1,2 @@
+$("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_new_emp_first_day_id").first.value.to_i %>]']").parent().parent().parent().find('th').attr("class","blink2");
+alert('<%=l(:at_param)%> "<%=l(:at_cf_new_emp_first_day)%>" <%=l(:at_missing)%>');

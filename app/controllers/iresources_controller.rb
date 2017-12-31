@@ -205,6 +205,7 @@ class IresourcesController < ApplicationController
   def set_granters
 		if ITicket.check_security_officer(User.current) && params[:iresgranters].present? && params[:res_id].present? 
 			IResgranter.where('i_resource_id = ? and user_id not in (?)', params[:res_id], params[:iresgranters]).destroy_all
+			#iresource = IresourcesController.find(params[:res_id])
 			iresource = IResource.active.where(:id => params[:res_id]).first
 			iresgranters = []
 			params[:iresgranters].each do |i|
@@ -256,7 +257,7 @@ class IresourcesController < ApplicationController
   				users.push(user)
   			end
 
-  			ies = []
+  			ies = []#iresource.ientities.active.select(['i_entities.id',:name])
   			respond_to do |format|
   				format.json { render :json => {:i_roles => irls, :users => users, :iresowners => iresowners, :iresgranters => iresgranters, :has_ip => iresource.has_ip, :ientities => ies} }
   			end
@@ -268,12 +269,14 @@ class IresourcesController < ApplicationController
     end
   end
 
-
+  #def ir_add
   def add_resource
 		if ITicket.check_security_officer(User.current)
 	    iresource = IResource.new(:name => params[:name] )
 	    iresource[:updated_by_id] = User.current.id
+      iresource[:description] = ''
 	    if iresource.save
+		    #ir = IResource.active.select([:id, :name])
 		    resources_list = IResource.resources_list(User.current.id)
 			  respond_to do |format|
 		      format.json { render :json => {:status => 1, :iresources => resources_list } }
@@ -286,6 +289,7 @@ class IresourcesController < ApplicationController
 		end
   end
 
+  #def ir_edit
   def save_resource
   	if params[:resource_id].present? && params[:name].present?
 			if ITicket.check_security_officer(User.current)
@@ -311,6 +315,7 @@ class IresourcesController < ApplicationController
 		end
   end
 
+  #def ir_remove
   def remove_resource
   	if params[:resource_id].present?
 			if ITicket.check_security_officer(User.current)

@@ -6,21 +6,42 @@
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
 
+
 <script type="text/javascript">
 
+
 $( document ).ready(function() {
+
+
     $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_verified_id").first.value %>').parent().attr('style','display:none');
     $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_approved_id").first.value %>').parent().attr('style','display:none');
     $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_granting_id").first.value %>').parent().attr('style','display:none');
     $('select#issue_custom_field_values_<%= ISetting.active.where(:param => "cf_confirming_id").first.value %>').parent().attr('style','display:none');
+
     $('#issue-form-custom-fields-').parent().attr("style", "display: none");
+
+
+    //console.log( $('#issue_tracker_id').val() );
+    
+    //$('#issue_tracker_id').attr("onchange", "alert($(this).val())");
+    //$('#issue_tracker_id').val(<%= ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>);
+    //$('#issue_tracker_id').attr("disabled", true);
+
+
     $('#issue_status_id').attr("disabled", true);
+    //$('#issue_assigned_to_id').val(<%= ISetting.active.where(:param => "sec_group_id").first.value.to_i %>);
     $("#issue_assigned_to_id option[value='<%= ISetting.active.where(:param => "sec_group_id").first.value.to_i %>']").attr('selected', 'selected');
+    //$('#issue_assigned_to_id').attr("disabled", "disabled");
+
     $('#issue_tracker_id').removeAttr("class");
 });
 
 
 
+$(document.body).on('click', 'button.icon-del', function() {
+  //$('#edit_ticket').DataTable().row( $(this).parents('tr') ).remove().draw();
+  //$('#at_versions option:selected').removeAttr("selected");
+});
 
 
 </script>
@@ -29,9 +50,6 @@ $( document ).ready(function() {
 <link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/jquery.dataTables.css" media="screen" rel="stylesheet" type="text/css" />
 <link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/jquery.dataTables_themeroller.css" media="screen" rel="stylesheet" type="text/css" />
 <link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/selectboxes.css" media="screen" rel="stylesheet" type="text/css" />
-
-
-
 
 <% end %>
 

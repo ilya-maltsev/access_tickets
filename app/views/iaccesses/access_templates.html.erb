@@ -1,0 +1,674 @@
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+<div id="" class="box">
+<fieldset>
+<legend><h4><%= l(:at_access_templates) %></h4></legend>
+
+  <table id="show_access" class="list entities issues issues_index context-menu-container">
+    <thead>
+      <tr>
+        <th style="width:5%" title="<%= l(:at_activity) %>"><a class="icon icon-settings settings"/a></th>
+        <th style="width:25%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:15%" title="<%= l(:at_role) %>"><a><%= l(:at_role) %></a></th>
+        <th style="width:25%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+
+<div style="clear: both;"></div>
+</fieldset>
+</div>
+
+<script type="text/javascript">
+
+function validate_name_len(name, min, max) {
+  if ( name.length < max ) {
+    if ( name.length > min ) {
+      return true;
+    } else {
+      return "<%=j l(:at_name) %><%=j l(:at_can_include) %><%=j l(:at_fr) %>" + min + "<%=j l(:at_symbols) %>";
+    }
+  } else {
+    return "<%=j l(:at_name) %><%=j l(:at_can_include) %><%=j l(:at_to) %>" + max + "<%=j l(:at_symbols) %>";
+  }
+}
+
+
+var security_officer = <%= ITicket.check_security_officer(User.current) ? 1 : 0 %>;
+
+$(document).attr("title", "<%= l(:at_access_templates) %>");
+
+$(document.body).on('click', 'button.icon-del', function() {
+  $('#show_access').DataTable().row( $(this).parents('tr') ).remove().draw();
+});
+
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<% l(:at_not_matched) %>'};
+
+$('#show_access').DataTable({
+    "createdRow" : function( row, data, index ) {
+        if (index > 0) {
+          var IDs = [];
+          $("#show_access").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": false,
+    "bFilter": false, 
+    "lengthMenu": [[5, 10, -1], ["5", "10", "<%= l(:at_all) %>"]],
+    "bSort" : false,
+    "oLanguage": {
+    "sInfo": "<%= l(:at_sInfo) %>",
+    "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+    "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+    "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                "sSearch": "",
+    "oPaginate": {
+            "sFirst": "<%= l(:at_sFirst) %>",
+            "sNext": "<%= l(:at_sNext) %>",
+            "sLast": "<%= l(:at_sLast) %>",
+            "sPrevious": "<%= l(:at_sPrevious) %>"
+    },
+    "sLengthMenu": "<%= l(:at_sLengthMenu) %>",
+    "columns": [
+        {"sClass": "dom"},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+  },
+  });
+
+
+
+$('body').append('<div id="confirmDialogBox"></div>');
+
+function show_confirm_dialog(title, warning, code) {
+  var result, confirm_result = false;
+  var $confirmDialog = $('#confirmDialogBox')
+    .html(warning)
+    .dialog({
+    title: title,
+    autoOpen: false, 
+    height:220,
+    resizable: false,
+    buttons: [{ 
+      text: "<%= l(:at_no) %>",
+      class: "button-4",
+      click: function () {
+        confirm_result =  false;
+        $(this).dialog('close');
+      }, 
+    },  {
+      text: "<%= l(:at_yes) %>",
+      class: "button-6",
+      click: function() {
+        confirm_result = true;
+        $(this).dialog('close');
+      }
+    }],
+    close: function() {
+      if (confirm_result == true) {
+        eval(code)
+      }
+    },
+    open: function( event, ui ) {
+      $('button.ui-state-focus').removeClass('ui-state-focus');
+    }
+  });
+  $confirmDialog.dialog('open');
+}
+
+  function clear_fields(){
+    $('#template_name').val('');
+
+  }
+
+
+  function add_template()  {
+    var name = $("#template_name").val();
+    result = validate_name_len(name,4,65) 
+    if (result == true){
+      $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/add_template", { group_id: $("select#group_id").val(), name : name }, function( data ) {
+        $('#show_access').DataTable().clear().draw();
+        $('#edit_template_name').show();
+        $('#remove_template_button').show();
+        $('#add_row_button').show();
+        $('#save_template_button').show();
+        $("label[for='versions_list']").hide();
+        $("#versions_list_chosen").hide();
+        $('#template_list').empty();
+        $('#template_list').trigger("chosen:updated");
+        $('#template_list').append('<option value=""><%= l(:at_select_template)%></option>');
+        $.each(data,function(i){
+          var template_id, template_name;
+          if (data[i].i_ticktemplate !== undefined) {
+            template_id = data[i].i_ticktemplate.id;
+            template_name = data[i].i_ticktemplate.name;
+          } else {
+            template_id = data[i].id;
+            template_name = data[i].name;
+          }
+          $('#template_list').append('<option value=' + template_id + '>' + template_name + '</option>');
+        }); 
+        $('#template_list option:contains("'+ name + '")').attr('selected','selected');
+        $('#template_list').trigger("chosen:updated");
+        $("span#status_value").html('<%=j l(:at_draft) %>');
+      }, "json");
+      clear_fields();
+    } else {
+      alert(result);
+    }
+  }
+
+
+  function change_template_name() {
+    var name = $("#template_name").val();
+    result = validate_name_len(name,4,65) 
+    if (result == true){
+      if ( $("select#template_list option").filter(":selected").val() == 'null'  || $("select#group_id option").filter(":selected").val() == 'null' ) {
+      } else {
+        var name = $("#template_name").val();
+        $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_template", { group_id: $("select#group_id").val(), template_id : $("select#template_list option").filter(":selected").val(), name : name }, function( data ) {
+            $('#template_list').empty();
+            $('#template_list').trigger("chosen:updated");
+            $('#template_list').append('<option value=""><%= l(:at_select_template) %></option>');
+            $.each(data,function(i){
+              var template_id, template_name;
+              if (data[i].i_ticktemplate !== undefined) {
+                template_id = data[i].i_ticktemplate.id;
+                template_name = data[i].i_ticktemplate.name;
+              } else {
+                template_id = data[i].id;
+                template_name = data[i].name;
+              }
+              $('#template_list').append('<option value=' + template_id + '>' + template_name + '</option>');
+            });
+        $('#template_list option:contains("'+ name + '")').attr('selected','selected');
+        $('#template_list').trigger("chosen:updated");
+          }, 
+        "json");
+        clear_fields();
+      }
+    } else {
+      alert(result);
+    }
+  }
+
+
+  function confirm_removing_template() {
+    var code = 'remove_template()';
+    show_confirm_dialog('<%=j l(:at_removing_template) %>', '<%=j l(:at_confirm_removing_template) %>', code);
+  }
+
+
+  function confirm_saving_template() {
+    var code = 'save_template()';
+    show_confirm_dialog('<%=j l(:at_saving_template) %>', '<%=j l(:at_confirm_saving_template) %>', code);
+  }
+
+
+  function remove_template(){
+    if ( $("select#template_list option").filter(":selected").val() == 'null' ) {
+    } else {
+      $('#show_access').DataTable().clear().draw();
+      $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/remove_template", { group_id: $("select#group_id").val(), template_id: $("select#template_list").val() }, function( data ) {
+        $('#add_row_button').hide();
+        $('#edit_template_name').hide();
+        $('#save_template_button').hide();
+        $('#remove_template_button').hide();
+        $("label[for='versions_list']").hide();
+        $("#versions_list_chosen").hide();
+        $("span#status_value").hide();
+        $("label[for='status']").hide();
+        $('#template_list').empty();
+        $('#template_list').trigger("chosen:updated");
+        $('#template_list').append('<option value=""><%= l(:at_select_template)%></option>');
+        $.each(data,function(i){
+          var template_id, template_name;
+          if (data[i].i_ticktemplate !== undefined) {
+            template_id = data[i].i_ticktemplate.id;
+            template_name = data[i].i_ticktemplate.name;
+          } else {
+            template_id = data[i].id;
+            template_name = data[i].name;
+          }
+          $('#template_list').append('<option value=' + template_id + '>' + template_name + '</option>');
+        }); 
+        $('#template_list').trigger("chosen:updated");
+      }, "json");
+    }
+  }
+
+
+  function save_template(){
+    var table_errors = 0;
+    var Rows = $('#show_access').DataTable().settings()[0]["aoData"];
+    var sendData = new Array();
+    if (Rows.length > 0) {
+      $('#show_access tbody tr').each(function(){
+        if ($(this).find('.resource_id').chosen().val() < 1) {
+          table_errors++;
+          $(this).find('.chosen-single').css('border-color','#F78282');
+        }
+        if ( $(this).find('.role_id').chosen().val() == null ) {
+          table_errors++;
+          $(this).find('div#role_id_chosen ul').css('border-color','#F78282');
+        }
+        if ($(this).find('#description').val() == undefined) {
+          if ( $(this).find('.entity_id').chosen().val() == null) {
+            table_errors++;
+            $(this).find('div#entity_id_chosen ul').css('border-color','#F78282');
+          }
+        }
+      });
+      if (table_errors > 0) {
+        $('#table-error').remove();
+        $('div.ui-dialog-buttonpane').prepend('<span  id="table-error"><%=j l(:at_form_error) %></span>');
+        $('#table-error').fadeOut(5000, function () {
+          $(this).hide(4900);
+          $(this).remove();
+        });
+      } else {
+        $('#show_access tbody tr').each(function(){
+          var customdata = {};
+          customdata["resource_id"] = $(this).find('.resource_id').chosen().val();
+          customdata["role_id"] = $(this).find('.role_id').chosen().val() ;
+          customdata["entity_id"] = $(this).find('.entity_id').chosen().val() ;
+          customdata["description"] = $(this).find('#description').val();
+          sendData.push(customdata); 
+        });
+        save_tickets(sendData);
+      }
+    } else {
+      save_tickets(sendData);
+    }
+  }
+
+function save_tickets(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/save_template", { group_id: $("select#group_id").val(), template_id: $("select#template_list option").filter(":selected").val(), i_tickets: JSON.stringify(obj) }, function( data ) {
+    if (data['tickets'].length == 0) {
+      $('#versions_list_chosen').hide();
+      $("label[for='versions_list']").hide();
+      $("span#status_value").hide();
+      $("label[for='status']").hide();
+    } else {
+      $('#versions_list_chosen').show();
+      $("label[for='versions_list']").show();
+      $("span#status_value").show();
+      $("label[for='status']").show();
+      $("span#status_value").html('<%=j l(:at_draft) %>');
+    }
+    update_template_table(data['tickets']);
+    $('#versions_list').empty();
+    $('#versions_list').append('<option value=""><%= l(:at_select_version)%></option>');
+    var versions = data.versions;
+    $.each(versions,function(i){
+      $('#versions_list').append('<option issue_id=' + versions[i][3] + ' status=' + versions[i][2] + ' value=' + versions[i][1] + '>' + versions[i][0] + '</option>');
+    }); 
+    $($('#versions_list option')[1]).attr('selected','selected');
+    $('#versions_list').trigger("chosen:updated");
+  }, "json");
+}
+
+function show_template_table(obj){
+  if ( $("select#template_list option").filter(":selected").val() == 'null' ) {
+  } else {
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_template", { group_id: $("select#group_id").val(), template_id: $("select#template_list").val(), t_uid: $(obj).val() }, function( data ) {
+      $('#edit_template_name').show();
+      $('#remove_template_button').show();
+      $('#add_row_button').show();
+      $('#save_template_button').show();
+      $("label[for='status']").show();
+      var status = $("select#versions_list option").filter(":selected").attr("status");
+      if (status == 2) {
+        var issue_id = $("select#versions_list option").filter(":selected").attr("issue_id");
+        var issue_link = "<a href='<%=j Redmine::Utils::relative_url_root %>/issues/" + issue_id + "'>#"+ issue_id + "</a>";
+        $("span#status_value").html('<%=j l(:at_approved) %>' + issue_link);
+      } else if (status == 1) {
+        var issue_id = $("select#versions_list option").filter(":selected").attr("issue_id");
+        var issue_link = "<a href='<%=j Redmine::Utils::relative_url_root %>/issues/" + issue_id + "'>#"+ issue_id + "</a>";
+        $("span#status_value").html('<%=j l(:at_on_approval) %>' + issue_link);
+      } else {
+        $("span#status_value").html('<%=j l(:at_draft) %>');
+      }
+      $("span#status_value").show();
+      update_template_table(data);
+    }, "json");
+  }
+}
+
+function update_template_table(data) {
+  $('#show_access').DataTable().clear().draw();
+
+  var ticket_data = data;
+  $.each(ticket_data,function(i){
+    var ticket = this;
+    var description,status,color;
+
+    if (this["status_id"] == 1) {
+      color = "#4ebf67";
+    } else {
+      color = "#F78282";
+    }
+     status = '<p style="color: ' + color +  ' !important">'+ this["status"] + '</p>';
+    if (ticket["i_res_has_entities"] == true) {
+      description = '<%=j select_tag("entity_id", nil,  {:style=>"width: 250px", :class => "entity_id",  :prompt => l(:at_resource_not_selected),"data-placeholder" => l(:at_resource_not_selected), "multiple" => "", "tabindex" => "3" } )  %>';
+    } else {
+      description = '<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>';
+    }
+    
+    $('#show_access').DataTable().row.add([
+      '<button class="icon icon-del button-2 button-blue" title="<%=j l(:at_remove) %>"><span class="glyph info"></span> </button>',
+      '<%=j select_tag("resource_id", options_from_collection_for_select(IResource.available_resources(User.current.id), :id, :name), {:style=>"", :prompt => l(:at_select_resource),  :class => "resource_id",:onchange => "show_roles(this);show_ientities(this)"} ) %>',
+      '<%=j select_tag("role_id", nil,  {:style=>"", :class => "role_id",  :prompt => l(:at_resource_not_selected),"data-placeholder" => l(:at_resource_not_selected), "multiple" => "", "tabindex" => "3" } )  %>',
+      description
+    ]).draw()
+      .nodes()
+      .to$()
+      .attr('uid', ticket["uid"] );
+    var row = $('[uid="' + ticket["uid"] + '"]');
+    row.find('#resource_id').attr("id","resource_id_" + ticket["uid"]);
+    row.find('#role_id').attr("id","role_id_" + ticket["uid"]);
+    if (ticket["i_res_has_entities"] == true) {
+      row.find('#entity_id').attr("id","entity_id_" + ticket["uid"]);
+    }
+    row.find('#description').val(this["description"]);
+    $('#resource_id_' + ticket["uid"]).chosen(ch_opts);
+    $.each(ticket["i_resource_id"],function(){
+      $('#resource_id_' + ticket["uid"] + ' option[value='+this+']').attr('selected','selected');
+      $('#resource_id_' + ticket["uid"]).trigger("chosen:updated");
+    });
+    $('#resource_id_' + ticket["uid"] + '_chosen').attr('style','width:100%');
+    $('#role_id_' + ticket["uid"]).empty();
+    $('#role_id_' + ticket["uid"]).append("<option value=''><%=j l(:at_select_role) %></option>");
+    $('#role_id_' + ticket["uid"]).attr("data-placeholder","<%=j l(:at_select_role) %>");
+    $.each(ticket["i_resource_roles"],function(){
+      var role_id, role_name;
+      if (this["i_role"] !== undefined) {
+        role_id = this["i_role"]["id"];
+        role_name = this["i_role"]["name"];
+      } else {
+        role_id = this["id"];
+        role_name = this["name"];
+      }
+      $('#role_id_' + ticket["uid"]).append('<option value=' + role_id + '>' + role_name + '</option>');
+    });
+    $.each(this["i_roles"],function(){
+      $('#role_id_' + ticket["uid"] + ' option[value='+this+']').attr('selected','selected');
+    });
+    $('#role_id_' + ticket["uid"]).chosen(ch_opts);
+    $('#role_id_' + ticket["uid"] + '_chosen').attr('style','width:100%');
+    if (ticket["i_res_has_entities"] == true) {
+      $('#entity_id_' + ticket["uid"]).empty();
+      $('#entity_id_' + ticket["uid"]).append("<option value=''><%=j l(:at_select_ientity) %></option>");
+      $('#entity_id_' + ticket["uid"]).attr("data-placeholder","<%=j l(:at_select_ientity) %>");
+      var ientities = ticket["i_entities"];
+      $.each(ientities, function(i) {
+        var id, name, ipv4;
+        if (this.i_entity !== undefined) {
+          id = this.i_entity["id"];
+          name = this.i_entity["name"];
+          ipv4 = this.i_entity["ipv4"];
+        } else {
+          id = this["id"];
+          name = this["name"];
+          ipv4 = this["ipv4"];
+        }
+        //var ipv4 = "";
+        if (ticket["i_res_has_ip"] == true) {
+          ipv4 = ' [' + ipv4 + ']';
+        } else {
+          ipv4 = '';
+        }
+        $('#entity_id_' + ticket["uid"]).append('<option value=' + id + '>' + name + ipv4 + '</option>');
+      });
+      $.each(ticket["i_entity"],function(){
+        var id;
+        if (this["i_entity"] !== undefined) {
+          id = this["i_entity"]["id"];
+        } else {
+          id = this["id"];
+        }
+        $('#entity_id_' + ticket["uid"] + ' option[value='+id+']').attr('selected','selected');
+        $('#entity_id_' + ticket["uid"]).trigger("chosen:updated");
+      });
+      $('#entity_id_' + ticket["uid"]).chosen(ch_opts);
+      $('#entity_id_' + ticket["uid"]).trigger("chosen:updated");
+      $('#entity_id_' + ticket["uid"] +'_chosen').attr('style','width:100%');
+    }
+  });
+}
+
+function show_roles(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/settings/plugin/access_tickets_iresources/show_details", { id: $(obj).val() }, function( data ) {
+    var row = $(obj).parent().parent();
+    var uid = row.attr('uid');
+    $("#role_id_" + uid).empty();
+    var i_roles = data.i_roles;
+    $("#role_id_" + uid).append("<option value=''><%=j l(:at_select_role) %></option>");
+    $("#role_id_" + uid).attr("data-placeholder","<%=j l(:at_select_role) %>");
+    $.each(i_roles,function(i){
+      var role_id, role_name;
+      if (i_roles[i].i_role !== undefined) {
+        role_id = i_roles[i].i_role.id;
+        role_name = i_roles[i].i_role.name;
+      } else {
+        role_id = i_roles[i].id;
+        role_name = i_roles[i].name;
+      }
+      $("#role_id_" + uid).append('<option value=' + role_id + '>' + role_name + '</option>');
+    });
+    $("#role_id_" + uid).trigger("chosen:updated");
+  }, "json");
+}
+
+function show_ientities(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource/ientity_show_list", { res_id: $(obj).val() }, function( data ) {
+    var row = $(obj).parent().parent();
+    var uid = row.attr('uid');
+    if (data.has_entities == true) {
+      var ientities = data.ientities;
+      if (ientities.length > 0) {
+        if (row.find('#description').length > 0 ) {
+          row.find('#description').parent().append('<%=j select_tag("entity_id", nil,  {:style=>"width: 250px", :class => "entity_id",  :prompt => l(:at_select_ientity),"data-placeholder" => l(:at_select_ientity), "multiple" => "", "tabindex" => "3" } )  %>');
+          row.find('#entity_id').attr('id','entity_id_' + uid);
+          row.find('#description').remove();
+        }
+        $('#entity_id_' + uid).empty();
+        $('#entity_id_' + uid).append("<option value=''><%=j l(:at_select_ientity) %></option>");
+        $('#entity_id_' + uid).chosen(ch_opts);
+        $('#entity_id_' + uid + '_chosen').attr('style','width:100%');
+        $.each(ientities, function(i) {
+          var id, name, ipv4;
+          if (this.i_entity !== undefined) {
+            id = this.i_entity["id"];
+            name = this.i_entity["name"];
+            ipv4 = this.i_entity["ipv4"];
+          } else {
+            id = this["id"];
+            name = this["name"];
+            ipv4 = this["ipv4"];
+          }
+          //var ipv4 = "";
+          if (data.has_ip == true) {
+            ipv4 = ' [' + ipv4 + ']';
+          } else {
+            ipv4 = '';
+          }
+          $('#entity_id_' + uid).append('<option value=' + id + '>' + name + ipv4 + '</option>');
+        });
+        $('#entity_id_' + uid).trigger('chosen:updated');
+      } else {
+        if (row.find('#description').length > 0 ) {
+          row.find('#description').val("");
+        } 
+        if ($('#entity_id_' + uid).length > 0 ) {
+          $('#entity_id_' + uid).parent().append('<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>');
+          $('#entity_id_' + uid +'_chosen').remove();
+          $('#entity_id_' + uid).remove();
+        }
+      }
+    } else {
+      $('#entity_id_' + uid).before('<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>');
+      $('#entity_id_' + uid +'_chosen').remove();
+      $('#entity_id_' + uid).remove();
+    }
+  }, "json");
+}
+
+function show_group_templates(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_group_templates", { group_id: $(obj).val() }, function( data ) {
+    $('#show_access').DataTable().clear().draw();
+    $('#template_list').empty();
+    $('#template_list').append('<option value=""><%= l(:at_select_template)%></option>');
+    $('#template_action').show();
+    $('#add_template_button').show();
+    $('#template_name').show();
+    $('#edit_template_name').hide();
+    $('#remove_template_button').hide();
+    $('#save_template_button').hide();
+    $('#add_row_button').hide();
+    $('#versions_list_chosen').hide();
+    $("label[for='versions_list']").hide();
+    $("label[for='status']").hide();
+    $("span#status_value").hide();
+    var templates = data.templates;
+    $.each(templates,function(i){
+      var template_id, template_name;
+      if (templates[i].i_ticktemplate !== undefined) {
+        template_id = templates[i].i_ticktemplate.id;
+        template_name = templates[i].i_ticktemplate.name;
+      } else {
+        template_id = templates[i].id;
+        template_name = templates[i].name;
+      }
+      $('#template_list').append('<option value=' + template_id + '>' + template_name + '</option>');
+    }); 
+    $('#template_list').trigger("chosen:updated");
+  }, "json");
+}
+
+function show_template_versions(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_template_versions", { group_id: $('#group_id').val(), template_id: $(obj).val() }, function( data ) {
+    $('#show_access').DataTable().clear().draw();
+    $('#versions_list').empty();
+    $('#versions_list').append('<option value=""><%= l(:at_select_version)%></option>');
+    $('#add_template_button').show();
+    $('#template_name').show();
+    $("span#status_value").hide();
+    $("label[for='status']").hide();
+    var versions = data.versions;
+    if (versions.length > 0) {
+      $('#add_row_button').show();
+      $('#edit_template_name').show();
+      $('#remove_template_button').show();
+      $('#save_template_button').show();
+      $.each(versions,function(i){
+        $('#versions_list').append('<option issue_id=' + versions[i][3] + ' status=' + versions[i][2] + ' value=' + versions[i][1] + '>' + versions[i][0] + '</option>');
+      }); 
+      $('#versions_list').trigger("chosen:updated");
+      $('#versions_list_chosen').show();
+      $("label[for='versions_list']").show();
+    } else {
+      $('#remove_template_button').show();
+      $('#edit_template_name').show();
+      $('#add_row_button').show();
+      $('#save_template_button').show();
+      $('#versions_list_chosen').hide();
+      $("label[for='versions_list']").hide();
+      if ( data.is_lider_for_group == 1) {
+        $('#template_action').show();
+      } else {
+        $('#template_action').hide();
+      }
+      
+    }
+  }, "json");
+}
+
+  $('table#show_access').before('<div class="dataTables_wrapper dataTables_length" style="width:98%;">');
+  $('.dataTables_wrapper').append('<div id="group_management" style="text-align: center;width : 100%;display:inline-block;float: left;margin-right:10px;"></div>');
+  $('.dataTables_wrapper').append('<div id="template_management" style="text-align: center;width : 100%;display:inline-block;float: left;margin-right:10px;margin-top:10px;"></div>');
+  $('#group_management').append('<div id="group_box" style="text-align: center;display:inline-block;float: left;margin-right:10px;" title="<%= l(:at_select_group) %>"></div>');
+  $('#group_box').append('<label style="float:left;margin-top: 8px;margin-right:10px" for="group_id"><%= l(:at_group) %>:</label>');
+  $('#group_box').append('<%=j select_tag("group_id", options_from_collection_for_select(Group.where(:id => IGrouplider.group_ids(User.current.id)), :id, :name), {:style=>"width: 300px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "show_group_templates(this)", :prompt => l(:at_select_group), "data-placeholder" => l(:at_select_group)} ) %>');
+  $('#group_id').chosen(ch_opts);
+
+  $("label[for='template_list']").attr("style","float: left;padding-top:8px !important;"); 
+  $('#group_management').append('<label style="float:left;margin-top: 8px;margin-right:10px" for="template_list"><%= l(:at_template) %>:</label>');
+  $('#group_management').append('<%=j select_tag("template_list", nil, {:style=>"width: 400px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "show_template_versions(this)", :prompt => l(:at_select_template), "data-placeholder" => l(:at_select_template)} ) %>');
+  $('#group_management').append('<label style="float:left;margin-top: 8px;margin-right:10px; display:none" for="versions_list"><%= l(:at_versions) %></label>');
+  $('#group_management').append('<%=j select_tag("versions_list", nil, {:style=>"width: 250px; margin-top: 4px;float: left;margin-right:10px; display:none", :class => "", :onchange => "show_template_table(this)", :prompt => l(:at_select_version), "data-placeholder" => l(:at_select_version)} ) %>');
+  $('#group_management').append('<label style="float:left;margin-top: 8px;margin-right:5px;display:none " for="status"><%= l(:at_status) %>:</label>');
+  $('#group_management').append('<span style="float:left;margin-top: 8px;margin-right:10px;display:none " id="status_value"></span>');
+  $('#template_management').append('<div id="template_action" style="display:none"></div>');
+  $('#template_action').append("<%=j button_tag(l(:at_add_row),  :id => 'add_row_button', :type => 'button', :class => 'button-1 nomargin-bottom', :onclick => 'add_row()', :style => 'float:right;margin-left:10px;display:none') %>");
+  if (security_officer == 1) {
+    $('#template_action').append('<button class="button-1 nomargin-bottom" id="at_iticket_verify" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_approve_all) %></button>');
+    $('#template_action').append('<button class="button-2 nomargin-bottom" id="at_iticket_reject" name="button" style="background-color: #F78282 !important;float: right;margin-left:10px;display: none" type="button"><%=j l(:at_revoke_all) %></button>');
+  }
+  $('#template_action').append("<%=j button_tag(l(:at_remove_template), :id => 'remove_template_button', :title => l(:at_remove_template),:type => 'button', :class => 'button-2 nomargin-bottom at_background_red', :onclick => 'confirm_removing_template()', :style => 'float:left;margin-left:0px !important;margin-right:10px !important;display:none') %>");
+  $('#template_action').append("<%=j button_tag(l(:at_add_template),  :id => 'add_template_button', :title => l(:at_add_template),:type => 'button', :class => 'button-1 nomargin-bottom', :onclick => 'add_template()', :style => 'float:left;margin-left:0px !important;display:none' ) %>");
+  $('#template_action').append("<%=j text_field_tag('template_name', nil, :title => l(:at_name), :placeholder => l(:at_name), :style=>'width: 300px;float:left;margin-left:10px;display:none', :class => 'at_input'  ) %>");
+  $('#template_action').append("<%=j button_tag(l(:at_change_template_name),  :id => 'edit_template_name', :title => l(:at_change_template_name), :type => 'button', :class => 'button-2 nomargin-bottom at_background_blue', :onclick => 'change_template_name()', :style => 'float:left;margin-left:10px;display:none') %>");
+  $('#template_action').append("<%=j button_tag(l(:at_save_template),  :id => 'save_template_button', :type => 'button', :class => 'button-1 nomargin-bottom', :onclick => 'confirm_saving_template()', :style => 'float:left;margin-left:10px;display:none') %>");
+  $('#template_list').chosen(ch_opts);
+  $('#template_list_chosen').attr('style','float:left; width:300px;margin-top: 4px;margin-right: 10px;');
+  $('#versions_list').chosen(ch_opts);
+  $('#versions_list_chosen').attr('style','float:left; width:200px;margin-top: 4px;margin-right: 10px;display:none');
+  $('#group_id_chosen').attr('style','float:left; width:300px;margin-top: 4px');  
+  function add_row(){
+
+  var uid = Math.random().toString(36).substring(3);
+  $('#show_access').DataTable().row.add([
+    '<button class="icon icon-del button-2 button-blue" title="<%=j l(:at_remove) %>"><span class="glyph info"></span> </button>',
+    '<%=j select_tag("resource_id", options_from_collection_for_select(IResource.available_resources(User.current.id), :id, :name), {:style=>"", :prompt => l(:at_select_resource),  :class => "resource_id",:onchange => "show_roles(this);show_ientities(this)"} ) %>',
+    '<%=j select_tag("role_id", nil,  {:style=>"", :class => "role_id",  :prompt => l(:at_resource_not_selected),"data-placeholder" => l(:at_resource_not_selected), "multiple" => "", "tabindex" => "3" } )  %>',
+    '<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>',
+    '' 
+    ]).draw()
+      .nodes()
+      .to$()
+      .attr('uid', uid );
+
+  var row = $('[uid="' + uid + '"]');
+  row.find('#resource_id').attr("id","resource_id_" + uid);
+  row.find('#role_id').attr("id","role_id_" + uid);
+  $("#resource_id_" + uid).chosen(ch_opts);
+  $("#resource_id_" + uid + "_chosen").attr('style','width:100%');
+  $("#role_id_" + uid).chosen(ch_opts);
+  $("#role_id_" + uid + "_chosen").attr('style','width:100%');
+
+  }
+
+$('#show_access').removeAttr('style');
+
+  $("#at_iticket_verify").click(function(e) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/verify_tickets", { template_id : $("select#template_list option").filter(":selected").val() }, function( data ) {
+      update_template_table(data);
+    },"json");  
+  });
+
+  $("#at_iticket_reject").click(function(e) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/reject_tickets", { template_id : $("select#template_list option").filter(":selected").val() }, function( data ) {
+      update_template_table(data);
+    },"json");  
+  });
+$('#easy_servicebar').remove();
+
+</script>
+
+<%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>

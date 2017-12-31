@@ -2,49 +2,60 @@
 <link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/jquery.dataTables_themeroller.css" media="screen" rel="stylesheet" type="text/css" />
 <link href="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/stylesheets/selectboxes.css" media="screen" rel="stylesheet" type="text/css" />
 
+
+
 <style>
 
 
-<% if ISetting.plugin_settings_ermi == 1 %>
-/*------for Erm ------*/
+
+
+
+
+
+<% if ISetting.plugin_settings_ermi() == 1 %>
+/*------for Erm ---<%= SecureRandom.hex(5) %>---*/
 
 
 
 <% border_color = "#52afe5" %>
 
-<% light_border_color = "#52afe5" %>
+<% light_border_color = "#52AFE5" %>
 
-
-
-tr.revoked {
-  background-color: #D6DCDD !important;
+table.dataTable {
+  width: 100% !important;
 }
-
 
 fieldset.at_descript {
-  margin-bottom: 10px;
+  /*margin-bottom: 10px;*/
+  margin:  0 !important;
+
+
+}
+
+div.box {
+  padding: 10px !important;
+
 }
 
 
 
-
-td .icon-add,  th .icon-add{
+td .icon-add {
   color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;
 }
 
-.icon-import {
+td .icon-import {
   color: <%= border_color %> !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;
 }
 
-.icon-export {
+td .icon-export {
   color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;
 }
 
-.icon-cf {
+td .icon-cf {
 color: <%= border_color %> !important;line-height: 10px !important; font-size: 30px !important; cursor: pointer;
 }
 
-.icon-close {
+td .icon-close {
 color: #F78282 !important;line-height: 30px !important; font-size: 30px !important; cursor: pointer;
 }
 
@@ -208,6 +219,7 @@ label.current_employee {
 }
 
 fieldset legend h4 {
+  background-color: transparent;
   border-bottom: none !important;
   margin-bottom: 5px !important;
   font-weight: normal;
@@ -219,20 +231,14 @@ fieldset legend h4 {
   font-size: 12px;
 }
 
+
+
 <% else %>
-/*------for standard redmine ------*/
+/*------for standard redmine ---<%= SecureRandom.hex(5) %>---*/
 
 <% border_color = "#628db6"   %>
 <% light_border_color = "#759fcf" %>
-
-
-
-tr.revoked {
-  background-color: #D6DCDD !important;
-}
-
-
-td .icon-add,  th .icon-add{
+td .icon-add, th .icon-add {
 
   cursor: pointer;
   background-image: url(../images/add.png);  
@@ -243,7 +249,7 @@ td .icon-add,  th .icon-add{
   padding-bottom: 3px;
 }
 
-.icon-import {
+td .icon-import, th .icon-import {
   cursor: pointer;
   background-image: url(../images/2downarrow.png);  
   background-position: 0% 50%;
@@ -254,7 +260,7 @@ td .icon-add,  th .icon-add{
 
 }
 
-.icon-export {
+td .icon-export, th .icon-export {
   cursor: pointer;
   background-image: url(../images/2uparrow.png);  
   background-position: 0% 50%;
@@ -263,8 +269,6 @@ td .icon-add,  th .icon-add{
   padding-top: 2px;
   padding-bottom: 3px;
 }
-
-
 
 
 
@@ -312,25 +316,10 @@ table.dataTable th {
 }
 
 table.dataTable tbody tr {
-  background-color: #f6f6f6 ;
+  background-color: #f6f6f6 !important;
 }
 
- th .icon-settings {
-	line-height: 10px !important; 
-	font-size: 15px !important; 
-	cursor: pointer;
-    background-image: url(../images/changeset.png);
-    padding-right: 13px;
-    margin-right: 6px;
-    background-position: 0% 50%;
-    background-repeat: no-repeat;
-    padding-left: 7px;
-    padding-top: 2px;
-    padding-bottom: 6px;
-    font-size: 0.9em;
-}
-  
-.icon-cf {
+td .icon-cf {
     color: <%= border_color %> !important;line-height: 10px !important; font-size: 15px !important; cursor: pointer;
     background-image: url(../images/edit.png);
     padding-right: 7px;
@@ -344,7 +333,7 @@ table.dataTable tbody tr {
 
 }
 
-.icon-close {
+td .icon-close {
     color: #F78282 !important;line-height: 30px !important; font-size: 15px !important; cursor: pointer;
     margin-left: 10px;
     background-image: url(../images/delete.png);
@@ -357,7 +346,7 @@ table.dataTable tbody tr {
     font-size: 0.9em;
 }
 
-.icon-save {
+td .icon-save {
     color: #F78282 !important;line-height: 30px !important; font-size: 15px !important; cursor: pointer;
     margin-left: 4px;
     background-image: url(../images/save.png);
@@ -508,11 +497,6 @@ width: 105px !important;
 padding-left: 6px;
 
 }
-  
-.s_date, .e_date {
-	width: 90% !important;
-}
- 
 
 table.dataTable tbody tr td {
   vertical-align: middle !important;
@@ -568,13 +552,11 @@ fieldset legend h4 {
 
 
 
-
-
-
-
-
-
-
+div.container {
+  min-width: 980px;
+  margin: 0 auto;
+  padding: 10px;
+}
 
 
 
@@ -594,6 +576,12 @@ div.param-label {
   vertical-align:middle;
   margin-right: 10px;
 }
+
+
+/*div.param-label {
+width : 300px;display:inline-block;text-align:right;vertical-align:middle;
+  
+}*/
 
 
 
@@ -667,7 +655,9 @@ width: 200px !important;
   border: 1px solid #5897fb;
 }
 
-
+tr.revoked {
+  background-color: #D6DCDD !important;
+}
 
 
 li.search-choice {
@@ -756,6 +746,70 @@ width: 200px !important;
 #show_expired_accesses tbody tr td textarea:focus {
   border: 1px solid #5897fb;
 }
+
+/*    */
+
+
+#show_user_access tbody tr:hover, #resources_list tbody tr:hover{
+  background-color: #F4FFF2;
+}
+
+#show_user_access tbody tr td [class*=button-].icon:before, #resources_list tbody tr td [class*=button-].icon:before {
+ left: 4px !important;
+}
+
+#show_user_access thead th,#show_user_access thead th a, #resources_list thead th,#resources_list thead th a  {
+  text-align: center;
+  color: #169 !important;
+}
+
+#show_user_access, #show_user_access thead,  #show_user_access thead th, #resources_list, #resources_list thead,  #resources_list thead th  {
+  border : none;
+}
+
+#show_user_access tbody tr td, #resources_list tbody tr td {
+border-top:  solid 1px <%= border_color %>;
+text-align: center;
+}
+
+#show_user_access thead tr th, #show_user_access tbody tr td, #resources_list thead tr th, #resources_list tbody tr td {
+border-left:  solid 1px <%= border_color %>;
+}
+
+#show_user_access thead tr th:first-child, #show_user_access tbody tr td:first-child, #resources_list thead tr th:first-child, #resources_list tbody tr td:first-child {
+border-left:  none ;
+}
+#show_user_access thead tr th:last-child, #show_user_access tbody tr td:last-child, #resources_list thead tr th:last-child, #resources_list tbody tr td:last-child {
+border-right:  none ;
+}
+
+#show_user_access tbody tr td select,#resources_list tbody tr td select {
+width: 175px ; 
+
+}
+
+#show_user_access tbody tr td select.user_id,#resources_list tbody tr td select.user_id {
+width: 200px !important; 
+
+}
+
+#show_user_access tbody tr td textarea, #resources_list tbody tr td textarea {
+  margin-top:3px;
+  height: 20px ;
+  width: 190px;
+  font-size: 13px;
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: linear-gradient(bottom, #fcfcfc , #fff);  
+  border: 1px solid #ccc;  padding: 6px 3px;  
+  box-sizing: border-box;  
+  -moz-box-sizing: border-box;
+}
+#show_user_access tbody tr td textarea:focus {
+  border: 1px solid #5897fb;
+}
+
+/*/////////////////////*/
 
 /*    */
 

@@ -1,0 +1,231 @@
+li.search-choice {
+  margin-left: 3px !important;
+  margin-right: 3px !important;
+}
+
+th.sorting_disabled {
+  background-color: #FFFFFF !important;
+}
+
+.nomargin-bottom {
+  margin-bottom: 0 !important;
+}
+
+input.hasDatepicker {
+  min-width: 123px !important;
+}
+
+button.ui-datepicker-trigger {
+  margin: 0px 0px 0px -33px !important;
+}
+
+.icon {
+
+  cursor: pointer !important;
+}
+
+div#ticket_action, .dataTables_length{
+    background-color: #FAFAFA;
+    border: 1px solid #E6E6E6;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+
+
+button.ui-datepicker-trigger {
+  /*color:  #42A7E2 !important;*/
+  color: #4EBF67 !important;
+}
+
+.ui-dialog-buttonpane{
+  border-top:  solid 1px #52afe5;
+}
+
+
+#edit_ticket tbody tr:hover{
+  background-color: #F4FFF2;
+}
+#edit_ticket tbody tr td [class*=button-].icon:before {
+ left: 4px !important;
+}
+
+#edit_ticket thead th,#edit_ticket thead th a  {
+  text-align: center;
+  color: #169 !important;
+}
+
+#edit_ticket, #edit_ticket thead,  #edit_ticket thead th {
+  border : none;
+}
+
+#edit_ticket tbody tr td {
+border-top:  solid 1px #52afe5;
+}
+
+#edit_ticket thead tr th, #edit_ticket tbody tr td {
+border-left:  solid 1px #52afe5;
+}
+
+#edit_ticket thead tr th:first-child, #edit_ticket tbody tr td:first-child {
+border-left:  none ;
+}
+#edit_ticket thead tr th:last-child, #edit_ticket tbody tr td:last-child {
+border-right:  none ;
+}
+
+#edit_ticket tbody tr td select {
+width: 175px ; 
+
+}
+
+#edit_ticket tbody tr td select.user_id {
+width: 200px !important; 
+
+}
+
+#edit_ticket tbody tr td textarea {
+  margin-top:3px;
+  height: 70px ;
+  width: 250px;
+  font-size: 13px;
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: linear-gradient(bottom, #fcfcfc , #fff);  
+  border: 1px solid #ccc;  padding: 6px 3px;  
+  box-sizing: border-box;  
+  -moz-box-sizing: border-box;
+}
+#edit_ticket tbody tr td textarea:focus {
+  border: 1px solid #5897fb;
+}
+
+
+
+/**/
+#show_ticket tbody tr:hover{
+  background-color: #F4FFF2;
+}
+#show_ticket tbody tr td [class*=button-].icon:before {
+ left: 4px !important;
+}
+
+#show_ticket thead th,#show_ticket thead th a  {
+  text-align: center;
+  color: #169 !important;
+}
+
+#show_ticket, #show_ticket thead,  #show_ticket thead th {
+  border : none;
+}
+
+#show_ticket tbody tr td {
+border-top:  solid 1px #52afe5;
+text-align: center;
+}
+
+#show_ticket thead tr th, #show_ticket tbody tr td {
+border-left:  solid 1px #52afe5;
+}
+
+#show_ticket thead tr th:first-child, #show_ticket tbody tr td:first-child {
+border-left:  none ;
+}
+#show_ticket thead tr th:last-child, #show_ticket tbody tr td:last-child {
+border-right:  none ;
+}
+
+#show_ticket tbody tr td select {
+width: 175px ; 
+
+}
+
+#show_ticket tbody tr td select.user_id {
+width: 200px !important; 
+
+}
+
+#show_ticket tbody tr td textarea {
+  margin-top:3px;
+  height: 20px ;
+  width: 190px;
+  font-size: 13px;
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
+  background: linear-gradient(bottom, #fcfcfc , #fff);  
+  border: 1px solid #ccc;  padding: 6px 3px;  
+  box-sizing: border-box;  
+  -moz-box-sizing: border-box;
+}
+#show_ticket tbody tr td textarea:focus {
+  border: 1px solid #5897fb;
+}
+
+div.ui-dialog-buttonset button.ui-button {
+  border: none !important;
+ font-size:14px !important;
+ line-height:normal !important;
+ padding: 10px !important;
+ text-align:left !important;
+ text-decoration: none !important;
+ white-space: nowrap !important;
+ cursor:pointer !important;
+ position: relative !important;
+ margin-bottom: 8px !important;
+}
+
+
+/**/
+
+#table-error {
+
+  width:30%; 
+  background: url("../images/exclamation.png") no-repeat left;
+  padding-left:20px;
+  margin:10px 0 0 10px;
+  float:left;
+
+}
+
+.chosen-results li[data-option-array-index="0"] {
+
+  display: none !important;
+}
+
+#s_date, #e_date {
+width: 105px !important;
+
+}
+.s_date {
+margin-bottom: 4px;
+}
+
+.button-blue {
+  padding: 0px !important;
+  margin-top: 8px!important;
+  width:30px !important;
+  line-height: 0.7 !important; 
+  height:30px !important;
+  background-color: #52afe5
+}
+
+.button-red {
+  padding: 0px 22px !important;
+  margin-top: 8px!important;
+  width:30px !important;
+  line-height: 0.7 !important; 
+  height:30px !important;
+  background-color: #F78282 !important
+}
+
+.at_red {
+  color: #F78282 !important;
+}
+
+.at_blue: {
+  color: #52afe5 !important;
+}
+
+.at_green {
+  color: #4ebf67 !important;
+}

@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 class IEntity < ActiveRecord::Base
   @ip_regex = /^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/
 
@@ -41,12 +40,8 @@ class IEntity < ActiveRecord::Base
   validates :description, length: { in: 0..128 }
   validates :ipv4, length: { in: 0..15 }
   #validates :type, inclusion: { in: ["Object", "Group"], message: "%{value} is not a valid type" }],
-  #before_create :default
+  before_create :default
   before_save :set_updater
-  before_validation(on: :create) do
-    self.deleted = 0
-    #self.updated_by_id = User.current.id
-  end
 
 def self.import(i_resource_id, file, user_id)
     iresource = IResource.find(i_resource_id)
@@ -79,6 +74,29 @@ def self.import(i_resource_id, file, user_id)
         end
       end
     end
+
+    #CSV.parse(file, headers: true) do |row|
+    #  entity_hash = row.to_hash 
+    #  if iresource.has_ip 
+    #    if IEntity.where(:id => ientities_ids, :name => entity_hash["name"]).empty? && IEntity.where(:id => ientities_ids, :ipv4 => entity_hash["ipv4"]).empty? 
+    #      ientity = IEntity.new(:name => entity_hash["name"], :ipv4 => entity_hash["ipv4"],:description => params[:description], :updated_by_id => user_id)
+    #      ientity.save
+    #      iresentity = iresource.iresentities.new(:i_entity_id => ientity.id)
+    #      iresentity.save
+    #    else
+    #      bad_rows.push(entity_hash)
+    #    end
+    #  else
+    #    if IEntity.where(:id => ientities_ids, :name => entity_hash["name"]).empty? 
+    #      ientity = IEntity.new(:name => entity_hash["name"], :ipv4 => "127.0.0.1", :description => params[:description], :updated_by_id => user_id)
+    #      ientity.save
+    #      iresentity = iresource.iresentities.new(:i_entity_id => ientity.id)
+    #      iresentity.save
+    #    else
+    #      bad_rows.push(entity_hash)
+    #    end
+    #  end
+    #end 
 
     bad_rows
   end 

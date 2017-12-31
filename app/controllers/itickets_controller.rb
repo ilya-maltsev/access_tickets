@@ -18,13 +18,40 @@
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
 
+
 class IticketsController < ApplicationController
+
+  def alter_template_uid()
+    if ITicket.check_security_officer(User.current) 
+      template_ids = ITicktemplate.active.map(&:id)
+      template_ids.each do |id|
+        t_uid = SecureRandom.hex(5)
+        ITicket.active.where('i_tickets.t_uid is NULL').where(:i_ticktemplate_id => id).update_all(:t_uid => t_uid)
+      end
+      redirect_to Redmine::Utils::relative_url_root, :status => 302
+    else
+      head :forbidden
+    end
+  end
+
+  def alter_f_date()
+    if ITicket.check_security_officer(User.current) 
+      ITicket.where('i_tickets.issue_id IS NOT NULL').each do |ticket|
+        ticket[:f_date] = ticket[:e_date]
+        ticket.save
+      end
+      redirect_to Redmine::Utils::relative_url_root, :status => 302
+    else
+      head :forbidden
+    end
+  end
 
   def show_last_users
     users_nosort = []
     first_option = {}
     first_option[:id] = ""
     first_option[:name] = l(:at_select_employee)
+    #users_nosort.push(first_option)
     users = User.active.select([:id,:firstname,:lastname])
     users.each do |user|
       option = {}
@@ -68,14 +95,15 @@ class IticketsController < ApplicationController
     else
       value = "*"
     end
+    #redirect_to "/redmine/projects/" + at_project + "/issues?set_filter=1&status_id=" + value, :status => 302
     redirect_to Redmine::Utils::relative_url_root + "/projects/" + at_project + "/issues?set_filter=1&status_id=" + value, :status => 302
   end
 
-  def edit_ticket_table_add_row
-    respond_to do |format|
-      format.js
-    end
-  end
+  #def edit_ticket_table_add_row
+  #  respond_to do |format|
+  #    format.js
+  #  end
+  #end
 
 
   def ticket_table_show_version
@@ -92,8 +120,14 @@ class IticketsController < ApplicationController
     @last_year = @current_year + 10
     @issue_id = params[:issue_id]
     @tracker_id = Issue.find(@issue_id).tracker_id
+    tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+    tr_new_emp_is_date = !CustomValue.where("custom_values.value !=''").where(:customized_type => "Issue",:customized_id => @issue_id, :custom_field_id => ISetting.active.where(:param => "cf_new_emp_first_day_id").first.value.to_i).empty?
+    if @tracker_id == tr_new_emp_id 
+      if tr_new_emp_is_date
+        @s_date = CustomValue.where(:customized_type => "Issue",:customized_id => @issue_id, :custom_field_id => ISetting.active.where(:param => "cf_new_emp_first_day_id").first.value.to_i).first.value.to_datetime.strftime("%d.%m.%Y")
+      end
+    end
     @itickets = []
-    tr_new_emp_id = 0
     if ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 0 || (ITicket.check_security_officer(User.current) && @tracker_id != tr_new_emp_id )
       @itickets = ITicket.edit_tickets_list(@issue_id).to_json
     end
@@ -135,7 +169,7 @@ class IticketsController < ApplicationController
   end
 
   def edit_ticket_table_save
-    if IticketsController.check_issue_editable(params[:issue_id], User.current) 
+    if IticketsController.check_issue_editable(params[:issue_id], User.current)
       issue_id = params[:issue_id]
       user_id = User.current.id
       old_tickets = ITicket.active.where(:issue_id => issue_id) # mark as deleted prev tickets for this issue
@@ -144,40 +178,89 @@ class IticketsController < ApplicationController
       end
       exist_accesses = []
       issue = Issue.where(:id => issue_id).first
-      vData = JSON.parse(params[:i_tickets])
-      inputData = ITicket.verify_tickets_for_duplicates(vData)
-      exist_accesses = inputData[:exist_accesses]
-      t_uid = SecureRandom.hex(5)
-      if !inputData[:tickets].empty?
-        inputData[:tickets].each do |object|
-          r_uid = SecureRandom.hex(5)
-          object["user_id"].each do |user|
-
-            object["role_id"].each do |role|
-
-              iticket = ITicket.new(:user_id => user, :i_role_id => role, :t_uid => t_uid, :i_resource_id => object["resource_id"], :r_uid => r_uid, :description => object["description"], :s_date => Date.parse(object["s_date"]), :e_date => Date.parse(object["e_date"]), :f_date => Date.parse(object["e_date"]), :issue_id => issue_id)
-              iticket.save
-
-              if object["entity_id"]
-                object["entity_id"].each do |entity|
-                  itickentity = iticket.itickentities.new(:i_entity_id => entity)
-                  itickentity.save
+      if params[:group_id].present? && params[:template_id].present? #&& ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 1
+        rawData = JSON.parse(params[:i_tickets])
+        group_id = params[:group_id]
+        i_ticktemplate_id = params[:template_id]
+        vData = ITicket.verify_tickets_for_simple_approvement(rawData, group_id, i_ticktemplate_id, issue_id)
+        inputData = ITicket.verify_tickets_for_duplicates(vData)
+        exist_accesses = inputData[:exist_accesses]
+        t_uid = SecureRandom.hex(5)
+        if !inputData[:ticktets].empty?
+          inputData[:ticktets].each do |object|
+            r_uid = SecureRandom.hex(5)
+            if object["user_id"] == nil
+              object["user_id"] = []
+              object["user_id"].push(0)
+            end
+            object["user_id"].each do |user|
+              object["role_id"].each do |role|
+                if object["description"].nil?
+                  description = ""
+                else
+                  description = object["description"]
+                end
+                iticket = ITicket.new(:user_id => user, :i_role_id => role, :t_uid => t_uid, :i_resource_id => object["resource_id"], :r_uid => r_uid,
+                  :description => description, :s_date => object["s_date"], :e_date => object["e_date"], :f_date => object["e_date"], :issue_id => issue_id)
+                iticket.save
+                if object["entity_id"]
+                  object["entity_id"].each do |entity|
+                    itickentity = iticket.itickentities.new(:i_entity_id => entity)
+                    itickentity.save
+                  end
                 end
               end
-            end        
-          end  
+            end
+          ITicket.verify_tickets_by_security(issue_id, 1)
+          ITicket.active.where(:issue_id => issue_id).update_all(:approved_by_id => 1, :approved_at => Time.now) ####?????
+          issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "admin_group_id").first.value)
+          end
+
         end
+
+      else
+
+        vData = JSON.parse(params[:i_tickets])
+        inputData = ITicket.verify_tickets_for_duplicates(vData)
+        exist_accesses = inputData[:exist_accesses]
+        t_uid = SecureRandom.hex(5)
+        if !inputData[:ticktets].empty?
+          inputData[:ticktets].each do |object|
+            r_uid = SecureRandom.hex(5)
+            object["user_id"].each do |user|
+
+              object["role_id"].each do |role|
+                if object["description"].nil?
+                  description = ""
+                else
+                  description = object["description"]
+                end
+                iticket = ITicket.new(:user_id => user, :i_role_id => role, :t_uid => t_uid, :i_resource_id => object["resource_id"], :r_uid => r_uid, :description => description, :s_date => Date.parse(object["s_date"]), :e_date => Date.parse(object["e_date"]), :f_date => Date.parse(object["e_date"]), :issue_id => issue_id)
+                iticket.save
+
+                if object["entity_id"]
+                  object["entity_id"].each do |entity|
+                    itickentity = iticket.itickentities.new(:i_entity_id => entity)
+                    itickentity.save
+                  end
+                end
+              end        
+            end  
+          end
+        end
+        issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "sec_group_id").first.value)
       end
-      issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "sec_group_id").first.value)
-      issue.watcher_user_ids = issue.watcher_user_ids | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id) | ITicket.resowners_for_issue(issue_id)
+      issue = Issue.where(:id => issue_id).first
+      issue.watcher_user_ids = issue.watcher_user_ids | ITicket.resowners_for_issue(issue_id)
+      #| User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id) 
       issue.save
       ITicket.check_itickets_for_verified(issue_id)
       ITicket.check_itickets_for_approved(issue_id)
       ITicket.check_itickets_for_granted(issue_id)
       ITicket.check_itickets_for_confirmed(issue_id)
-      check_issue_status = 0 
-      show_last_ticket_version = 0 
-      tickets = 0 
+      check_issue_status = 0 #ITicket.check_issue_status(issue_id, user_id)
+      show_last_ticket_version = 0 #IticketsController.show_last_ticket_version(issue_id)
+      tickets = 0 #ITicket.tickets_list(issue_id, user_id)
       respond_to do |format|
         format.json { render :json =>  [tickets, show_last_ticket_version, check_issue_status, exist_accesses] }
       end
@@ -186,7 +269,7 @@ class IticketsController < ApplicationController
     end
   end
 
-
+## migrate to model
   def self.show_last_ticket_version(issue_id)
     if !ITicket.active.where(:issue_id => issue_id).empty?
       Time::DATE_FORMATS.merge!(:localdb=>"%H:%M:%S %d.%m.%Y")
@@ -225,9 +308,11 @@ class IticketsController < ApplicationController
           format.json { render :json =>  tickets }
         end
       else
+        #ead :forbidden
         render_error({:message => :notice_file_not_found, :status => 404})
       end
     else
+      #head :forbidden
       render_error({:message => :notice_file_not_found, :status => 404})
     end
   end
@@ -252,9 +337,11 @@ class IticketsController < ApplicationController
           format.json { render :json =>  tickets }
         end
       else
+        #head :forbidden
         render_error({:message => :notice_file_not_found, :status => 404})
       end
     else
+      #head :forbidden
       render_error({:message => :notice_file_not_found, :status => 404})
     end
   end
@@ -289,6 +376,7 @@ class IticketsController < ApplicationController
       end
       redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
     else
+      #head :forbidden
       render_error({:message => :notice_file_not_found, :status => 404})
     end
   end
@@ -303,7 +391,7 @@ class IticketsController < ApplicationController
     user_id = User.current.id
     if ITicket.may_be_revoked_by_owner_status(issue_id, user_id, r_uid)
       tracker_id = Issue.find(issue_id).tracker_id
-      tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+      tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
       if tracker_id == tr_new_emp_id
         ITicket.reject_tickets_by_security(issue_id, user_id)
         ITicket.check_itickets_for_approved(issue_id)
@@ -323,6 +411,7 @@ class IticketsController < ApplicationController
       end
       redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
     else
+      #head :forbidden
       render_error({:message => :notice_file_not_found, :status => 404})
     end
   end

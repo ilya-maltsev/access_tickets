@@ -27,7 +27,7 @@
   $('#group_templates_id').chosen({width:"500px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:'<%=j l(:at_select_template)%>'});
 
   function show_group_details(obj){
-    $.post("access_tickets_isettings/show_group_details", { group_id: $(obj).val() }, function( data ) {
+    $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets/show_group_details", { group_id: $(obj).val() }, function( data ) {
       $('#group_liders_id').empty();
       $('#group_liders_id').append('<option value=""><%= l(:at_select_group)%></option>');
       var users = data.users;
@@ -44,7 +44,7 @@
   function set_group_liders(obj){
     if ( $("select#group_id option").filter(":selected").val() == 'null' ) {
     } else {
-      $.post("access_tickets_isettings/set_group_liders", { group_id : $("select#group_id option").filter(":selected").val(),
+      $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets/set_group_liders", { group_id : $("select#group_id option").filter(":selected").val(),
       group_liders: $(obj).val() }, function( data ) {
       }, "json");
     }

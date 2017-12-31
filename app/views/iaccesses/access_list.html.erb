@@ -1,15 +1,174 @@
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.ui-contextmenu-1.7.js"></script>
 
-
-
-
-</fieldset>
 
 <div id="" class="box">
+<% if ITicket.check_security_officer(User.current) %>
+ 
+<fieldset class="at_descript">
+<legend><h4><%= l(:at_expired_access_list) %></h4></legend>
 
-<fieldset>
+
+  <table id="show_expired_accesses" class="list entities issues issues_index context-menu-container">
+    <thead>
+    <tr> 
+      <th style="width:6%;background-color:white" title="<%= l(:at_issue_number) %>"><%= text_field_tag("exp_issue_number", nil, :title => "", :placeholder => l(:at_issue_search), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>   
+      <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>" style="background:none !important"><%= text_field_tag("exp_search_employee", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %>   
+        </th>         
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("exp_search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
+      <th style="width:13%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("exp_search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_note) %>"><%= text_field_tag("exp_search_note", nil, :title => "", :placeholder => l(:at_search_note), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+      <th style="width:9%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("exp_search_s_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+      <th style="width:10%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("exp_search_e_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+        <th style="width:20%;background-color:white" title="<%= l(:at_activity) %>" style="background:none !important">   
+        </th>      
+
+    </tr> 
+      <tr>
+        <th style="width:5%" title="<%= l(:at_issue) %>"><a><%= l(:at_issue) %></a></th>
+        <th style="width:10%;" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
+        <th style="width:15%;" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:13%" title="<%= l(:at_role) %>"><a><%= l(:at_role) %></a></th>
+        <th style="width:15%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+        <th style="width:10%" title="<%= l(:at_s_date) %>"><a><%= l(:at_s_date) %></a></th>
+        <th style="width:10%" title="<%= l(:at_e_date) %>"><a><%= l(:at_e_date) %></a></th>
+        <th style="width:5%;background:none !important; cursor: auto"  title=""><%= l(:at_activity) %></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for access in IAccess.expired_accesses_list() %>
+      <tr >
+        <td><a href="<%= Redmine::Utils::relative_url_root %>/issues/<%= access[:issue_id] %>">#<%= access[:issue_id] %></a></td>
+        <td>
+          <% for user in access[:users] %>
+          <span class="nowrap add-user-links" user-id= "<%= user[:id] %>"><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= user[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= user[:name] %></a></span><br>
+          <% end %>
+        </td>
+        <td>
+          <span class="nowrap">
+            <a id="<%= access[:i_resource_id] %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= access[:i_resource] %></a>
+          </span>
+        </td>
+        <td>
+          <% for i_role in access[:i_roles] %>
+            <%= i_role[:name] %><br>
+          <% end %>
+        </td>
+        <td>
+        <% if access[:ientities].empty? %>
+          <%= access[:description] %>
+        <% else %>
+          <% for entity in access[:ientities] %>
+            <%= entity[:caption] %><br>
+          <% end %>
+        <% end %>
+        </td>
+        <td>
+          <%= access[:s_date] %>
+        </td>
+        <td>
+          <%= access[:e_date] %>
+        </td>
+        <td>
+
+
+          <a id="<%= access[:r_uid] %>" style="color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-time" title="<%= l(:at_retime_access) %>" onclick="confirm_removing_resource(this);">
+          <a id="<%= access[:r_uid] %>" style="color: #F78282 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-close" title="<%= l(:at_revoke_grant_it) %>" onclick="confirm_removing_resource(this);">
+        </td>
+      </tr>
+    <% end %>
+
+    </tbody>
+  </table>
+
+  <div style="clear: both;"></div>
+
+  </fieldset>
+
+
+
+<script type="text/javascript">
+
+
+  $('#show_expired_accesses').DataTable({
+    "bPaginate": false,
+    "bInfo": false,
+    "oLanguage": {
+      "sInfo": "<%= l(:at_sInfo) %>",
+      "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+      "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+      "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                  "sSearch": "",
+      "oPaginate": {
+              "sFirst": "<%= l(:at_sFirst) %>",
+              "sNext": "<%= l(:at_sNext) %>",
+              "sLast": "<%= l(:at_sLast) %>",
+              "sPrevious": "<%= l(:at_sPrevious) %>"
+      },
+      "sLengthMenu": "<%= l(:at_sLengthMenu) %>"
+    },
+    "columns": [
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      { "orderDataType": "dom-text", type: 'string' },
+      null,
+    ],
+  });
+
+
+$(document).ready( function () {
+  var table = $('#show_expired_accesses').DataTable();
+  $(document).contextmenu({
+    delegate: "#show_expired_accesses td",
+    menu: [
+      /*{title: "<%=j l(:at_expand_by_user) %>", cmd: "expand_by_user"}, добавить отключение доступа*/
+      {title: "<%=j l(:at_expand_by_resource) %>", cmd: "expand_by_resource"}
+  ],
+  select: function(event, ui) {
+    var celltext = ui.target.text();
+    var colvindex = ui.target.parent().children().index(ui.target);
+    var colindex = $('#show_expired_accesses thead tr th:eq('+colvindex+')').data('column-index');
+    switch(ui.cmd){
+      case "expand_by_user":
+        var user_id = ui.target.parent().children()[1].getElementsByTagName('span')[0].getAttribute("user-id");
+        $('#ajax-indicator').show();
+        window.open("<%= Redmine::Utils::relative_url_root %>/access_tickets/expand_by_user?user_id=" + user_id,"_self");
+        break;
+      case "expand_by_resource":
+        var resource_id = ui.target.parent().children()[2].getElementsByTagName('a')[0].getAttribute("id");
+        $('#ajax-indicator').show();
+        window.open("<%= Redmine::Utils::relative_url_root %>/access_tickets/expand_by_resource?resource_id=" + resource_id,"_self");
+        break;
+    }
+  },
+  beforeOpen: function(event, ui) {
+    var $menu = ui.menu,
+      $target = ui.target,
+      extraData = ui.extraData;
+    ui.menu.zIndex(9999);
+    }
+  });
+} );
+
+
+
+
+</script>
+
+
+  <% end %>
+
+
+
+
+
+<fieldset class="at_descript">
 <legend><h4><%= l(:at_access_list) %></h4></legend>
 
 
@@ -123,46 +282,12 @@
 
 <script type="text/javascript">
 
-
-  $('#show_expired_accesses').DataTable({
-    "bPaginate": false,
-    "bInfo": false,
-    "oLanguage": {
-      "sInfo": "<%= l(:at_sInfo) %>",
-      "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
-      "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
-      "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
-                  "sSearch": "",
-      "oPaginate": {
-              "sFirst": "<%= l(:at_sFirst) %>",
-              "sNext": "<%= l(:at_sNext) %>",
-              "sLast": "<%= l(:at_sLast) %>",
-              "sPrevious": "<%= l(:at_sPrevious) %>"
-      },
-      "sLengthMenu": "<%= l(:at_sLengthMenu) %>"
-    },
-        "columns": [
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-      { "orderDataType": "dom-text", type: 'string' },
-        null,
-    ],
-  });
-
-
-
-
-
-
 $('#wrapper').append('<div id="msgBox"></div>');
   $(document).attr("title", "<%= l(:at_access_list) %>");
 
   $('#show_access').DataTable({
     "bPaginate": false,
+    //"bFilter": false, 
     "bInfo": false,
     "oLanguage": {
       "sInfo": "<%= l(:at_sInfo) %>",
@@ -268,9 +393,13 @@ $('#exp_search_e_date').on( 'input', function () {
       $('#show_access').DataTable().column(1).visible( false );
       $('#employee_management').append("<%=j select_tag('sw_type', options_for_select([[l(:at_employee) + ':', 0], [l(:at_resource)+':', 1]], :selected => 0), {:style=>'width: 200px; margin-top: 4px;float: right;margin-left:10px;margin-right:10px;', :include_blank => true, :onchange => 'set_showing_type(this)'} ) %>");
       $('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 5px;float: right;margin-left:10px;display:none"><%= l(:at_showing_type) %>:</label>');
+
     <% else %>
       $('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 5px;float: right;margin-left:10px;"><%= l(:at_employee) %>:</label>');
     <% end %>
+   
+    
+
     $('#items_list').append("<option value=''><%=j l(:at_select_employee) %></option>");
     $('#items_list').attr("data-placeholder","<%=j l(:at_select_employee) %>");
     <% for user in @users_list %>
@@ -311,11 +440,13 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
 
   function update_accesses_list_table(data){
     $('#show_access').DataTable().clear().draw();
+    
+
     $.each(data[0],function(i){
       var description,checkbox,e_date,resource,users;
       users = '';
       $.each(this["users_ids"], function(i) {
-        user = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
+        user = '<span class="nowrap add-user-links" ><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
         users = users + user + "<br>";
       });
       resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
@@ -349,7 +480,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       var description,actions,e_date,resource,users;
       users = '';
       $.each(this["users_ids"], function(i) {
-        user = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
+        user = '<span class="nowrap add-user-links" ><a href="<%=j Redmine::Utils::relative_url_root %>/users/'+ this.id + '/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>">'+ this.name + '</a></span>';
         users = users + user + "<br>";
       });
       resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
@@ -358,6 +489,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       } else {
         e_date = this["e_date"];
       }
+
       if (this["ientities"].length > 0) {
         description = "";
         $.each(this["ientities"],function(i){
@@ -387,10 +519,13 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
   function show_items_list(obj) {
 <% if @is_security || @is_resgranter || @is_resowner %>
     if ($('#sw_type').val() == 0) {
+      
       $.post("show_accesses", { user_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
       }, "json");
     } else {
+      
+
       $.post("show_accesses", { resource_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
       }, "json");        
@@ -413,6 +548,8 @@ function set_showing_type(obj) {
     $("#search_e_date").val('');
     $('#show_access').DataTable().columns().search('').draw();
     $('#show_access').DataTable().clear().draw();
+
+
   if ($(obj).val() == 0) {
     $('#show_access').DataTable().column(1).visible( false );
     $('#show_access').DataTable().column(2).visible( true );
@@ -422,6 +559,7 @@ function set_showing_type(obj) {
     $('#show_access').DataTable().column(2).visible( false );
     show_available_resources();
   }
+
 }
 
 function show_available_users() {
@@ -452,13 +590,169 @@ function show_available_resources() {
         resource_id = iresources[i].id;
         resource_name = iresources[i].name;
       }
-      $('#items_list').append('<option value=' + resource_id+ '>' + resource_name + '</option>');
+      $('#items_list').append('<option value=' + resource_id + '>' + resource_name + '</option>');
     });
     $('#items_list').trigger("chosen:updated");
   }, "json");
+      
+  
 }
+
 <% end %>
 
+$('body').append('<div id="confirmDialogBox" style="display:none"></div>');
+
+function show_confirm_dialog(title, warning, code) {
+  var result, confirm_result = false;
+  var $confirmDialog = $('#confirmDialogBox')
+    .html(warning)
+    .dialog({
+    title: title,
+    //modal: true,
+    autoOpen: false, 
+    height:250,
+    resizable: false,
+    buttons: [{ 
+      text: "<%= l(:at_no) %>",
+      class: "button-4",
+      click: function () {
+        confirm_result =  false;
+        $(this).dialog('close');
+      }, 
+    },  {
+      text: "<%= l(:at_yes) %>",
+      class: "button-6",
+      click: function() {
+        confirm_result = true;
+        $(this).dialog('close');
+      }
+    }],
+    close: function() {
+      if (confirm_result == true) {
+        eval(code);
+      }
+    },
+    open: function( event, ui ) {
+      $('button.ui-state-focus').removeClass('ui-state-focus');
+    }
+  });
+  $confirmDialog.dialog('open');
+}
+
+function enable_filter_g(obj) { 
+  var value = 0;
+  if ($(obj).is(":checked")) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+  if (value == 1) {
+    $('#s_date_g').datepicker('enable');
+    $('#e_date_g').datepicker('enable');
+  } else {
+    $('#s_date_g').datepicker('disable');
+    $('#e_date_g').datepicker('disable');
+  }
+}
+
+function enable_filter_r(obj) { 
+  var value = 0;
+  if ($(obj).is(":checked")) {
+    value = 1;
+  } else {
+    value = 0;
+  }
+  if (value == 1) {
+    $('#s_date_r').datepicker('enable');
+    $('#e_date_r').datepicker('enable');
+  } else {
+    $('#s_date_r').datepicker('disable');
+    $('#e_date_r').datepicker('disable');
+  }
+}
+
+
+
+function export_accesses(obj) {
+  var title, warning, code, attr, url;
+  title = '<%= l(:at_export_csv) %>';
+  if ($('#sw_type').val() == 0) {
+    attr = 'user_id';
+  } else {
+    attr = 'resource_id';
+  }
+  url = obj.getAttribute("url");
+  warning = '<form accept-charset="UTF-8" action="<%=j Redmine::Utils::relative_url_root %>' + url + '" id="entities_import_form" enctype="multipart/form-data" method="post"><input name="authenticity_token" type="hidden" value="<%=j form_authenticity_token %>"/><input name="'+ attr + '" type="hidden" value="' + $('#items_list').val() + '"/> <table><tr><td style="border-right:  solid 1px #ccc;"><label class="entity_caption"><input name="grant_filter" type="checkbox" class="entity_checker" onclick="enable_filter_g(this)" style="margin-left:-2px"><%= l(:at_grant_period) %>:</label><br><%=j text_field_tag("s_date_g", nil, {:title => l(:at_s_date), :style=>"", :class => "s_date", "readonly" => "true", :placeholder => l(:at_fr) } ) %><br><%=j text_field_tag("e_date_g", nil, {:title => l(:at_e_date), :style=>"", :class => "e_date", "readonly" => "true", :placeholder => l(:at_to) } ) %><br></td> <td style="padding-left:20px">   <label class="entity_caption"><input name="revoke_filter" type="checkbox" class="entity_checker" onclick="enable_filter_r(this)" style="margin-left:-2px"><%= l(:at_revoke_period) %>:</label><br><%=j text_field_tag("s_date_r", nil, {:title => l(:at_s_date), :style=>"", :class => "s_date", "readonly" => "true", :placeholder => l(:at_fr) } ) %><br><%=j text_field_tag("e_date_r", nil, {:title => l(:at_e_date), :style=>"", :class => "e_date", "readonly" => "true", :placeholder => l(:at_to) } ) %><br></td></tr></table></form>';
+  code ='$("#entities_import_form").submit()';
+  show_confirm_dialog(title, warning, code);
+  $('.button-4').text('<%= l(:at_close) %>');
+  $('.button-6').text('<%= l(:at_download) %>');
+  $('.button-6').attr('class','button-5 ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only');
+  $('#confirmDialogBox').parent().attr('style','outline: 0px; z-index: 1011; height: auto; width: 410px; top: 243.5px; left: 766px; display: block;');
+  $('#s_date_g').datepicker(datepickerOptions);
+  $('#e_date_g').datepicker(dpOptions);
+  $('#s_date_r').datepicker(datepickerOptions);
+  $('#e_date_r').datepicker(dpOptions);
+}
+
+var datepickerOptions={
+  dateFormat: 'dd.mm.yy', 
+  firstDay: 1,  
+  onSelect: function(dateText, inst){
+    $('#'+ inst.id).change();
+    $(this).css('border-color','#CCC');
+  },
+  disabled: true,
+  showOn: 'button', 
+  buttonImageOnly: false, 
+  buttonText: 'C', 
+  showButtonPanel: true, 
+  showWeek: true,
+  showOtherMonths: true, 
+  selectOtherMonths: true, 
+  changeMonth: true, 
+  changeYear: true,
+  yearRange: '2015:2025', 
+  beforeShow: beforeShowDatePicker
+};
+
+
+var dpOptions={dateFormat: 'dd.mm.yy', 
+  firstDay: 1,  
+  onSelect: function(dateText, inst){
+    $('#'+ inst.id).change();
+    $(this).css('border-color','#CCC');
+  },
+  disabled: true,
+  showOn: 'button', 
+  buttonImageOnly: false, 
+  buttonText: 'C', 
+  showButtonPanel: true, 
+  showWeek: true, 
+  showOtherMonths: true, 
+  selectOtherMonths: true, 
+  changeMonth: true, 
+  changeYear: true, 
+  yearRange: '2015:2025',
+  beforeShow: function( input ) {
+
+  setTimeout(function() {  
+    $("button.ui-datepicker-current").remove();
+     var buttonPane = $( input )  
+       .datepicker( "widget" )  
+       .find( ".ui-datepicker-buttonpane" );  
+     var btn = $('<button class="ui-datepicker-current ui-state-default ui-priority-secondary ui-corner-all" type="button"><%=j l(:at_forever) %></button>');  
+     btn  
+      .unbind("click")  
+     .bind("click", function () {   
+       $(input).val("<%=j l(:at_forever) %>");
+       $(input).datepicker("hide");
+       $(input).css('border-color','#CCC');
+    });  
+    btn.appendTo( buttonPane );    
+  }, 1 );  
+  }
+};
 
 function hide_revoked_accesses(obj) {
   var value = 0;
@@ -476,17 +770,23 @@ function hide_revoked_accesses(obj) {
 }
 
 
+
 var ch_opts = {width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
 $('#items_list').chosen(ch_opts);
 
  var ms_ch_opts = {disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
 $('#sw_type').chosen(ms_ch_opts);
-$('#sw_type_chosen').attr("style","float:right;margin-left:10px;width:20%");
+$('#sw_type_chosen').attr("style","float:right;margin-left:5px;width:20%");
 $('#items_list_chosen').attr("style","float:right;margin-left:10px;width:50%");
 $('#show_access_filter label input[type=search]').hide();
 $('#show_expired_accesses_filter label input[type=search]').hide();
+$('#easy_servicebar').remove();
 
+<% if @is_security %>
+  $('#items_list').after('<a id="" url="/access_tickets/accesses_list/export_accesses.csv" style="color: #52AFE5 !important; line-height: 26px !important; font-size: 30px !important;cursor: pointer;float:right; margin-left: 5px" class="icon-import" title="<%=j l(:at_export_selected_csv) %>" onclick="export_accesses(this);"></a>');
+  $('#employee_management').append('<a id="" url="/access_tickets/accesses_list/export_all_accesses.csv" style="color: #4ebf67 !important; line-height: 26px !important; font-size: 30px !important;cursor: pointer;float:right;" class="icon-import" title="<%=j l(:at_export_all_csv) %>" onclick="export_accesses(this);"></a>');
+<% end %>
 </script>
 
 

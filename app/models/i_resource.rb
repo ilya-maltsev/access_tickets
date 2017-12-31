@@ -36,35 +36,35 @@ class IResource < ActiveRecord::Base
   has_many :groups, through: :iresugroups
 
 
-  has_many :iroles, :class_name => "IRole", dependent: :destroy
+  has_many :iroles, :class_name => "IRole"#, dependent: :destroy
 
   has_many :igroupentities, :class_name => "IGroupEntities"
 
   has_many :itickets, :class_name => "ITicket"
   validates :name, length: { in: 2..64 }
   validates :description, length: { in: 0..256 }
-  #before_create :default
+  before_create :default
   after_create :set_default_params
-  before_validation(on: :create) do
-    self.deleted = 0
-    self.has_ip = 0
-    self.has_entities = 0
-    self.description = ""
-    self.updated_by_id = User.current.id
-  end
+  #before_save :set_updater
+
+  #def set_updater
+  #  self.updated_by = User.current.login
+  #  #self.updater_id = 
+  #end
 
   def delete
     self.deleted = true
     self.save
   end
 
-
-
-  #def default
-  #  self.deleted = 0
-  #  self.has_ip = 0
-  #  self.has_entities = 0
-  #end
+  def default
+    self.deleted = 0
+    self.has_ip = 0
+    self.has_entities = 0
+    #if self.owner.nil? 
+    #  self.owner_id = 1
+    #end
+  end
 
   def set_default_params
     self.iresowners.create(:user_id => User.current.id)
@@ -73,7 +73,7 @@ class IResource < ActiveRecord::Base
 
 
   def self.available_audit_resources(user_id)
-    if ITicket.check_security_officer(User.find(user_id)) 
+    if ITicket.check_security_officer(User.find(user_id)) #|| user_id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id))
       IResource.active.all
     elsif IResgranter.is_resgranter(user_id) || IResowner.is_resowner(user_id)
       IResource.active.where(:id => (IResgranter.where(:user_id => user_id).map(&:i_resource_id).uniq | IResowner.where(:user_id => user_id).map(&:i_resource_id).uniq) ) 
@@ -84,7 +84,7 @@ class IResource < ActiveRecord::Base
 
   def self.available_resources(user_id)
     available_resources = []
-    if ITicket.check_security_officer(User.find(user_id)) 
+    if ITicket.check_security_officer(User.find(user_id)) #|| user_id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id))
       available_resources = IResource.active.all
     else
       groups = User.find(user_id).groups.map(&:id).uniq
@@ -101,6 +101,17 @@ class IResource < ActiveRecord::Base
 
   def self.available_for_user(resource_id, user_id)
     ITicket.check_security_officer(User.find(user_id)) || !IResugroup.where(:group_id => User.find(user_id).groups.map(&:id).uniq | IGrouplider.where(:user_id => user_id).map(&:group_id).uniq, :i_resource_id => resource_id).empty? || IResgranter.is_granter_for_resource(user_id,resource_id) || IResowner.is_owner_for_resource(user_id,resource_id)
+      #resugroups = IResource.find(resource_id).iresugroups.map(&:group_id).uniq
+      #users_ids_all = []
+      #resugroups.each do |group|
+      #  users_ids = User.active.in_group(group).map(&:id)
+      #  users_ids_all = users_ids_all | users_ids
+      #end
+      #if user_id == 1 || user_id.in?(users_ids_all)
+      #  true
+      #else
+      #  false
+      #end
   end
 
   def self.resources_list(user_id)
@@ -170,11 +181,16 @@ class IResource < ActiveRecord::Base
               entity[:id] = ientity.id
               entity[:caption] = ientity.name
               if resource[:has_ip]
+                #if ientity.ipv4.nil?
+                #  ip = ""
+                #else
                 ip = ientity.ipv4
+                #end
                 entity[:caption] = entity[:caption] + " [" + ip + "];"
               end
               object[:i_entities].push(entity)
             end
+            #object[:entities] = resource.ientities.active.select(['i_entities.id',:name, :ipv4])
           end 
         else
           object[:i_entities] = []

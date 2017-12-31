@@ -22,6 +22,7 @@ class ITicket < ActiveRecord::Base
   scope :active, -> { where(deleted: false) }
 
   attr_accessible  :may_be_granted, :may_be_revoked,:i_ticktemplate_id, :description, :t_uid, :r_uid, :f_date, :e_date, :s_date, :user_id, :i_resource_id, :i_role_id, :deleted, :issue_id, :created_at, :updated_at
+
   belongs_to :issue, :class_name => "Issue", :foreign_key => "issue_id"
   belongs_to :user, :class_name => "User", :foreign_key => "user_id"
   belongs_to :iresource, :class_name => "IResource", :foreign_key => "i_resource_id"
@@ -34,18 +35,9 @@ class ITicket < ActiveRecord::Base
   has_many :itickentities, :class_name => "ITickentity"
   has_many :ientities, through: :itickentities, :class_name => "IEntity"
 
-  #before_create :default
+  before_create :default
+
   validates :description, length: { in: 0..128 }
-  before_validation(on: :create) do
-    self.created_by_id = User.current.id
-    self.deleted = 0
-    if self.description.nil?
-      self.description = ""
-    end
-  end
-
-
-
 
   def self.resowner_for_unapproval_issue(issue_id)
     unapproval_res_id = ITicket.active.where('i_tickets.verified_by_id IS NOT NULL and i_tickets.approved_by_id IS NULL').where(:issue_id => issue_id).first[:i_resource_id]
@@ -60,7 +52,7 @@ class ITicket < ActiveRecord::Base
 
 
   def self.may_be_set_ticket_user(issue_id, user_id)
-    if ITicket.check_issue_status(issue_id)[0..1] == [1,1] && ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => user_id).map(&:i_resource_id)).count > 0 && IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0 
+    if ITicket.check_issue_status(issue_id)[0..1] == [1,1] && ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => user_id).map(&:i_resource_id)).count > 0 && Issue.find(issue_id).tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i  && IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0 #&& ITicket.active.where("i_tickets.user_id != 0").where(:issue_id => issue_id).count == 0
       true
     else
       false
@@ -71,13 +63,260 @@ class ITicket < ActiveRecord::Base
   def self.verify_tickets_for_duplicates(rawData)
     tickets = []
     exist_accesses = []
+    tmp = []
     time = Time.now()
     if !rawData.empty?
       rawData.each do |object|
-        tickets.push(object)
+        object_entities = object["entity_id"]
+        bad_users = []
+        if !object["user_id"].empty?
+          object["user_id"].each do |user|
+            user_accesses = IAccess.accesses_list_by_resource_for_user(user,object["resource_id"])#IAccess.accesses_list(user)
+            if !user_accesses.empty? && !object["resource_id"].nil? && !object["role_id"].nil?
+              duplicated_entities = [] 
+              not_duplicated_entities = []
+              user_accesses.each do |access|
+                exist_access = {}
+                if object["resource_id"].to_i == access[:i_resource_id]
+                  if IResource.find(object["resource_id"])["has_entities"] == false
+                    if !(object["role_id"].map(&:to_i) & access[:i_roles_id]).empty?
+                      exist_access["r_uid"] = object["r_uid"]
+                      exist_access["users"] = []
+                      exist_access["users"].push(User.where(:id => user).first.name)
+                      exist_access["users_ids"] = []
+                      exist_access["users_ids"].push(user)
+                      exist_access["i_resource"] = IResource.where(:id => object["resource_id"]).first.name
+                      exist_access["role_id"] = object["role_id"].map(&:to_i) & access[:i_roles_id]
+                      exist_access["i_roles"] = []
+                      IRole.where(:id => exist_access["role_id"]).each do |role|
+                        exist_access["i_roles"].push(role.name)
+                      end
+                      exist_access["description"] = access[:description]
+                      exist_access["ientities"] = []
+                      exist_accesses.push(exist_access)
+                      bad_users.push(user)
+                    end
+                  else
+                    if object["entity_id"].empty?
+                      bad_users.push(user)
+                    else
+                      if (!(duplicated_entities & access[:i_entities_id]).empty? || !(object["entity_id"].map(&:to_i) & access[:i_entities_id]).empty?) && !(object["role_id"].map(&:to_i) & access[:i_roles_id]).empty?
+                        exist_access["r_uid"] = object["r_uid"]
+                        exist_access["users"] = []
+                        exist_access["users"].push(User.where(:id => user).first.name)
+                        exist_access["users_ids"] = []
+                        exist_access["users_ids"].push(user)
+                        exist_access["i_resource"] = IResource.where(:id => object["resource_id"]).first.name
+                        exist_access["role_id"] = object["role_id"].map(&:to_i) & access[:i_roles_id]
+                        exist_access["i_roles"] = []
+                        IRole.where(:id => exist_access["role_id"]).each do |role|
+                          exist_access["i_roles"].push(role.name)
+                        end
+                        exist_access["entity_id"] = object["entity_id"].map(&:to_i) & access[:i_entities_id] 
+                        exist_access["ientities"] = []
+                        IEntity.where(:id => exist_access["entity_id"]).select([:id,:name,:ipv4]).each do |entity|
+                          if entity.iresource.has_ip
+                            exist_access["ientities"].push(entity.name + " [" + entity.ipv4 + "];")
+                          else
+                            exist_access["ientities"].push(entity.name)
+                          end
+                        end
+                        exist_accesses.push(exist_access)
+                        bad_users.push(user)
+                        duplicated_entities = duplicated_entities + (object["entity_id"].map(&:to_i) & access[:i_entities_id])
+                      else
+
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+          #end each users
+        end
+      end
+      #end object
+      exist_r_iuds = []
+      exist_accesses.each do |ea|
+        exist_r_iuds.push(ea["r_uid"])
+      end
+      exist_r_iuds = exist_r_iuds.uniq
+      rawData.each do |object|
+        object_entities = object["entity_id"]
+        if object["r_uid"].in?(exist_r_iuds)
+          exist_accesses_by_r_uid = []
+          exist_accesses_users = []
+          exist_accesses.each do |ea_r_uid|
+            if ea_r_uid["r_uid"] == object["r_uid"] 
+              exist_accesses_users = exist_accesses_users + ea_r_uid["users_ids"]
+              exist_accesses_by_r_uid.push(ea_r_uid)
+            end
+          end
+          if !(object["user_id"] - exist_accesses_users).empty? #any nonproblem users there in ticket?
+            #exist_accesses_by_r_uid.each do |ea_by_r_uid|
+              #if !(object["role_id"] - ea_by_r_uid["role_id"]).empty?
+            non_exist_accesses = {}
+            non_exist_accesses["r_uid"] = object["r_uid"]
+            non_exist_accesses["resource_id"] = object["resource_id"]
+            non_exist_accesses["role_id"] = object["role_id"]
+            non_exist_accesses["user_id"] = object["user_id"] - exist_accesses_users
+            non_exist_accesses["entity_id"] = object["entity_id"]
+            non_exist_accesses["s_date"] = object["s_date"]
+            non_exist_accesses["e_date"] = object["e_date"]
+            tickets.push(non_exist_accesses)
+              #end
+            #end
+          else
+            #do nothing
+          end
+
+          #act with problem users
+          exist_accesses_users.each do |ea_user|
+            exist_accesses_by_user = []
+            exist_accesses_by_user_roles = []
+            exist_accesses_by_r_uid.each do |ea_by_r_uid_by_user|
+              if ea_user.in?(ea_by_r_uid_by_user["users_ids"])
+                exist_accesses_by_user_roles = exist_accesses_by_user_roles + ea_by_r_uid_by_user["role_id"]
+              end
+            end
+            #any roles for this user in object??
+            non_existing_roles = object["role_id"].map(&:to_i) - exist_accesses_by_user_roles
+            if !non_existing_roles.empty?
+              if IResource.find(object["resource_id"])["has_entities"] == false
+                non_exist_accesses = {}
+                non_exist_accesses["r_uid"] = object["r_uid"]
+                non_exist_accesses["resource_id"] = object["resource_id"]
+                non_exist_accesses["user_id"] = []
+                non_exist_accesses["user_id"].push(ea_user)
+                non_exist_accesses["role_id"] = non_existing_roles
+                non_exist_accesses["s_date"] = object["s_date"]
+                non_exist_accesses["e_date"] = object["e_date"]
+                tickets.push(non_exist_accesses)
+              else
+                non_existing_roles.each do |non_e_role|
+                  exist_accesses_by_user_roles_entities = []
+                  exist_accesses_by_r_uid.each do |ea_by_r_uid_by_user|
+                    if ea_by_r_uid_by_user["users_ids"] == ea_user && !(ea_by_r_uid_by_user["role_id"] & non_e_role).empty?
+                      exist_accesses_by_user_roles_entities = exist_accesses_by_user_roles_entities + exist_accesses_by_r_uid["entity_id"]
+                    end
+                  end
+                  non_existing_entities = object_entities.map(&:to_i) - exist_accesses_by_user_roles_entities
+                  if !non_existing_entities.empty?
+                    non_exist_accesses = {}
+                    non_exist_accesses["r_uid"] = object["r_uid"]
+                    non_exist_accesses["resource_id"] = object["resource_id"]
+                    non_exist_accesses["user_id"] = []
+                    non_exist_accesses["user_id"].push(ea_user)
+                    non_exist_accesses["role_id"] = []
+                    non_exist_accesses["role_id"].push(non_e_role)
+                    non_exist_accesses["entity_id"] = non_existing_entities
+                    non_exist_accesses["s_date"] = object["s_date"]
+                    non_exist_accesses["e_date"] = object["e_date"]
+                    tickets.push(non_exist_accesses)
+                  end
+                end
+              end
+            end
+            #checkin for non existing entities for existing roles
+            if !exist_accesses_by_user_roles.empty? ######################### not working if exits non problem roles in object
+              if IResource.find(object["resource_id"])["has_entities"] == true
+                exist_accesses_by_user_roles.each do |existing_role|
+                  non_exist_accesses = {}
+                  exist_accesses_by_user_ex_roles_entities = []
+                  exist_accesses_by_r_uid.each do |ea_by_r_uid_by_user|
+                    if ea_user.in?(ea_by_r_uid_by_user["users_ids"]) && existing_role.in?(ea_by_r_uid_by_user["role_id"])
+                      exist_accesses_by_user_ex_roles_entities = exist_accesses_by_user_ex_roles_entities + ea_by_r_uid_by_user["entity_id"]
+                    end
+                  end
+                  non_existing_entities = object_entities.map(&:to_i) - exist_accesses_by_user_ex_roles_entities
+                  if !non_existing_entities.empty?
+                    non_exist_accesses = {}
+                    non_exist_accesses["r_uid"] = object["r_uid"]
+                    non_exist_accesses["resource_id"] = object["resource_id"]
+                    non_exist_accesses["user_id"] = []
+                    non_exist_accesses["user_id"].push(ea_user)
+                    non_exist_accesses["role_id"] = []
+                    non_exist_accesses["role_id"].push(existing_role)
+                    non_exist_accesses["entity_id"] = non_existing_entities
+                    non_exist_accesses["s_date"] = object["s_date"]
+                    non_exist_accesses["e_date"] = object["e_date"]
+                    tickets.push(non_exist_accesses)
+                  end
+                end
+              end
+            end
+          end
+        else
+          tickets.push(object)
+        end
+      end
+
+
+
+    end
+    {:tmp => tmp, :ticktets => tickets, :exist_accesses => exist_accesses}
+  end
+
+
+
+  def self.verify_tickets_for_simple_approvement(rawData, group_id, i_ticktemplate_id, issue_id)
+    tickets = []
+    if IGrouptemplate.where(:group_id => group_id, :i_ticktemplate_id => i_ticktemplate_id).count > 0
+      tracker_id = Issue.find(issue_id).tracker_id
+      tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i 
+      templ_using_issue_id = ITicktemplate.where(:id => i_ticktemplate_id).first[:using_issue_id]
+      template_uids =  ITicket.active.where(:issue_id => templ_using_issue_id,:i_ticktemplate_id => i_ticktemplate_id).map(&:r_uid).uniq
+      group_users_ids = User.in_group(group_id).map(&:id).uniq
+      if !rawData.empty?
+        rawData.each do |object|  
+          if object["r_uid"].in?(template_uids)
+            user_ids = []
+            if tracker_id != tr_new_emp_id
+              object["user_id"].each do |user_id|
+                if user_id.to_i.in?(group_users_ids)
+                  user_ids.push(user_id)
+                end
+              end
+            else
+              user_ids.push(0)
+            end
+            if !user_ids.empty?
+              template_tickets = ITicket.active.where(:issue_id => templ_using_issue_id,:i_ticktemplate_id => i_ticktemplate_id, :r_uid => object["r_uid"])
+              ticket = template_tickets.select([:description]).first.attributes.symbolize_keys
+              ticket["r_uid"] = object["r_uid"]
+              ticket["user_id"] = user_ids
+              ticket["resource_id"] = template_tickets.select(:i_resource_id).map(&:i_resource_id).first
+              main_ticket = template_tickets.first
+              ticket["role_id"] = template_tickets.select(:i_role_id).map(&:i_role_id).uniq
+              if IResource.find(object["resource_id"])["has_entities"] == true
+                template_entities = main_ticket.ientities.select(['i_entities.id']).map(&:id).uniq
+                object_entities = object["entity_id"].map(&:to_i)
+                if object_entities.empty?
+                  ticket["entity_id"] = template_entities
+                elsif !(template_entities & object_entities).empty?
+                  ticket["entity_id"] = template_entities & object_entities
+                else
+                  ticket["entity_id"] = template_entities 
+                end
+              end
+              if object["s_date"].nil?
+                ticket["s_date"] = Time.now().strftime("%d.%m.%Y")
+              else
+                ticket["s_date"] = object["s_date"]
+              end
+              if object["e_date"].nil?
+                ticket["e_date"] = "31.12.2025"
+              else
+                ticket["e_date"] = object["e_date"]
+              end
+              tickets.push(ticket)
+            end
+          end
+        end
       end
     end
-    {:tickets => tickets, :exist_accesses => exist_accesses}
+    tickets
   end
 
   def self.tickets_user_id(issue_id)
@@ -188,6 +427,7 @@ class ITicket < ActiveRecord::Base
             ticket[:status_id] = 2
             ticket[:user_id] = ticket[:approved_by_id]
             ticket[:user_name] = User.where(:id => ticket[:approved_by_id]).first.name
+            #maybe grant by user for r_uid?
             if !current_user_id.nil?
               if ticket[:i_resource_id].in?(granted_resources)
                 ticket[:may_be_granted] = 1
@@ -202,16 +442,19 @@ class ITicket < ActiveRecord::Base
         end
       else
         if main_ticket.iaccesses.active.first.confirmed_by_id?
-          ticket[:status] = l(:at_confirmed_at) + main_ticket.iaccesses.active.first.confirmed_at.in_time_zone(tz).to_s(:atf)
+          #ticket[:status] = l(:at_confirmed_by)
+          ticket[:status] = l(:at_confirmed_at) + main_ticket.iaccesses.active.first.confirmed_at.in_time_zone(tz).to_s(:atf)#.strftime("%H:%M %d.%m.%Y")
           ticket[:status_id] = 4
           ticket[:user_id] = main_ticket.iaccesses.active.first.confirmed_by_id
           ticket[:user_name] = User.where(:id => main_ticket.iaccesses.active.first.confirmed_by_id).first.name
         else
           if main_ticket.iaccesses.active.first.granted_by_id?
-            ticket[:status] = l(:at_granted_at) + main_ticket.iaccesses.active.first.granted_at.in_time_zone(tz).to_s(:atf)
+            #ticket[:status] = l(:at_granted_by)
+            ticket[:status] = l(:at_granted_at) + main_ticket.iaccesses.active.first.granted_at.in_time_zone(tz).to_s(:atf)#.strftime("%H:%M %d.%m.%Y")
             ticket[:status_id] = 3
             ticket[:user_id] = main_ticket.iaccesses.active.first.granted_by_id
             ticket[:user_name] = User.where(:id => main_ticket.iaccesses.active.first.granted_by_id).first.name
+            #maybe revoke by user for r_uid?
             if !current_user_id.nil?
               if ticket[:i_resource_id].in?(granted_resources)
                 ticket[:may_be_revoked] = 1
@@ -264,7 +507,7 @@ class ITicket < ActiveRecord::Base
     tickets
   end
 
-  def self.show_tickets_list(issue_id,t_uid)
+  def self.show_tickets_list(issue_id,t_uid)######
     tickets = []
     r_uids = self.where(:issue_id => issue_id, :t_uid => t_uid).map(&:r_uid).uniq
     users = []
@@ -326,6 +569,11 @@ class ITicket < ActiveRecord::Base
 
   def self.check_itickets_for_access(issue_id)
     ITicket.check_issue_status(issue_id)[0..3] == [1,1,1,1]
+    #if ITicket.check_issue_status(issue_id)[0..3] == [1,1,1,1]
+    #  true
+    #else
+    #  false
+    #end
   end
 
   def self.approve_tickets_by_owner(issue_id, owner_id, r_uid = nil)
@@ -340,6 +588,7 @@ class ITicket < ActiveRecord::Base
 
   def self.verify_tickets_by_security(issue_id, user_id)
     ITicket.active.where(:issue_id => issue_id).update_all(:verified_by_id => user_id, :verified_at => Time.now)
+    #ITicket.check_itickets_for_verified(issue_id)
     cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
     CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id).update_all(:value => 1)
   end
@@ -347,7 +596,7 @@ class ITicket < ActiveRecord::Base
   def self.reject_tickets_by_security(issue_id, user_id)
     
     tracker_id = Issue.find(issue_id).tracker_id
-    tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+    tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
     if tracker_id == tr_new_emp_id 
       ITicket.active.where(:issue_id => issue_id).update_all(:verified_by_id => nil, :verified_at => nil, :user_id => 0, :approved_by_id => nil, :approved_at => nil)
     else
@@ -358,45 +607,53 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.check_issue_status(issue_id, user_id = nil)
-    cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
-    cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
-    cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
-    cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
+    #cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
+    #cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
+    #cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
+    #cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
 
-    cf_verified = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id)
-    if cf_verified.empty?
-      CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id, :value => 0)
-      cf_verified = 0
-    else
-      cf_verified = cf_verified.first.value.to_i
-    end
-    cf_approved = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id)
+    #cf_verified = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id)
+    #if cf_verified.empty?
+    #  CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id, :value => 0)
+      #cf_verified = 0
+    #else
+    #  cf_verified = cf_verified.first.value.to_i
+    #end
+    #cf_approved = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id)
 
-    if cf_approved.empty?
-      CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id, :value => 0)
-      cf_approved = 0
-    else
-      cf_approved = cf_approved.first.value.to_i
-    end
+    #if cf_approved.empty?
+    #  CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id, :value => 0)
+      #cf_approved = 0
+    #else
+      #cf_approved = cf_approved.first.value.to_i
+    #end
 
-    cf_granting = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id)
-    if cf_granting.empty?
-      CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id, :value => 0)
-      cf_granting = 0
-    else
-      cf_granting = cf_granting.first.value.to_i
-    end
+    #cf_granting = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id)
+    #if cf_granting.empty?
+    #  CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id, :value => 0)
+    #  cf_granting = 0
+    #else
+    #  cf_granting = cf_granting.first.value.to_i
+    #end
 
-    cf_confirming = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id)
-    if cf_confirming.empty?
-      CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id, :value => 0)
-      cf_confirming = 0
-    else
-      cf_confirming = cf_confirming.first.value.to_i
-    end
+    #cf_confirming = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id)
+    #if cf_confirming.empty?
+    #  CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id, :value => 0)
+    #  cf_confirming = 0
+    #else
+    #  cf_confirming = cf_confirming.first.value.to_i
+    #end
 
-    if cf_verified == 0
-    end
+    #if cf_verified == 0
+      #Issue.find(issue_id).update_attributes(:assigned_to_id => ISetting.active.where(:param => "sec_group_id").first.value)
+    #end
+    cf_v = ITicket.check_granting_cf(issue_id)
+
+    cf_verified = cf_v[0]
+    cf_approved = cf_v[1]
+    cf_granting = cf_v[2]
+    cf_confirming = cf_v[3]
+
     tickets_count = ITicket.active.where(:issue_id => issue_id).count
     if user_id.nil?
       return cf_verified, cf_approved, cf_granting, cf_confirming, tickets_count
@@ -413,6 +670,109 @@ class ITicket < ActiveRecord::Base
       #     10                     11
     end
   end
+
+  def self.check_granting_cf(issue_id)
+    if !issue_id.nil?
+      cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
+      cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
+      cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
+      cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
+      cf_verified = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id)
+      cf_approved = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id)
+      cf_granting = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id)
+      cf_confirming = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id)
+      if cf_verified.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id, :value => 0)
+        cf_verified_v = 0
+      else
+        cf_verified_v = cf_verified.first.value
+      end
+      if cf_approved.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id, :value => 0)
+        cf_approved_v = 0
+      else
+        cf_approved_v = cf_approved.first.value
+      end
+      if cf_granting.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id, :value => 0)
+        cf_granting_v = 0
+      else
+        cf_granting_v = cf_granting.first.value
+      end
+      if cf_confirming.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id, :value => 0)
+        cf_confirming_v = 0
+      else
+        cf_confirming_v = cf_confirming.first.value
+      end
+      all_tickets_count = ITicket.active.where(:issue_id => issue_id).count
+      if all_tickets_count > 0 
+        verified_tickets_count = ITicket.active.where("i_tickets.verified_by_id IS NOT NULL").where(:issue_id => issue_id).count
+        if all_tickets_count != verified_tickets_count
+          cf_verified.update_all(:value => 0)
+          cf_approved.update_all(:value => 0)
+          cf_granting.update_all(:value => 0)
+          cf_confirming.update_all(:value => 0)
+          cf_verified_v = 0
+          cf_approved_v = 0
+          cf_granting_v = 0
+          cf_confirming_v = 0
+        else
+          approved_tickets_count = ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id).count
+          if all_tickets_count != approved_tickets_count
+            cf_approved.update_all(:value => 0)
+            cf_granting.update_all(:value => 0)
+            cf_confirming.update_all(:value => 0)
+            cf_approved_v = 0
+            cf_granting_v = 0
+            cf_confirming_v = 0
+          else
+            granted_accesses_count = ITicket.active.joins(:iaccesses).where("i_accesses.granted_by_id IS NOT NULL").where(:issue_id => issue_id).map(&:id).uniq.count
+            if granted_accesses_count == 0
+              cf_granting.update_all(:value => 0)
+              cf_confirming.update_all(:value => 0)
+              cf_granting_v = 0
+              cf_confirming_v = 0
+            else
+              if all_tickets_count != granted_accesses_count
+                cf_granting.update_all(:value => 0)
+                cf_confirming.update_all(:value => 0)
+                cf_granting_v = 0
+                cf_confirming_v = 0
+              else
+                confirmed_accesses_count = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL").where(:issue_id => issue_id).map(&:id).uniq.count
+                if all_tickets_count != confirmed_accesses_count
+                  cf_confirming.update_all(:value => 0)
+                  cf_confirming_v = 0
+                end
+              end
+            end
+          end
+        end
+      else
+        if cf_verified_v != 0
+          cf_verified.update_all(:value => 0)
+          cf_verified_v = 0
+        end
+        if cf_approved_v != 0
+          cf_approved.update_all(:value => 0)
+          cf_approved_v = 0
+        end
+        if cf_granting_v != 0
+          cf_granting.update_all(:value => 0)
+          cf_granting_v = 0
+        end
+        if cf_confirming_v != 0
+          cf_confirming.update_all(:value => 0)
+          cf_confirming_v = 0
+        end
+      end
+      return cf_verified_v.to_i,cf_approved_v.to_i,cf_granting_v.to_i,cf_confirming_v.to_i
+    else
+      return 0,0,0,0
+    end
+  end
+
 
   def self.set_default_cf(issue_id)
     if !issue_id.nil?
@@ -435,13 +795,13 @@ class ITicket < ActiveRecord::Base
         cf_approved = cf_approved.update_all(:value => 0)
       end
 
-
+      #cf_granting = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id)
       if cf_granting.empty?
         CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id, :value => 0)
       else
         cf_granting = cf_granting.update_all(:value => 0)
       end
-
+      #cf_confirming = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id)
       if cf_confirming.empty?
         CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id, :value => 0)
       else
@@ -458,7 +818,8 @@ class ITicket < ActiveRecord::Base
       else
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id).update_all(:value => 0)
       end
-
+    #else
+    #  ITicket.set_default_cf(issue_id)
     end
   end
 
@@ -467,9 +828,16 @@ class ITicket < ActiveRecord::Base
       cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
       if ITicket.active.where(:issue_id => issue_id).count == ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id).count
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id).update_all(:value => 1)
+
+
       else
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id).update_all(:value => 0)
+
+
+
       end
+    #else
+    #  ITicket.set_default_cf(issue_id)
     end
   end
 
@@ -489,6 +857,8 @@ class ITicket < ActiveRecord::Base
       else
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id).update_all(:value => 0)
       end
+    #else
+    #  ITicket.set_default_cf(issue_id)
     end
   end
 
@@ -508,26 +878,43 @@ class ITicket < ActiveRecord::Base
       else
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id).update_all(:value => 0)
       end
-
+    #else
+    #  ITicket.set_default_cf(issue_id)
     end
   end
 
 
   def self.may_be_approved_by_owner_status(issue_id, owner_id, r_uid = nil)
     ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id),:approved_by_id => nil).count > 0
+    #if ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id),:approved_by_id => nil).count > 0
+      #true
+    #else
+      #false
+    #end
   end
 
 
 
   def self.may_be_revoked_by_owner_status(issue_id, owner_id, r_uid = nil)
+    #if ITicket.check_issue_status(issue_id)[0..1] == [1,0] &&
     if ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count > 0 
         tracker_id = Issue.find(issue_id).tracker_id
-        tr_new_emp_id = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+        tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
         tr_grant_id = ISetting.active.where(:param => "tr_grant_id").first.value.to_i
         if tracker_id == tr_new_emp_id
           IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0
+          #if IAccess.joins(:iticket).where("i_tickets.deleted" => 0, "i_tickets.issue_id" => issue_id).count == 0
+          #  true
+          #else
+          #  false
+          #end
         else
           ITicket.active.joins(:iaccesses).where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count == 0 && tracker_id == tr_grant_id
+          #if ITicket.active.joins(:iaccesses).where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count == 0 && tracker_id == tr_grant_id
+          #  true
+          #else
+          #  false
+          #end
         end
       else
         false
@@ -536,6 +923,11 @@ class ITicket < ActiveRecord::Base
 
   def self.need_to_approve_by_owner_status(issue_id, owner_id, r_uid = nil)
     ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id), :approved_by_id => nil).count > 0
+    #if ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id), :approved_by_id => nil).count > 0
+      #true
+    #else
+      #false
+    #end
   end
 
 

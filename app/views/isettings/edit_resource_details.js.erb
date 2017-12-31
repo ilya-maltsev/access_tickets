@@ -1,10 +1,9 @@
 <% if @resource.has_entities %>
   var ies = $.parseJSON('<%=j raw @ies %>');
 <% end %>
-var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'Нет совпадений с '};
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched) %>'};
 $(document.body).on('click', 'button.icon-del', function() {
   $('#entity_list').DataTable().row( $(this).parents('tr') ).remove().draw();
-  $('#at_versions option:selected').removeAttr("selected");
 });
 
 
@@ -32,7 +31,7 @@ function import_entities() {
   code ='$("#entities_import_form").submit()';
   show_confirm_dialog(title, warning, code);
   $('.button-4').text('<%= l(:at_close) %>');
-  $('.button-6').text('<%= l(:at_save) %>');
+  $('.button-6').text('<%= l(:at_send) %>');
   $('.button-6').attr('class','button-5 ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only');
   $('#confirmDialogBox').parent().attr('style','outline: 0px; z-index: 1011; height: auto; width: 500px; top: 243.5px; left: 766px; display: block;');
 }
@@ -276,6 +275,7 @@ function set_has_entities(obj){
   }, "json");
 }
 
+
 $("#msgBox").html(' \
   <table id ="entity_list" class="list entities issues issues_index context-menu-container"> \
 	<thead > \
@@ -285,6 +285,8 @@ $("#msgBox").html(' \
     <th style="width:20%;background-color:white" title="<%=j l(:at_enter_desc) %>"><%=j text_field_tag("add_entity_desc", nil, :title => l(:at_enter_desc), :placeholder => l(:at_enter_desc), :maxlength => "128", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        \
     <th style="width:10%;background-color:white" title="<%=j l(:at_activity) %>" style="background:none !important">  \
       <a id="" style="color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-add" title="<%=j l(:at_add) %>" onclick="add_entity();"></a>  \
+      <a id="" style="color: #52AFE5 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-import" title="<%=j l(:at_export_csv) %>" onclick="export_entities();"></a>  \
+      <a id="" style="color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-export" title="<%=j l(:at_import_csv) %>" onclick="import_entities();"></a>  \
     </th>        \
   </tr> \
   <tr> \
@@ -300,6 +302,8 @@ $("#msgBox").html(' \
 
 
 
+
+
 $('#ticket_action').remove();
 $('#version_box').remove();
 $('#msgBox').dialog({
@@ -309,8 +313,11 @@ $('#msgBox').dialog({
 <% else %>
   title: '<%=j l(:at_change_resource_details) %>',
 <% end %>
+
+
   height: '740',
   width: '960',
+
   modal: true,
   position: 'top',
 
@@ -346,6 +353,7 @@ $('#msgBox').dialog({
   }],
   close: function( event, ui ) {
     $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resources_list", { }, function( data ) {
+
       update_resources_list(data);
       if ( $('#confirmDialogBox').is(':visible') )
       {
@@ -378,6 +386,7 @@ $(document.body).on('focus', '.search-field input', function() {
 
 
 showModal('msgBox');
+
 
 
 <% if @resource.has_entities %> 
@@ -440,6 +449,8 @@ $('#entity_list').DataTable({
   });
 
 
+
+
   $('#resource_action').remove();
   
 
@@ -477,7 +488,7 @@ $('#entity_list').DataTable({
 
 
 
-  $('#resource_action').append('<div id="role_action" style="text-align: left;width : 100%;display:inline-block;float: left;margin-right:10px;margin-top:10px;height: 30px; line-height: 30px; padding: 0;"></div>');
+  $('#resource_action').append('<div id="role_action" style="text-align: left;width : 100%;display:inline-block;float: left;margin-right:10px;margin-top:10px;min-height: 30px; line-height: 30px; padding: 0;"></div>');
 
   $('#role_action').append('<div style="width : 150px;display:inline-block;text-align:right;"><label style="" for="role_id"><%= l(:at_roles) %>:</label></div>');
 
@@ -528,22 +539,14 @@ $('#entity_list').DataTable({
   $('#granters_action').append("<%=j select_tag('resource_granter_id', options_from_collection_for_select(@users, :id, :name, {:selected => @resource.iresgranters.map(&:user_id).uniq - [1]}), {:style=>'width: 300px', :disabled => "", :prompt => "", "data-placeholder" => "", "multiple" => "", :onchange => "set_granters(this)"} ) %>");
   <% end %>
 
-
-
-  $('#save_resource').show();
-
-
+$('#save_resource').show();
 $('#entity_list_length').attr("style","width:20%"); 
 $('input[type=search]').attr("placeholder", "<%=j l(:at_search) %>");
 $('#entity_list_length label select').attr("style", "width:25% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
 
 
   var ch_opts = {width:"200px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
-
-
-
   var ms_ch_opts = {disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
-
   $('#sw_has_entities').chosen(ms_ch_opts);
   $('#sw_has_ip').chosen(ms_ch_opts);
 
@@ -604,15 +607,15 @@ $("#at_irole_edit").click(function(e) {
     $('#role_id').empty();
     $('#role_id').append('<option value=""><%= l(:at_select_role)%></option>');
     $.each(data,function(i){
-    var role_id, role_name;
-    if (data[i].i_role !== undefined) {
-      role_id = data[i].i_role.id;
-      role_name = data[i].i_role.name;
-    } else {
-      role_id = data[i].id;
-      role_name = data[i].name;
-    }
-    $('#role_id').append('<option value=' + role_id + '>' + role_name + '</option>');
+      var role_id, role_name;
+      if (data[i].i_role !== undefined) {
+        role_id = data[i].i_role.id;
+        role_name = data[i].i_role.name;
+      } else {
+        role_id = data[i].id;
+        role_name = data[i].name;
+      }
+      $('#role_id').append('<option value=' + role_id + '>' + role_name + '</option>');
     });
     $('#role_id').trigger("chosen:updated");
     $("#at_irole_name").val('');
@@ -648,6 +651,7 @@ $('#add_entity_desc').on( 'input', function () {
 $('#msgBox').prop('title', '<%=j l(:at_retiming_changing) %>');
   $("#edit_resource_name").attr("disabled","disabled");
   $("#description").attr("disabled","disabled");
+  
 
   $('#role_id').trigger("chosen:updated");
 
@@ -678,6 +682,8 @@ $('#msgBox').attr('style','width: auto; min-height: 0px; height: 310px;');
     if (ies.length < 5) {
       $('div.paging_simple_numbers').hide();
     }
+
+
   <% else %>
     $('#msgBox').hide();
     $('#msgBox').parent().attr('style',$('#msgBox').parent().attr('style') + 'top:50px');

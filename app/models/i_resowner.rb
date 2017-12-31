@@ -21,6 +21,8 @@ class IResowner < ActiveRecord::Base
 
   belongs_to :owner, :class_name => "User", :foreign_key => "user_id"
   belongs_to :iresource, :class_name => "IResource", :foreign_key => "i_resource_id"
+  #attr_accessible :name
+  #belongs_to :owner, :class_name => "User", :foreign_key => "owner_id"
 
   def self.is_resowner(user_id)
     IResowner.where(:user_id => user_id).count > 0

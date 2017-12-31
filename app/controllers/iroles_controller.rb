@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 class IrolesController < ApplicationController
 
   def show_role_description
@@ -54,7 +53,7 @@ class IrolesController < ApplicationController
   def add_role
     if ITicket.check_security_officer(User.current) && params[:res_id].present? && params[:name].present? 
 	    iresource = IResource.where(:id => params[:res_id]).first
-	    irole = iresource.iroles.new(:name => params[:name], :updated_by_id => User.current.id, :description => params[:description])
+	    irole = iresource.iroles.new(:name => params[:name], :updated_by_id => User.current.id, :description => "")
 	    if irole.save
 	      irls = iresource.iroles.active.select([:id,:name])
 	      respond_to do |format|
@@ -100,4 +99,8 @@ class IrolesController < ApplicationController
   end
 
 
+  #private
+  #  def irs_params
+  #    params.require(:article).permit(:title, :text)
+  #  end
 end

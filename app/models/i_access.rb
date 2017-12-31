@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 class IAccess < ActiveRecord::Base
   scope :deleted, -> { where(deleted: true) }
   scope :active, -> { where(deleted: false) }
 
   attr_accessible :i_entity_id, :rev_issue_id,:i_ticket_id, :r_created_by_id, :granted_by_id, :granted_at, :confirmed_by_id, :confirmed_at, :revoked_by_id, :revoked_at, :deleted, :active, :deactivated_by_id, :deactivated_at, :created_at, :updated_at
+
   belongs_to :iticket, :class_name => "ITicket", :foreign_key => "i_ticket_id"
   belongs_to :granter, :class_name => "User", :foreign_key => "granted_by_id"
   belongs_to :confirmer, :class_name => "User", :foreign_key => "confirmed_by_id"
@@ -31,8 +31,47 @@ class IAccess < ActiveRecord::Base
   belongs_to :ientity, :class_name => "IEntity", :foreign_key => "i_entity_id"
   belongs_to :revoker, :class_name => "User", :foreign_key => "revoked_by_id"
   belongs_to :r_creater, :class_name => "User", :foreign_key => "r_created_by_id"
+  has_one :iretimeaccess, :class_name => "IRetimeaccess"
+
   before_create :default
 
+  def self.create_export_row(data)
+    row = []
+    row.push(data[:issue_id])
+    row.push(data[:i_resource])
+    row.push(data[:i_roles].join('; '))
+    if data[:ientities].empty?
+      row.push(data[:description])
+    else
+      captions = []
+      data[:ientities].each do |entity|
+        captions.push(entity[:caption])
+      end
+      if IResource.find(data[:i_resource_id]).has_ip
+        row.push(captions.join(' '))
+      else
+        row.push(captions.join('; '))
+      end
+    end
+    row.push(data[:s_date])
+    row.push(data[:e_date])
+    row.push(data[:rev_issue_id])
+    row.push(data[:deactivated_at])
+    row
+  end
+
+def self.to_csv(array)
+    CSV.generate(:col_sep => ';') do |csv|
+      array.each do |entity|
+        csv << entity
+      end
+    end
+  end
+
+
+  def self.has_deactived_accesses(r_uid,user_id)
+    ITicket.active.joins(:iaccesses).where("i_accesses.deactivated_by_id IS NOT NULL").where(:r_uid => r_uid, :user_id => user_id).count > 0    
+  end
 
   def self.can_dismiss_user(dismiss_user_id, current_user_id)
     if IGrouplider.lider_for_user(dismiss_user_id, current_user_id) ||  current_user_id == 1 || current_user_id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id)) || current_user_id.in?(User.active.in_group(ISetting.active.where(:param => "hr_group_id").first.value.to_i).map(&:id))
@@ -114,6 +153,7 @@ class IAccess < ActiveRecord::Base
       0
     end
   end
+
 
   def self.last_revoking_version(issue_id, user_id)
     if !IAccess.active.where(:rev_issue_id => issue_id).empty?
@@ -220,10 +260,68 @@ class IAccess < ActiveRecord::Base
     end
   end
 
+
+  def self.check_revoking_cf(issue_id)
+    if !issue_id.nil?
+      cf_revoked_id = ISetting.active.where(:param => "cf_revoked_id").first.value
+      cf_deactivated_id = ISetting.active.where(:param => "cf_deactivated_id").first.value
+      cf_revoked = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_revoked_id)
+      cf_deactivated = CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_deactivated_id)
+      if cf_revoked.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_revoked_id, :value => 0)
+        cf_revoked_v = 0
+      else
+        cf_revoked_v = cf_revoked.first.value
+      end
+      if cf_deactivated.empty?
+        CustomValue.create(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_deactivated_id, :value => 0)
+        cf_deactivated_id = 0
+      else
+        cf_deactivated_v = cf_deactivated.first.value
+      end
+
+      all_tickets_count = IRetimeaccess.active.where(:rev_issue_id => issue_id).count
+      if all_tickets_count > 0 
+        revoked_tickets_count = IRetimeaccess.active.where("i_accesses.revoked_by_id IS NOT NULL").where(:rev_issue_id => issue_id).count
+        if all_tickets_count != verified_tickets_count
+          cf_revoked.update_all(:value => 0)
+          cf_deactivated.update_all(:value => 0)
+          cf_revoked_v = 0
+          cf_deactivated_v = 0
+        else
+          deactivated_tickets_count = IRetimeaccess.active.where("i_accesses.deactivated_by_id IS NOT NULL").where(:rev_issue_id => issue_id).count
+          if all_tickets_count != deactivated_tickets_count
+            cf_deactivated.update_all(:value => 0)
+            cf_deactivated_v = 0
+          else
+           
+          end
+        end
+      else
+        if cf_revoked_v != 0
+          cf_revoked.update_all(:value => 0)
+          cf_revoked_v = 0
+        end
+        if cf_deactivated_v != 0
+          cf_deactivated.update_all(:value => 0)
+          cf_deactivated_v = 0
+        end
+      end
+      return cf_revoked_v.to_i,cf_deactivated_v.to_i
+    else
+      return 0,0
+    end
+  end
+
+
+
+
+
+
     def self.accesses_list_by_resource(resource_id, current_user_id = nil)
     Time::DATE_FORMATS.merge!(:atf=>"%H:%M %d.%m.%Y")
     if !current_user_id.nil?
-      granted_resources = IResgranter.where(:user_id => current_user_id).map(&:i_resource_id)
+      #granted_resources = IResgranter.where(:user_id => current_user_id).map(&:i_resource_id)
       if User.find(current_user_id).time_zone != nil
         tz = User.current.time_zone
       else
@@ -295,7 +393,7 @@ class IAccess < ActiveRecord::Base
   def self.revoked_accesses_list_by_resource(resource_id, current_user_id = nil)
     Time::DATE_FORMATS.merge!(:atf=>"%H:%M %d.%m.%Y")
     if !current_user_id.nil?
-      granted_resources = IResgranter.where(:user_id => current_user_id).map(&:i_resource_id)
+      #granted_resources = IResgranter.where(:user_id => current_user_id).map(&:i_resource_id)
       if User.find(current_user_id).time_zone != nil
         tz = User.current.time_zone
       else
@@ -376,6 +474,58 @@ class IAccess < ActiveRecord::Base
     accesses
   end
 
+  def self.accesses_list_by_resource_for_user(user_id, resource_id)
+    accesses = []
+    r_uids = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL").where(:i_resource_id => resource_id, :user_id => user_id).map(&:r_uid).uniq
+    r_uids.each do |r_uid|
+      ientities = []
+      access = {}
+      access[:r_uid] = r_uid
+      access[:users] = []
+      access[:users_ids] = []
+      access[:i_roles] = []
+      access[:i_roles_id] = []
+      access[:i_entities_id] = []
+      itickets = ITicket.active.where(:r_uid => r_uid, :user_id => user_id)
+      iaccesses = itickets.first.iaccesses.active.where(:deactivated_by_id => nil)
+      user_name = User.find(itickets.first[:user_id]).name
+      user_obj = {}
+      user_obj[:id] = user_id
+      user_obj[:name] = user_name
+      access[:users_ids].push(user_obj)
+      access[:users].push(user_name)
+      access[:i_resource_id] = itickets.first[:i_resource_id]
+      access[:i_resource] = IResource.find(access[:i_resource_id]).name
+      access[:issue_id] =  itickets.first[:issue_id]
+      itickets.each do |iticket|
+        access[:i_roles].push(IRole.find(iticket[:i_role_id]).name)
+        access[:i_roles_id].push(iticket[:i_role_id])
+      end
+      access[:i_roles] = access[:i_roles].uniq
+      access[:i_roles_id] = access[:i_roles_id].uniq
+      access[:s_date] = itickets.first[:s_date].strftime("%d.%m.%Y")
+      access[:e_date] = itickets.first[:e_date].strftime("%d.%m.%Y")
+      iaccesses.map(&:i_entity_id).uniq.each do |ientity_id|  
+        IEntity.where(:id => ientity_id).each do |ientity| 
+          entity = {}
+          entity[:id] = ientity.id
+          if ientity.iresource.has_ip
+            entity[:caption] = ientity.name + " [" + ientity.ipv4 + "];"
+          else
+            entity[:caption] = ientity.name
+          end
+          ientities.push(entity)
+          access[:i_entities_id].push(ientity.id)
+        end
+      end
+      access[:ientities] = ientities
+      accesses.push(access)
+    end
+    accesses
+  end
+
+
+
 
   def self.accesses_list(user_id, rev_issue_id = nil, current_user_id = nil)
     Time::DATE_FORMATS.merge!(:atf=>"%H:%M %d.%m.%Y")
@@ -406,16 +556,19 @@ class IAccess < ActiveRecord::Base
       access[:i_entities_id] = []
       if rev_issue_id.nil?
         itickets = ITicket.active.where(:r_uid => r_uid, :user_id => user_id)
-        access[:revoked_by_id] = itickets.first.iaccesses.first[:revoked_by_id]
-        access[:revoked_at] = itickets.first.iaccesses.first[:revoked_at]
-        access[:deactivated_by_id] = itickets.first.iaccesses.first[:deactivated_by_id]
-        access[:deactivated_at] = itickets.first.iaccesses.first[:deactivated_at]
+        access[:revoked_by_id] = itickets.first.iaccesses.active.first[:revoked_by_id]
+        access[:revoked_at] = itickets.first.iaccesses.active.first[:revoked_at]#.in_time_zone(tz).to_s(:atf)
+        iaccesses = itickets.first.iaccesses.active.where(:deactivated_by_id => nil)
+        access[:deactivated_by_id] = itickets.first.iaccesses.active.first[:deactivated_by_id]
+        access[:deactivated_at] = itickets.first.iaccesses.active.first[:deactivated_at]#.in_time_zone(tz).to_s(:atf)
       else
         itickets = ITicket.active.joins(:iaccesses).where(:r_uid => r_uid, "i_accesses.rev_issue_id" => rev_issue_id)
-        access[:revoked_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_by_id]
-        access[:revoked_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:revoked_at]
-        access[:deactivated_by_id] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
-        access[:deactivated_at] = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]
+        access[:rev_issue_id] = nil
+        access[:revoked_by_id] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:revoked_by_id]
+        access[:revoked_at] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:revoked_at]#.in_time_zone(tz).to_s(:atf)
+        iaccesses = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id)
+        access[:deactivated_by_id] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
+        access[:deactivated_at] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]#.in_time_zone(tz).to_s(:atf)
       end
       user_name = User.find(itickets.first[:user_id]).name
       user_obj = {}
@@ -432,20 +585,19 @@ class IAccess < ActiveRecord::Base
         access[:i_roles_id].push(iticket[:i_role_id])
       end
       access[:i_roles] = access[:i_roles].uniq
-      access[:i_roles_id] = access[:i_roles_id].uniq      
+      access[:i_roles_id] = access[:i_roles_id].uniq
       access[:s_date] = itickets.first[:s_date].strftime("%d.%m.%Y")
       access[:e_date] = itickets.first[:e_date].strftime("%d.%m.%Y")
+
+      #access[:revoked_by_id] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:revoked_by_id]
+      #access[:revoked_at] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:revoked_at]#.in_time_zone(tz).to_s(:atf)
+
+
       if !access[:revoked_by_id].nil?
         access[:revoked_at] = access[:revoked_at].in_time_zone(tz).to_s(:atf)
       end
-      rev_access = itickets.first.iaccesses.where(:rev_issue_id => rev_issue_id).first
-      if !rev_access.nil?
-        access[:deactivated_by_id] = rev_access[:deactivated_by_id]
-        access[:deactivated_at] = rev_access[:deactivated_at]
-      else 
-        access[:deactivated_by_id] = nil
-        access[:deactivated_at] = nil
-      end
+      #access[:deactivated_by_id] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:deactivated_by_id]
+      #access[:deactivated_at] = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id).first[:deactivated_at]#.in_time_zone(tz).to_s(:atf)
       if !access[:deactivated_by_id].nil?
         access[:deactivated_at] = access[:deactivated_at].in_time_zone(tz).to_s(:atf)#.strftime("%H:%M %d.%m.%Y")
       end
@@ -479,11 +631,12 @@ class IAccess < ActiveRecord::Base
         access[:status] = l(:at_need_to_confirm_revoking)
         access[:status_id] = 0
       end
-      if rev_issue_id.nil?
-        iaccesses = itickets.first.iaccesses.active.where(:deactivated_by_id => nil)
-      else
-        iaccesses = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id)
-      end
+      #if rev_issue_id.nil?
+        #iaccesses = itickets.first.iaccesses.active.where(:deactivated_by_id => nil)
+        ####access[:rev_issue_id] = iaccesses.first[:rev_issue_id]
+      #else
+        #iaccesses = itickets.first.iaccesses.active.where(:rev_issue_id => rev_issue_id)
+      #end
       iaccesses.map(&:i_entity_id).uniq.each do |ientity_id|  
         IEntity.where(:id => ientity_id).each do |ientity| 
           entity = {}
@@ -580,6 +733,145 @@ class IAccess < ActiveRecord::Base
   end
 
 
+
+
+
+  def self.expired_accesses_list(resource_id = nil, r_user_id = nil)
+    Time::DATE_FORMATS.merge!(:atf=>"%H:%M %d.%m.%Y")
+    if !resource_id.nil?
+      itickets = ITicket.active.joins(:iaccesses).where("i_tickets.i_resource_id = ? and i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()", resource_id)
+    elsif !r_user_id.nil?
+      itickets = ITicket.active.joins(:iaccesses).where("i_tickets.user_id= ? and i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()", r_user_id) 
+    else
+      itickets = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()")    
+    end
+    user_ids = itickets.map(&:user_id).uniq
+    accesses = []
+    user_ids.each do |user_id|
+      itickets.where(:user_id => user_id).map(&:r_uid).uniq.each do |r_uid|
+        tickets = itickets.where(:r_uid => r_uid, :user_id => user_id)
+        ientities = []
+        access = {}
+        access[:r_uid] = r_uid
+        access[:users] = []
+        access[:users_ids] = tickets.map(&:user_id)
+        access[:i_roles] = []
+        access[:i_roles_id] = tickets.map(&:i_role_id)
+        access[:ientities] = []
+        access[:i_entities_id] = []
+        access[:users_ids].uniq.each do |user_id|
+          user_obj = {}
+          user_obj[:id] = user_id
+          user_obj[:name] = User.find(user_id).name
+          access[:users].push(user_obj)
+        end
+        access[:i_resource_id] =tickets.first[:i_resource_id]
+        access[:i_resource] = IResource.find(access[:i_resource_id]).name
+        access[:description] = tickets.first[:description]
+        access[:issue_id] =  tickets.first[:issue_id]
+        access[:i_roles_id].uniq.each do |i_role_id|
+          role_obj = {}
+          role_obj[:id] = i_role_id
+          role_obj[:name] = IRole.find(i_role_id).name
+          access[:i_roles].push(role_obj)
+        end
+        access[:s_date] = tickets.first[:s_date].strftime("%d.%m.%Y")
+        access[:e_date] = tickets.first[:e_date].strftime("%d.%m.%Y")
+        iaccesses = tickets.first.iaccesses.active.where(:deactivated_by_id => nil)
+        if IResource.find(access[:i_resource_id]).has_entities
+          iaccesses.map(&:i_entity_id).uniq.each do |ientity_id|  
+            entity = {}
+            entity[:id] = ientity_id
+            ientity = IEntity.where(:id => ientity_id).first
+            if !ientity.nil?
+              if ientity.iresource.has_ip
+                entity[:caption] = ientity.name + " [" + ientity.ipv4 + "];"
+              else
+                entity[:caption] = ientity.name
+              end
+            else
+              entity[:caption] = "entity with id " + ientity_id.to_s + " was lost"
+            end
+            access[:ientities].push(entity)
+          end
+        end
+        accesses.push(access)
+      end
+    end
+    accesses
+  end
+
+
+
+
+
+
+
+
+
+##############
+  def self.old_expired_accesses_list(resource_id = nil, r_user_id = nil)
+    Time::DATE_FORMATS.merge!(:atf=>"%H:%M %d.%m.%Y")
+    if !resource_id.nil?
+      itickets = ITicket.active.joins(:iaccesses).where("i_tickets.i_resource_id = ? and i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()", resource_id)
+    elsif !r_user_id.nil?
+      itickets = ITicket.active.joins(:iaccesses).where("i_tickets.user_id= ? and i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()", r_user_id)
+    else
+      itickets = ITicket.active.joins(:iaccesses).where("i_accesses.confirmed_by_id IS NOT NULL AND i_accesses.deactivated_by_id IS NULL AND STR_TO_DATE(i_tickets.e_date, '%Y-%m-%d') < CURDATE()")
+    end
+    accesses = []
+    itickets.map(&:r_uid).uniq.each do |r_uid|
+      tickets = itickets.where(:r_uid => r_uid)
+      ientities = []
+      access = {}
+      access[:r_uid] = r_uid
+      access[:users] = []
+      access[:users_ids] = tickets.map(&:user_id)
+      access[:i_roles] = []
+      access[:i_roles_id] = tickets.map(&:i_role_id)
+      access[:ientities] = []
+      access[:i_entities_id] = []
+      access[:users_ids].uniq.each do |user_id|
+        user_obj = {}
+        user_obj[:id] = user_id
+        user_obj[:name] = User.find(user_id).name
+        access[:users].push(user_obj)
+      end
+      access[:i_resource_id] =tickets.first[:i_resource_id]
+      access[:i_resource] = IResource.find(access[:i_resource_id]).name
+      access[:description] = tickets.first[:description]
+      access[:issue_id] =  tickets.first[:issue_id]
+      access[:i_roles_id].uniq.each do |i_role_id|
+        role_obj = {}
+        role_obj[:id] = i_role_id
+        role_obj[:name] = IRole.find(i_role_id).name
+        access[:i_roles].push(role_obj)
+      end
+      access[:s_date] = tickets.first[:s_date].strftime("%d.%m.%Y")
+      access[:e_date] = tickets.first[:e_date].strftime("%d.%m.%Y")
+      iaccesses = tickets.first.iaccesses.active.where(:deactivated_by_id => nil)
+
+      iaccesses.map(&:i_entity_id).uniq.each do |ientity_id|  
+        entity = {}
+        entity[:id] = ientity_id
+        ientity = IEntity.where(:id => ientity_id).first
+        if !ientity.nil?
+          if ientity.iresource.has_ip
+            entity[:caption] = ientity.name + " [" + ientity.ipv4 + "];"
+          else
+            entity[:caption] = ientity.name
+          end
+        else
+          entity[:caption] = "entity with id " + ientity_id.to_s + " was lost"
+        end
+        access[:ientities].push(entity)
+      end
+      accesses.push(access)
+    end
+    accesses
+  end
+############
+
   def self.may_be_grant_access_by_issue_status(issue_id, granter_id, r_uid = nil) # maybe packed
     if ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => granter_id).map(&:i_resource_id)).count > 0 && ITicket.check_issue_status(issue_id)[0..3] == [1,1,0,0]
       i = 0
@@ -610,6 +902,11 @@ class IAccess < ActiveRecord::Base
           end
         end
         i > 0
+        #if (i > 0)
+        #  true
+        #else
+        #  false
+        #end
       end
     else
       false
@@ -622,6 +919,11 @@ class IAccess < ActiveRecord::Base
       i = 0
       j = 0
       if r_uid.nil?
+        #if IAccess.active.joins(:iticket).where("i_tickets.i_resource_id" => IResgranter.where(:user_id => granter_id).map(&:i_resource_id), "i_tickets.issue_id" => issue_id).count > 0
+        #  true
+        #else
+        #  false
+        #end
         IAccess.active.joins(:iticket).where("i_tickets.i_resource_id" => IResgranter.where(:user_id => granter_id).map(&:i_resource_id), "i_tickets.issue_id" => issue_id).count > 0
       else
         itickets = ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => granter_id).map(&:i_resource_id), :r_uid => r_uid)
@@ -631,6 +933,11 @@ class IAccess < ActiveRecord::Base
           end
         end
         i > 0
+        #if (i > 0)
+        #  true
+        #else
+        #  false
+        #end
       end
     end
   end
@@ -763,14 +1070,18 @@ class IAccess < ActiveRecord::Base
 
 
   def self.revoke_grant_for_tickets(issue_id, granter_id, r_uid = nil)
-    tr_new_employee = 0#ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
+    tr_new_employee = Issue.find(issue_id).tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
     if r_uid.nil? #|| tr_new_employee
       itickets = ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => granter_id).map(&:i_resource_id))
     else
       itickets = ITicket.active.where(:issue_id => issue_id,:i_resource_id => IResgranter.where(:user_id => granter_id).map(&:i_resource_id), :r_uid => r_uid)
     end
 
-    itickets.each do |ticket| 
+    itickets.each do |ticket| # delete prev access for this issue
+      #if tr_new_employee && r_uid.nil?
+      #  ticket.update_attributes(:user_id => 0)
+      #end
+
       if ticket.iaccesses.active.count > 0
         ticket.iaccesses.active.each { |access| access.delete }
       end

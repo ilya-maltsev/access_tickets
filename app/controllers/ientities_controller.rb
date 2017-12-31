@@ -19,6 +19,65 @@
 
 class IentitiesController < ApplicationController
 
+  def import_entities
+    if params[:resource_id].present? && params[:csvfile].present? && ( ITicket.check_security_officer(User.current) || IResgranter.is_granter_for_resource(User.current.id,params[:resource_id]) || IResowner.is_owner_for_resource(User.current.id,params[:resource_id]) )
+      iresource = IResource.find(params[:resource_id]) 
+      if iresource.has_entities
+        rawdata = params[:csvfile].read
+        data = IEntity.import(params[:resource_id], rawdata, User.current.id)
+        if data.empty?
+          flash[:notice] = l(:at_all_entities_of_res) + iresource.name + l(:at_was_successfull_imported)
+        else
+          flash[:error] = l(:at_foll_items_of_res) + iresource.name + l(:at_were_not_imported) +  data.to_s
+        end
+        redirect_to(:back)
+        #respond_to do |format|
+        #  format.html
+        #  format.json { render :json => { :data => data } }
+        #end
+      else
+        head :forbidden
+      end
+    else
+      head :forbidden
+    end
+  end
+
+  def export_entities
+    if IResource.available_for_user(params[:resource_id], User.current.id)
+      iresource = IResource.where(:id => params[:resource_id]).first
+
+      a_ies = []
+      if iresource.has_ip == true 
+        ies = iresource.ientities.active.select([:name, :ipv4,:description])
+        a_ies.push(['#name','#ipv4','#description'])
+      else
+        ies = iresource.ientities.active.select([:name, :description])
+        a_ies.push(['#name','#description'])
+      end
+      ies.each do |ientity|
+        row = []
+        row.push(ientity[:name])
+        if iresource.has_ip == true 
+          row.push(ientity[:ipv4])
+        end
+        row.push(ientity[:description])
+        a_ies.push(row)
+      end
+      #csv = a_ies.map(&:to_csv).join
+      csv = IEntity.to_csv(a_ies)
+      respond_to do |format|
+        format.html
+        format.csv { send_data csv, :filename => 'entities_of_'+ iresource.name + '_at_'+ Time.now().strftime("%HH-%MM-%d-%m-%Y") +'.csv' }
+        #format.csv { render csv: csv, filename: 'entities.csv' }
+      end
+
+    else
+      head :forbidden
+    end
+  end
+
+
   def ientity_show_list
     if User.current.anonymous? 
       head :forbidden
@@ -43,6 +102,7 @@ class IentitiesController < ApplicationController
     end
   end
 
+
   def add_entity
     if ( ( ITicket.check_security_officer(User.current) || IResgranter.is_granter_for_resource(User.current.id,params[:res_id]) || IResowner.is_owner_for_resource(User.current.id,params[:res_id]) ) && params[:name].present?  )
       iresource = IResource.where(:id => params[:res_id]).first
@@ -50,8 +110,6 @@ class IentitiesController < ApplicationController
         ientity = IEntity.new(:name => params[:name], :description => params[:description], :updated_by_id => User.current.id)
         if params[:ipv4].present? && iresource.has_ip
           ientity.ipv4 = params[:ipv4]
-        else
-          ientity.ipv4 = '127.0.0.1'
         end
         ientity.updated_by_id = User.current.id
         ientity.save
@@ -117,4 +175,8 @@ class IentitiesController < ApplicationController
   end
 
 
+  #private
+  #  def irs_params
+  #    params.require(:article).permit(:title, :text)
+  #  end
 end

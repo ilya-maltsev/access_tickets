@@ -3,7 +3,7 @@
 
 <div id="" class="box">
 <fieldset class="at_descript">
-<legend><h3><%= l(:at_access_list) %></h3></legend>
+<legend><h4><%= l(:at_access_list) %></h4></legend>
 
 
   <table id="show_ticket" class="list entities issues issues_index context-menu-container">
@@ -69,11 +69,12 @@
     </tbody>
   </table>
 
-    
+
 <div style="clear: both;"></div>
 
 </fieldset>
 </div>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/access_tickets.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
@@ -93,10 +94,10 @@ $('#ajax-indicator span').text('<%= l(:at_loading) %>');
       "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
                   "sSearch": "",
       "oPaginate": {
-        "sFirst": "<%= l(:at_sFirst) %>",
-        "sNext": "<%= l(:at_sNext) %>",
-        "sLast": "<%= l(:at_sLast) %>",
-        "sPrevious": "<%= l(:at_sPrevious) %>"
+              "sFirst": "<%= l(:at_sFirst) %>",
+              "sNext": "<%= l(:at_sNext) %>",
+              "sLast": "<%= l(:at_sLast) %>",
+              "sPrevious": "<%= l(:at_sPrevious) %>"
       },
       "sLengthMenu": "<%= l(:at_sLengthMenu) %>"
     },
@@ -132,7 +133,7 @@ $('#show_ticket_paginate').before('<div id="ticket_version" style="float:left;wi
       <% for user in IAccess.show_revoking_users(User.current.id) %>
         $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
       <% end %>
-      $("#at_iticket_edit").show();
+      //$("#at_iticket_edit").show();
     <% else %>
       $('#users_list').empty();
 
@@ -143,6 +144,14 @@ $('#show_ticket_paginate').before('<div id="ticket_version" style="float:left;wi
 
   <% else %>
     <% if @issue.tracker_id == ISetting.active.where(:param => "tr_dismissal_id").first.value.to_i %>
+
+      <% if User.current.in?(User.active.in_group(ISetting.active.where(:param => "hr_group_id").first.value.to_i)) %>
+
+        $('#show_ticket').DataTable().column(3).visible( false );
+        
+      <% end %>
+
+
       <% if at_revoking_status[0] == 0  %>
         $('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"", :class =>  "", :onchange => "confirm_set_dismissal_user()", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee)} ) %>');
         <% for user in IAccess.show_revoking_users(User.current.id) %>
@@ -207,7 +216,7 @@ $('#users_list').chosen(ch_opts);
     if ( $("select#users_list option").filter(":selected").val() == '' ) {
       alert('<%= l(:at_select_employee) %>');
     } else {
-      $.post("access_tickets/edit_revoking_table", { issue_id : <%= @issue.id.to_s %> , r_user_id: $("select#users_list").val() }, "json");  
+      $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_revoking_table", { issue_id : <%= @issue.id.to_s %> , r_user_id: $("select#users_list").val() }, "json");  
     }
 
   });
@@ -225,11 +234,11 @@ $('#users_list').chosen(ch_opts);
 <% else %>
   $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
 <% end %>
-  
+
 if ($('#show_ticket').DataTable().data().length < 11 ) {
   $('div.paging_simple_numbers').hide();
 }
-  
+
   function revoking(data){
 
       if (data[2][0] == "0"){
@@ -327,20 +336,20 @@ function set_tickets_user(obj){
 
 function set_dismissal_user(){
     $('#show_ticket').DataTable().clear().draw();
-    window.open("access_tickets/set_dismissal_user?issue_id=<%= @issue.id.to_s %>&r_user_id=" + $('#users_list').val(),"_self");
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/set_dismissal_user?issue_id=<%= @issue.id.to_s %>&r_user_id=" + $('#users_list').val(),"_self");
 }
 
 
   $("#at_confirm_revoking").click(function(e) { 
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
-    window.open("access_tickets/confirm_revoking?issue_id=<%= @issue.id.to_s %>","_self");
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/confirm_revoking?issue_id=<%= @issue.id.to_s %>","_self");
   });
 
   $("#at_revoke_confirm_revoking").click(function(e) { 
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
-    window.open("access_tickets/refuse_confirmation_revoking?issue_id=<%= @issue.id.to_s %>","_self");
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/refuse_confirmation_revoking?issue_id=<%= @issue.id.to_s %>","_self");
   });
 
 
@@ -348,13 +357,13 @@ function set_dismissal_user(){
   $("#at_deactivate_grants").click(function(e) { 
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
-    window.open("access_tickets/deactivate_grants?issue_id=<%= @issue.id.to_s %>","_self");
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/deactivate_grants?issue_id=<%= @issue.id.to_s %>","_self");
   });
 
   $("#at_refuse_deactivating_grants").click(function(e) { 
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
-    window.open("access_tickets/refuse_deactivating_grants?issue_id=<%= @issue.id.to_s %>","_self");
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/refuse_deactivating_grants?issue_id=<%= @issue.id.to_s %>","_self");
   });
 
 
@@ -362,7 +371,7 @@ function set_dismissal_user(){
 
   function deactivate_single_grant(e) { 
     $(e).hide();
-    $.post("access_tickets/deactivate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/deactivate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
       var current_page = $('#show_ticket').DataTable().page();
       $('#show_ticket').DataTable().clear().draw();
       update_datatable(data);
@@ -373,7 +382,7 @@ function set_dismissal_user(){
 
   function activate_single_grant(e) { 
     $(e).hide();
-    $.post("access_tickets/activate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/activate_single_grant", { issue_id : <%= @issue.id.to_s %>, uid : e.id }, function( data ) {
       var current_page = $('#show_ticket').DataTable().page();
       $('#show_ticket').DataTable().clear().draw();
       update_datatable(data);
@@ -437,9 +446,9 @@ function show_confirm_dialog(title, warning, code) {
 }
 
 function update_datatable(data){
-
+    //console.log(data);
     $('#ticket_version').html(data[1]);
-
+    //$('#show_ticket').DataTable().column(6).visible( false );
     
     if ( data[2][0] == 0 && data[2][1] == 0 && data[2][1] > 0 ){
       $("#at_confirm_revoking").show();
@@ -463,7 +472,7 @@ function update_datatable(data){
 
       if (data[2][0] == 1 && this["status_id"] == 1 && this["may_be_deactivated"] == 1) {
         actions = '<a id="' + this["r_uid"] + '" class="revoke_grant icon icon-close at_red" title="<%= l(:at_deactivate_this_grant) %>" onclick="deactivate_single_grant(this);"> </a>';
-
+        //alert('1');
         $('#show_ticket').DataTable().column(6).visible( true );
       } else if (data[2][0] == 1 && this["status_id"] == 2 && this["may_be_activated"] == 1) {
         actions = '<a id="' + this["r_uid"] + '" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_activate_this_grant) %>" onclick="activate_single_grant(this);">';
@@ -486,7 +495,7 @@ function update_datatable(data){
       if (this["e_date"] == "31-12-2025") {
         period = "<%= l(:at_forever) %><%= l(:at_since) %>" + this["s_date"];
       } else {
-
+        //period = this["s_date"]+" -<br>"+this["e_date"];
         period = this["s_date"]+" -<br>"+this["e_date"];
       }
       $('#show_ticket').DataTable().row.add([
@@ -499,7 +508,13 @@ function update_datatable(data){
       actions
       ]).draw();
     });
-
+    <% if @issue.tracker_id == ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i %>
+      if (data[3] == 0) {
+        $("#users_list option:selected").removeAttr("selected");
+      } else {
+        $('#users_list').find(' option[value='+data[3]+']').attr('selected','selected');
+      }
+    <% end %>
 }
 
 

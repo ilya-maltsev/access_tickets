@@ -21,4 +21,6 @@ class IResentity < ActiveRecord::Base
 
   belongs_to :ientity, :class_name => "IEntity", :foreign_key => "i_entity_id"
   belongs_to :iresource, :class_name => "IResource", :foreign_key => "i_resource_id"
+  #attr_accessible :name
+  #belongs_to :owner, :class_name => "User", :foreign_key => "owner_id"
 end

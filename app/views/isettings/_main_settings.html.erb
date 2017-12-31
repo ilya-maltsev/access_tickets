@@ -10,6 +10,12 @@
 <div style="margin-left:50px;padding:10px">
   <div class="param-line" style="margin-bottom:5px;width:95%;">
 
+    <div  class="param-label">
+      <%= label_tag(:access_tickets_simple_approvement, l(:at_simple_approvement) + ':') %>
+    </div>
+    <%= select_tag('at_simple_approvement', options_for_select([[l(:at_yes), 1], [l(:at_no), 0]], :selected => config["at_simple_approvement"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
   <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_project_id, l(:at_plugin_project) + ':') %>
@@ -19,10 +25,25 @@
 
   <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
+      <%= label_tag(:access_tickets_tr_new_emp_id, l(:at_tr_new_emp) + ':') %>
+    </div>
+    <%= select_tag('tr_new_emp_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_new_emp_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
       <%= label_tag(:access_tickets_tr_grant_id, l(:at_tr_grant) + ':') %>
     </div>
     <%= select_tag('tr_grant_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_grant_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_change_term_id, l(:at_tr_change_term) + ':') %>
+    </div>
+    <%= select_tag('tr_change_term_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_change_term_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
   <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_tr_revoke_id, l(:at_tr_revoke) + ':') %>
@@ -30,6 +51,21 @@
     <%= select_tag('tr_revoke_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_revoke_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_dismissal_id, l(:at_tr_dismissal) + ':') %>
+    </div>
+    <%= select_tag('tr_dismissal_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_dismissal_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_template_agreement_id, l(:at_tr_template_agreement_id) + ':') %>
+    </div>
+    <%= select_tag('tr_template_agreement_id', options_from_collection_for_select(Tracker.all, :id, :name, :selected => config["tr_template_agreement_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+  
   <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_verified_id, l(:at_cf_verified) + ':') %>
@@ -37,13 +73,13 @@
       <%= select_tag('cf_verified_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_verified_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
 
-
   <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
         <%= label_tag(:access_tickets_cf_approved_id, l(:at_cf_approved) + ':') %>
       </div>
       <%= select_tag('cf_approved_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_approved_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
   </div>
+
 
 
   <div class="param-line" style="margin-bottom:5px;width:95%;">
@@ -97,6 +133,14 @@
   </div>
 
   <div class="param-line" style="margin-bottom:5px;width:95%;">
+      <div class="param-label">
+        <%= label_tag(:at_cf_new_emp_first_day_id, l(:at_cf_new_emp_first_day) + ':') %>
+      </div>
+      <%= select_tag('cf_new_emp_first_day_id', options_from_collection_for_select(Project.where(:id => config["at_project_id"]).first.issue_custom_fields.all, :id, :name, :selected => config["cf_new_emp_first_day_id"]), {:style=>'width: 200px !important', :include_blank => true, :onchange => "set_settings_value(this)"} ) %>
+  </div>
+
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
       <%= label_tag(:access_tickets_sec_group_id, l(:at_security_group) + ':') %>
     </div>
@@ -146,11 +190,16 @@ var ws_ch_opts = {width:"250px", disable_search: false, allow_single_deselect:tr
 
 var ms_ch_opts = {width:"250px", disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
+$('#at_simple_approvement').chosen(ms_ch_opts);
 
 $('#at_erm_integration').chosen(ms_ch_opts);
 $('#at_project_id').chosen(ws_ch_opts);
+$('#tr_new_emp_id').chosen(ws_ch_opts);
 $('#tr_grant_id').chosen(ws_ch_opts);
+$('#tr_change_term_id').chosen(ws_ch_opts);
 $('#tr_revoke_id').chosen(ws_ch_opts);
+$('#tr_dismissal_id').chosen(ws_ch_opts);
+$('#tr_template_agreement_id').chosen(ws_ch_opts);
 $('#sec_group_id').chosen(ws_ch_opts);
 $('#admin_group_id').chosen(ws_ch_opts);
 $('#hr_group_id').chosen(ws_ch_opts);
@@ -163,7 +212,7 @@ $('#cf_confirming_id').chosen(ws_ch_opts);
 
 $('#cf_revoked_id').chosen(ws_ch_opts);
 $('#cf_deactivated_id').chosen(ws_ch_opts);
-
+$('#cf_new_emp_first_day_id').chosen(ws_ch_opts);
 $('#working_issue_status_id').chosen(ws_ch_opts);
 $('#granted_issue_status_id').chosen(ws_ch_opts);
 $('#blocked_issue_status_id').chosen(ws_ch_opts);
@@ -192,10 +241,12 @@ function set_plugin_settings_value(obj){
 
 $( document ).ready(function() {
   $('div#settings input[type="submit"]').hide();
-  $("#reset_config").click(function(e) { 
+
+$("#reset_config").click(function(e) { 
     $(this).prop( "disabled", true );
     $('#ajax-indicator').show();
     window.open("<%= Redmine::Utils::relative_url_root %>/access_tickets/reset_config","_self");
 });
+
 });
 </script>

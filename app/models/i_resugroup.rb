@@ -22,4 +22,9 @@ class IResugroup < ActiveRecord::Base
   belongs_to :group, :class_name => "Group", :foreign_key => "group_id"
   belongs_to :iresource, :class_name => "IResource", :foreign_key => "i_resource_id"
 
+
+  #def self.is_owner_for_resource(user_id, resource_id)
+  #  IResgranter.where(:user_id => user_id, :i_resource_id => resource_id).count > 0
+  #end
+
 end

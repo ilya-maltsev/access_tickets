@@ -1,0 +1,329 @@
+<% if @issue.project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i %>
+<div id="" class="box">
+<fieldset class="at_descript">
+<legend><h4><%= l(:at_access_list) %></h4></legend>
+    <table id="show_ticket" class="list entities issues issues_index context-menu-container">
+      <thead>
+        <tr>
+          <th style="width:15%" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
+          <th style="width:10%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %> / <%= l(:at_role) %></a></th>
+          <th style="width:20%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+          <th style="width:10%" title="<%= l(:at_period) %>"><a><%= l(:at_period) %></a></th>
+          <th style="width:10%" title="<%= l(:at_r_date) %>"><a><%= l(:at_r_date) %></a></th>
+          <th style="width:15%" title="<%= l(:at_status) %>"><a><%= l(:at_status) %></a></th>
+          <th style="width:5%" title="<%= l(:label_activity) %>"><a class="icon icon-settings settings"/a></th>
+        </tr>
+      </thead>
+      <tbody>
+      <% for access in IRetimeaccess.retiming_accesses_list(@issue.id, User.current.id) %>
+        <tr>
+          <td>
+            <% for user in access[:users_ids] %>
+              <span class="nowrap add-user-links" ><a href="<%= Redmine::Utils::relative_url_root %>/users/<%= user[:id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= user[:name] %></a></span><br>
+            <% end %>
+          </td>
+          <td>
+          <span class="nowrap">
+            <a id="<%= access[:i_resource_id] %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= access[:i_resource] %></a>
+          </span> / <br>
+          <%=raw access[:i_roles]*"<br>" %></td>
+          <td>
+          <% if access[:ientities].empty? %>
+            <%= access[:description] %>
+          <% else %>
+            <% for entity in access[:ientities] %>
+              <%= entity[:caption] %><br>
+            <% end %>
+          <% end %>
+          </td>
+          <% if access[:e_date].to_s == "2025-12-31" %>
+            <td><%= l(:at_forever) %><%= l(:at_since) %><%= access[:s_date] %></td>
+          <% else %>
+            <td><%= access[:s_date] %> - <%= access[:e_date] %></td>
+          <% end %>
+          <td>
+           <% if access[:prolongation] == 1 %>
+            <p style="color:#4ebf67 !important">
+            <% else %>
+            <p style="color:#F78282 !important">
+            <% end %>
+            <%= access[:r_date] %></p></td>
+          </td>
+          <td>
+          <span class="add-user-links" data-id="1">
+          <% if access[:status_id] == 2  %>
+            <a href="<%= Redmine::Utils::relative_url_root %>/users/<%= access[:user_id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= access[:user_name] %></a></span>
+            <p style="color: #4ebf67 !important"><%= access[:status] %>
+          <% elsif access[:status_id] == 3 %>
+          <p style="color: #4ebf67 !important"><%= access[:status] %>
+
+          <a href="<%= Redmine::Utils::relative_url_root %>/issues/<%= access[:new_retime_issue_id] %>">#<%= access[:new_retime_issue_id] %></a>
+          <% else %>
+            <p style="color: #F78282 !important"><%= access[:status] %>
+          <% end %>
+            </p>
+          </td>
+          <td>
+          <% if access[:status_id] == 1 && access[:may_be_deactivated]  == 1 %>
+            <a id="<%= access[:r_uid] %>" class="revoke_grant icon icon-close at_red" title="<%= l(:at_deactivate_this_grant) %>" onclick="deactivate_single_grant(this);"> </a>
+          <% else if access[:status_id] == 2 && access[:may_be_activated]  == 1 %>
+            <a id="<%= access[:r_uid] %>" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_activate_this_grant) %>" onclick="activate_single_grant(this)"> </a>
+          <% else %>
+          
+          <% end %>
+          
+          </td>
+
+        </tr>
+        <% end %>
+      <% end %>
+      </tbody>
+    </table>
+
+
+  <div style="clear: both;"></div>
+
+
+</fieldset>
+</div>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/access_tickets.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+<script type="text/javascript">
+$('#ajax-indicator span').text('<%= l(:at_loading) %>');
+  $('#show_ticket').DataTable({
+    //"bPaginate": false,
+    "bFilter": false, 
+    "bInfo": false,
+    "lengthMenu": [[10, 20, -1], ["10 <%= l(:at_entries) %>", "20 <%= l(:at_entries) %>", "<%= l(:at_all_entries) %>"]],
+    "oLanguage": {
+      "sInfo": "<%= l(:at_sInfo) %>",
+      "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+      "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+      "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                  "sSearch": "",
+      "oPaginate": {
+              "sFirst": "<%= l(:at_sFirst) %>",
+              "sNext": "<%= l(:at_sNext) %>",
+              "sLast": "<%= l(:at_sLast) %>",
+              "sPrevious": "<%= l(:at_sPrevious) %>"
+      },
+      "sLengthMenu": "<%= l(:at_sLengthMenu) %>"
+    },
+  });
+
+  $('div#show_ticket_length label').attr("style","float:left !important; width: 200px !important;"); 
+
+  $('#show_ticket_length label select').attr("style", "width:65% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
+
+  $('#show_ticket_paginate').before('<div id="ticket_version" style="float:left;width:50%;margin-top:20px"><%=j IRetimeaccess.last_retiming_version(@issue.id, User.current) %> </div>');
+
+  $('#show_ticket_length').attr("style",""); 
+
+
+
+  //$('.dataTables_length').append('<div id="user_management" style=""></div>');
+
+  $('#user_management').append('<%= label_tag(:at_employee_id, l(:at_employee) + ":") %>');
+
+
+  $("label[for='at_employee_id']").attr("style","float:left;margin-top:4px"); 
+
+  $('#show_ticket').DataTable().column(6).visible( false );
+
+<% if at_retiming_status[0] == 1 %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_verified_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_verified_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+<% if at_retiming_status[1] == 1 %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_approved_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_approved_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+<% if at_retiming_status[2] == 0 %>
+  $("div.dataTables_paginate").hide();
+<% end %>
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_blue" id="at_iticket_edit" name="button" style="margin-left:10px;float: right;display: none" type="button"><%=j l(:at_edit) %></button>');
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_verify_retiming" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_verify_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_red" id="at_reject_verification_retiming" name="button" style="float: left;margin-left:10px;display: none" type="button"><%=j l(:at_reject_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_approve_retiming" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_approve_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_red" id="at_refuse_approve_retiming" name="button" style="float: left;margin-left:10px; display: none" type="button"><%=j l(:at_revoke_all) %></button>');
+
+
+
+  $('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"width: 200px; margin-top: 4px;float: left;margin-left:10px;", :class => "", :onchange => "set_retiming_user()", "multiple" => "", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee)} ) %>');
+
+
+  $('#user_management').show();
+
+
+  <% if at_retiming_status[4] == 1  %>
+    $("#at_iticket_edit").show();
+  <% end %>
+
+
+  <% if at_retiming_status[0..1] == [0,0] %>
+
+    <% for user in IRetimeaccess.show_retiming_users(User.current.id) %>
+      $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+    <% end %>
+    
+    <% if at_retiming_status[4] == 1 && at_retiming_status[2] > 0 %>
+      $("#at_verify_retiming").show();
+    <% end %>
+  <% elsif at_retiming_status[0..1] == [1,0] %> 
+
+    <% for user in IRetimeaccess.show_retiming_users(User.current.id, @issue.id) %>
+      $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+    <% end %>
+
+    $('select#users_list').prop('disabled','disabled');
+    <% if at_retiming_status[5] == 1 %>
+      $("#at_reject_verification_retiming").show();
+    <% end %>
+    <% if at_retiming_status[6] == 1 %>
+      $("#at_approve_retiming").show();
+    <% end %>
+    <% if at_retiming_status[7] == 1 %>
+      $("#at_refuse_approve_retiming").show();
+    <% end %>
+  <% elsif at_retiming_status[0..1] == [1,1] %> 
+
+    <% for user in IRetimeaccess.show_retiming_users(User.current.id, @issue.id) %>
+      $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+    <% end %>
+
+    $('select#users_list').prop('disabled','disabled');
+    <% if at_retiming_status[7] == 1 %>
+      $("#at_refuse_approve_retiming").show();
+    <% end %>
+  <% else %>  
+
+  <% end %>
+
+  <% for user_id in at_retiming_status[3] %>
+    $('#users_list').find('option[value="'+<%= user_id %>+'"]').attr('selected','selected');
+  <% end %>
+
+if ($('#show_ticket').DataTable().data().length < 11 ) {
+  $('div.paging_simple_numbers').hide();
+}
+
+  $("#at_verify_retiming").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/verify_retiming?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+  $("#at_reject_verification_retiming").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/reject_retiming?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+  $("#at_approve_retiming").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/approve_retiming?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+  $("#at_refuse_approve_retiming").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/revoke_retiming?issue_id=<%= @issue.id.to_s %>","_self")////////;
+  });
+
+
+  $("#at_iticket_edit").click(function(e) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_retiming_table", { issue_id : <%= @issue.id.to_s %> , r_user_id: $("select#users_list").val() }, "json");  
+  });
+
+function set_retiming_user(){
+    $('#show_ticket').DataTable().clear().draw();
+    $("#at_iticket_edit").show();
+}
+
+function show_resource(obj) { 
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+}
+
+function update_datatable(data){
+
+    $('#ticket_version').html(data[1]);
+    $.each(data[0],function(i){
+      var color,status,actions,period,description,user_id,resource;
+      if (this["ientities"].length > 0) {
+        description = "";
+        $.each(this["ientities"],function(i){
+          description = description + '<label class="entity_caption">' + this["caption"] + '</label>' + '<br>';
+        });
+      } else {
+        description = this["description"];
+      }
+      resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
+      if (this["status_id"] == 3 && this["may_be_revoked"] == 1) {
+        actions = '<a id="' + this["uid"] + '" class="revoke_grant icon icon-close at_red" title="<%= l(:at_revoke_grant_it) %>" onclick="revoke_single_grant(this);"> </a>';
+        $('#show_ticket').DataTable().column(6).visible( true );
+      } else if (this["status_id"] == 2 && this["may_be_granted"] == 1) {
+        actions = '<a id="' + this["uid"] + '" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_grant_it) %>" onclick="grant_single_access(this);">';
+        $('#show_ticket').DataTable().column(6).visible( true );
+      } else {
+        actions = "";
+      }
+      
+      if ( this["status_id"] == 2) {
+        if ( this["status_id"] == 2 ) {
+          color = "#4ebf67";
+          status = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/' + this["user_id"] + '/profile" class="user active" data-remote="true" title="">' + this["user_name"] + '</a></span>' + '<p style="color: ' + color +  ' !important">'+ this["status"] + "</p>";
+        } 
+
+      } else if (this["status_id"] == 1 || this["status_id"] == 0) {
+        color = "#F78282";
+        status = '<p style="color: ' + color +  ' !important">'+ this["status"] + '</p>';
+
+      } 
+      if (this["e_date"] == "31.12.2025") {
+        period = "<%= l(:at_forever) %><%= l(:at_since) %>" + this["s_date"];
+      } else {
+        period = this["s_date"]+" -<br>"+this["e_date"];
+      }
+      
+
+      $('#show_ticket').DataTable().row.add([
+      resource,
+      this["i_roles"].join('<br>'),
+      description,
+      period,
+      this["r_date"],
+      status,
+      actions
+      ]).draw();
+    });
+}
+
+var ch_opts = {width:"250px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
+$('#users_list').chosen(ch_opts);
+$('select[name="show_ticket_length"]').parent().hide();
+$('#show_ticket_wrapper').attr('style','min-height:300px');
+
+
+
+</script>
+
+<div id="msgBox" style="display:none;"></div>
+
+<%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>
+
+<% end %>

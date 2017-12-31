@@ -17,10 +17,312 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 class IaccessesController < ApplicationController
 
-   def confirm_revoking
+  def export_all_accesses
+    if ITicket.check_security_officer(User.current)
+      current_user_id = User.current.id
+      a_ies = []
+      a_ies.push(['#issue','#resource','#role','#description','#start_date','#end_date','#deactivated_in','#deactivated_at'])
+      grant_filter = false
+      revoke_filter = false
+      if params[:grant_filter].present?
+        if params[:grant_filter] == "on"
+          grant_filter = true
+          s_date_g = params[:s_date_g]
+          e_date_g = params[:e_date_g]
+        end
+      end
+      if params[:revoke_filter].present?
+        if params[:revoke_filter] == "on"
+          revoke_filter = true
+          s_date_r = params[:s_date_r]
+          e_date_r = params[:e_date_r]
+        end
+      end
+      resources_list = IResource.active.all.map(&:id)
+      resources_list.each do |resource|
+        accesses_list = IAccess.accesses_list_by_resource(resource, current_user_id)
+        rev_accesses_list = IAccess.revoked_accesses_list_by_resource(resource, current_user_id)
+        if !revoke_filter
+          accesses_list.each do |access|
+            if grant_filter
+              if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+                a_ies.push(IAccess.create_export_row(access))
+              end
+            else
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          end
+        end
+        rev_accesses_list.each do |access|
+          if grant_filter && !revoke_filter
+            if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          elsif !grant_filter && revoke_filter
+            if access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          elsif grant_filter && revoke_filter
+            if access[:s_date].to_date > s_date_g.to_date && access[:s_date].to_date < e_date_g.to_date && access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          else
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        end
+      end
+      csv = IAccess.to_csv(a_ies)
+      respond_to do |format|
+        format.html
+        format.csv { send_data csv, :filename => 'accesses'+'_at_'+ Time.now().strftime("%HH-%MM-%d-%m-%Y") +'.csv' }
+      end
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+
+  end
+
+
+  def export_accesses
+    current_user_id = User.current.id
+    a_ies = []
+    a_ies.push(['#issue','#resource','#role','#description','#start_date','#end_date','#deactivated_in','#deactivated_at'])
+    grant_filter = false
+    revoke_filter = false
+    if params[:grant_filter].present?
+      if params[:grant_filter] == "on"
+        grant_filter = true
+        s_date_g = params[:s_date_g]
+        e_date_g = params[:e_date_g]
+      end
+    end
+    if params[:revoke_filter].present?
+      if params[:revoke_filter] == "on"
+        revoke_filter = true
+        s_date_r = params[:s_date_r]
+        e_date_r = params[:e_date_r]
+      end
+    end
+    if ITicket.check_security_officer(User.current) && params[:user_id].present? 
+      accesses_list = IAccess.accesses_list(params[:user_id].to_i, nil, current_user_id)
+      rev_accesses_list = IAccess.revoked_accesses_list(params[:user_id].to_i, current_user_id)
+
+      if !revoke_filter
+        accesses_list.each do |access|
+          if grant_filter
+            if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          else
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        end
+      end
+
+      rev_accesses_list.each do |access|
+        if grant_filter && !revoke_filter
+          if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        elsif !grant_filter && revoke_filter
+          if access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        elsif grant_filter && revoke_filter
+          if access[:s_date].to_date > s_date_g.to_date && access[:s_date].to_date < e_date_g.to_date && access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        else
+          a_ies.push(IAccess.create_export_row(access))
+        end
+      end
+
+      csv = IAccess.to_csv(a_ies)
+      respond_to do |format|
+        format.html
+        format.csv { send_data csv, :filename => 'accesses'+'_at_'+ Time.now().strftime("%HH-%MM-%d-%m-%Y") +'.csv' }
+      end
+    elsif ITicket.check_security_officer(User.current) && params[:resource_id].present?
+      current_user_id = User.current.id
+      accesses_list = IAccess.accesses_list_by_resource(params[:resource_id], current_user_id)
+      rev_accesses_list = IAccess.revoked_accesses_list_by_resource(params[:resource_id], current_user_id)
+
+      if !revoke_filter
+        accesses_list.each do |access|
+          if grant_filter
+            if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+              a_ies.push(IAccess.create_export_row(access))
+            end
+          else
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        end
+      end
+
+      rev_accesses_list.each do |access|
+        if grant_filter && !revoke_filter
+          if access[:s_date].to_date > s_date_g.to_date &&  access[:s_date].to_date < e_date_g.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        elsif !grant_filter && revoke_filter
+          if access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        elsif grant_filter && revoke_filter
+          if access[:s_date].to_date > s_date_g.to_date && access[:s_date].to_date < e_date_g.to_date && access[:deactivated_at].to_date > s_date_r.to_date && access[:deactivated_at].to_date < e_date_r.to_date
+            a_ies.push(IAccess.create_export_row(access))
+          end
+        else
+          a_ies.push(IAccess.create_export_row(access))
+        end
+      end
+
+      csv = IAccess.to_csv(a_ies)
+      respond_to do |format|
+        format.html
+        format.csv { send_data csv, :filename => 'accesses'+'_at_'+ Time.now().strftime("%HH-%MM-%d-%m-%Y") +'.csv' }
+      end
+
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+  end
+
+  def expand_by_user
+    if ITicket.check_security_officer(User.current) && params[:user_id].present?
+      user_id = params[:user_id]
+      at_pr = ISetting.active.where(:param => "at_project_id").first.value
+      tr_r = ISetting.active.where(:param => "tr_change_term_id").first.value
+      sec_group_id = ISetting.active.where(:param => "sec_group_id").first.value
+      eal = IAccess.expired_accesses_list(nil,user_id)
+      if !eal.empty?
+        counter = 0
+        eal.each do |access|
+          if IRetimeaccess.active.where("i_retimeaccesses.r_verified_by_id IS NULL or i_retimeaccesses.r_approved_by_id IS NULL").where(:r_uid => access[:r_uid]).empty?
+            counter = counter + 1
+          end
+        end
+        if counter > 0
+          i = Issue.create(:tracker_id => tr_r, :project_id => at_pr, :author_id => User.current.id, :assigned_to_id => sec_group_id,:subject => l(:at_prolongation), :description => "", :priority_id => 1)
+          if i.save
+            IRetimeaccess.create_prolongated_accesses(i.id,eal,Date.today.next_year.strftime("%d.%m.%Y"))
+            redirect_to Redmine::Utils::relative_url_root + "/issues/" + i.id.to_s, :status => 302 #root_url
+          else
+            render_error({:message => :notice_file_not_found, :status => 404})
+          end
+        else
+          render_error({:message => :at_notice_can_not_create_issue, :status => 404})
+        end
+      else
+        render_error({:message => :notice_file_not_found, :status => 404})
+      end
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+  end
+
+
+  def expand_by_resource
+    if ITicket.check_security_officer(User.current) && params[:resource_id].present?
+      resource_id = params[:resource_id]
+      at_pr = ISetting.active.where(:param => "at_project_id").first.value
+      tr_r = ISetting.active.where(:param => "tr_change_term_id").first.value
+      sec_group_id = ISetting.active.where(:param => "sec_group_id").first.value
+      eal = IAccess.expired_accesses_list(resource_id)
+      if !eal.empty?
+        counter = 0
+        eal.each do |access|
+          if IRetimeaccess.active.where("i_retimeaccesses.r_verified_by_id IS NULL or i_retimeaccesses.r_approved_by_id IS NULL").where(:r_uid => access[:r_uid]).empty?
+            counter = counter + 1
+          end
+        end
+        if counter > 0
+          i = Issue.create(:tracker_id => tr_r, :project_id => at_pr, :author_id => User.current.id, :assigned_to_id => sec_group_id,:subject => l(:at_prolongation, :resource_name => IResource.find(resource_id).name), :description => "", :priority_id => 1)
+          if i.save
+            IRetimeaccess.create_prolongated_accesses(i.id,eal,Date.today.next_year.strftime("%d.%m.%Y"))
+            i.watcher_user_ids = i.watcher_user_ids | IRetimeaccess.resowners_for_issue(i.id) 
+            i.save
+            redirect_to Redmine::Utils::relative_url_root + "/issues/" + i.id.to_s, :status => 302 #root_url
+          else
+            render_error({:message => :notice_file_not_found, :status => 404})
+          end
+        else
+          render_error({:message => :at_notice_can_not_create_issue, :status => 404})
+        end
+      else
+        render_error({:message => :notice_file_not_found, :status => 404})
+      end
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+  end
+
+
+
+  def set_dismissal_user
+    if params[:r_user_id].present? && params[:issue_id].present?
+      issue_id = params[:issue_id]
+      r_user_id = params[:r_user_id].to_i
+      user_id = User.current.id
+      if IAccess.can_dismiss_user(r_user_id, user_id)
+        old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id) 
+        if !old_r_accesses.empty?
+          old_r_accesses.update_all(:revoked_by_id => nil, :rev_issue_id => nil, :deactivated_by_id => nil, :deactivated_at => nil)
+          IAccess.refuse_confirmation_revoking_for_accesses(issue_id, user_id)
+        end
+        accesses = IAccess.accesses_list(r_user_id)
+        if !accesses.empty?
+          rev_accesses = []
+          accesses.each do |access|
+            r_access = {}
+            r_access[:r_uid] = access[:r_uid]
+            r_access[:entities] = []
+            access[:ientities].each do |ientity|
+              r_access[:entities].push(ientity[:id].to_s)
+            end
+            rev_accesses.push(r_access)
+          end
+          rev_accesses.each do |rev_access|
+            if rev_access[:entities].empty?
+              IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => rev_access[:r_uid]).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id)
+            else
+              IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => rev_access[:r_uid], "i_accesses.i_entity_id" => rev_access[:entities]).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id)
+            end
+          end
+          issue = Issue.find(issue_id)
+          #issue.watcher_user_ids = issue.watcher_user_ids | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id)
+          #issue.save
+          revoking_status = IAccess.check_revoking_status(issue_id, user_id)
+          if revoking_status[4] == 1
+            IAccess.confirm_revoking_for_accesses(issue_id, user_id)
+            journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id) ### set system user_id
+            details = JournalDetail.new(:property => "attr", :prop_key => "assigned_to_id", :old_value => Issue.find(issue_id).assigned_to_id, :value => ISetting.active.where(:param => "admin_group_id").first.value)
+            journal.details << details
+            details = JournalDetail.new(:property => "attr", :prop_key => "status_id", :old_value => issue.status_id, :value => ISetting.active.where(:param => "working_issue_status_id").first.value.to_i)
+            journal.details << details
+            journal.save
+            issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "admin_group_id").first.value)
+            issue.update_attributes(:status_id => ISetting.active.where(:param => "working_issue_status_id").first.value.to_i)
+          end
+        else
+          IAccess.refuse_confirmation_revoking_for_accesses(issue_id, user_id)
+        end
+        accesses = IAccess.accesses_list(0, issue_id, user_id)
+        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 #root_url
+        #respond_to do |format|
+        #  format.json { render :json =>  [accesses, IAccess.last_revoking_version(issue_id, user_id), IAccess.check_revoking_status(issue_id, user_id)] }
+        #end
+      else
+        head :forbidden
+      end
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+  end
+
+  def confirm_revoking
     if params[:issue_id].present?
       issue_id = params[:issue_id]
       user_id = User.current.id
@@ -191,22 +493,25 @@ class IaccessesController < ApplicationController
       #inputData = params[:i_tickets]
       old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id) 
       if !old_r_accesses.empty?
-        old_r_accesses.update_all(:revoked_by_id => nil, :rev_issue_id => nil, :r_created_by_id => nil)
+        old_r_accesses.update_all(:revoked_by_id => nil, :revoked_at => nil, :rev_issue_id => nil, :r_created_by_id => nil)
       end
 
       if !inputData.empty?
         inputData.each do |ticket|
           if ticket["entities"].empty?
-            ids = IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).select("i_accesses.id").map(&:id)
+            if !IResource.find(ITicket.where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).first[:i_resource_id]).has_entities
+              ids = IAccess.active.joins(:iticket).where("i_accesses.rev_issue_id is NULL").where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"]).select("i_accesses.id").map(&:id)
+              IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now)
+            end
           else
-            ids = IAccess.joins(:iticket).where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"], "i_accesses.i_entity_id" => ticket["entities"]).select("i_accesses.id").map(&:id)
+            ids = IAccess.active.joins(:iticket).where("i_accesses.rev_issue_id is NULL").where("i_tickets.user_id" => r_user_id, "i_tickets.r_uid" => ticket["r_uid"], "i_accesses.i_entity_id" => ticket["entities"]).select("i_accesses.id").map(&:id)
+            IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now)
           end
-          IAccess.where(:id => ids).update_all(:rev_issue_id => issue_id, :r_created_by_id => user_id, :updated_at => Time.now) 
         end
       end
-      issue = Issue.find(issue_id)
-      issue.watcher_user_ids = issue.watcher_user_ids | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id)
-      issue.save      
+      #issue = Issue.find(issue_id)
+      #issue.watcher_user_ids = issue.watcher_user_ids | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id)
+      #issue.save      
       accesses = IAccess.accesses_list(r_user_id, issue_id)
       respond_to do |format|
         format.json { render :json =>  [accesses, IAccess.last_revoking_version(issue_id, user_id), IAccess.check_revoking_status(issue_id, user_id)] }
@@ -229,6 +534,8 @@ class IaccessesController < ApplicationController
     end
   end
 
+
+
   def self.check_revoking_editable(issue_id, user)
     if user.id == 1 || user.id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id)) 
       return true
@@ -241,6 +548,15 @@ class IaccessesController < ApplicationController
   end
 
 
+  def OLD_show_template
+      template_id = params[:template_id]
+      tickets = ITicktemplate.template_tickets_list(template_id)
+      respond_to do |format|
+        format.json { render :json =>  tickets }
+      end
+  end
+
+
   def available_users
     respond_to do |format|
       format.json { render :json => [IGrouplider.available_users(User.current)] }
@@ -250,6 +566,7 @@ class IaccessesController < ApplicationController
   def accesses_list
     @user_id = User.current.id
     users_nosort = []
+
     @is_resowner = IResowner.is_resowner(@user_id)
     @is_resgranter = IResgranter.is_resgranter(@user_id)
     @is_group_lider = IGrouplider.is_group_lider(@user_id)
@@ -263,8 +580,22 @@ class IaccessesController < ApplicationController
         render :template => 'iaccesses/access_list'
       }
     end
+
   end
 
+
+  def access_templates
+    user = User.current
+    if user.id == 1 || user.id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id)) || IGrouplider.is_group_lider(User.current.id)
+      respond_to do |format|
+        format.html {
+          render :template => 'iaccesses/access_templates'
+        } 
+      end
+    else
+      render_error({:message => :notice_file_not_found, :status => 404})
+    end
+  end
 
   def show_accesses
     current_user_id = User.current.id
@@ -307,6 +638,7 @@ class IaccessesController < ApplicationController
       user_id = User.current.id
       if IAccess.may_be_grant_access_by_issue_status(issue_id, user_id, r_uid)
         IAccess.grant_access_for_tickets(issue_id, user_id, r_uid)
+        #tickets = ITicket.tickets_list(issue_id, user_id)
         issue_status = ITicket.check_issue_status(issue_id)#, user_id)
         if issue_status[0..3] == [1,1,1,0]
           issue = Issue.find(issue_id)
@@ -343,6 +675,7 @@ class IaccessesController < ApplicationController
       if IAccess.may_be_revoke_grant_by_issue_status(issue_id, user_id, r_uid)
         old_issue_status = ITicket.check_issue_status(issue_id)#, user_id)
         IAccess.revoke_grant_for_tickets(issue_id, user_id, r_uid)
+        #tickets = ITicket.tickets_list(issue_id, user_id)
         issue_status = ITicket.check_issue_status(issue_id)#, user_id)
         if issue_status[0..3] == [1,1,0,0] && old_issue_status[0..3] == [1,1,1,0]
           issue = Issue.find(issue_id)
@@ -412,6 +745,7 @@ class IaccessesController < ApplicationController
     if IAccess.may_be_revoke_grant_by_issue_status(issue_id, user_id, r_uid)
       old_issue_status = ITicket.check_issue_status(issue_id, user_id)
       IAccess.revoke_grant_for_tickets(issue_id, user_id, r_uid)
+      #tickets = ITicket.tickets_list(issue_id, user_id)
       issue_status = ITicket.check_issue_status(issue_id, user_id)
       if issue_status[0..3] == [1,1,0,0] && old_issue_status[0..3] == [1,1,1,0]
         issue = Issue.find(issue_id)
@@ -446,7 +780,6 @@ class IaccessesController < ApplicationController
         issue_status = ITicket.check_issue_status(issue_id)
         if issue_status[0..3] == [1,1,1,1]
           issue = Issue.find(issue_id)
-          issue.update_attributes(:status_id => ISetting.active.where(:param => "blocked_issue_status_id").first.value.to_i)
           journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id)
           cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
           details = JournalDetail.new(:property => "cf", :prop_key => cf_confirming_id.to_s, :old_value => "0", :value => "1") ### set current_user
@@ -454,6 +787,7 @@ class IaccessesController < ApplicationController
           details = JournalDetail.new(:property => "attr", :prop_key => "status_id", :old_value => issue.status_id, :value => ISetting.active.where(:param => "blocked_issue_status_id").first.value.to_i)
           journal.details << details
           journal.save
+          issue.update_attributes(:status_id => ISetting.active.where(:param => "blocked_issue_status_id").first.value.to_i)####
         end
         redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
       else

@@ -128,7 +128,6 @@ function remove_resource(res_id){
   $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/remove_resource", { resource_id : res_id }, function( data ) {
     if (data.status == 1) {
       update_resources_list(data);
-      //$('#entity_list').DataTable().draw();
     }
   }, "json");
 
@@ -139,7 +138,7 @@ function confirm_removing_resource(obj) {
   var res_id = $(obj).attr("id");
   var code = 'remove_resource('+ res_id + ')';
   //eval(code);
-  show_confirm_dialog('<%=j l(:at_removing_resource) %>', '<%=j l(:at_confirm_removing_resource) %>', code);
+  show_confirm_dialog('<%= l(:at_removing_resource) %>', '<%= l(:at_confirm_removing_resource) %>', code);
 }
 
 function validate_name_len(name, len) {
@@ -171,14 +170,14 @@ function show_confirm_dialog(title, warning, code) {
     height:200,
     resizable: false,
     buttons: [{ 
-      text: "<%=j l(:at_no) %>",
+      text: "<%= l(:at_no) %>",
       class: "button-4",
       click: function () {
         confirm_result =  false;
         $(this).dialog('close');
       }, 
     },  {
-      text: "<%=j l(:at_yes) %>",
+      text: "<%= l(:at_yes) %>",
       class: "button-6",
       click: function() {
         confirm_result = true;
@@ -267,6 +266,7 @@ $('#resources_list').DataTable({
   }
 
 function update_resources_list(data) {
+
   if (data.iresources.length > 0) {
     
     $('#resources_list').DataTable().clear().draw();
@@ -279,7 +279,6 @@ function update_resources_list(data) {
       resgranters = "";
       var iroles = this["roles"];
       if (iroles.length > 0) {
-
         if (iroles.length < 5) {
           $.each(iroles, function(i) {
             var role_id, role_name;
@@ -369,7 +368,6 @@ function update_resources_list(data) {
       } else {
         resgranters = "";
       }
-      //actions = '<a id="'+id+'" style="color: #4ebf67 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-list" title="<%=j l(:at_details) %>" onclick="show_resource(this);"></a>';
       actions = '';
       if (this["editable"] == 1) {
         actions = actions + '<a id ="'+id+'" style="color: #52afe5 !important; line-height: 30px !important; font-size: 30px !important;  cursor: pointer;" class="icon-cf" title="<%=j l(:at_edit) %>" onclick="edit_resource(this);"></a>';
@@ -444,6 +442,7 @@ $('#resources_list').DataTable().column(4).visible( false );
 <% if ITicket.check_security_officer(User.current) || IResgranter.is_resgranter(User.current.id) || IResowner.is_resowner(User.current.id) %>
   $('#resources_list').DataTable().column(4).visible( true );
 <% end %>
+$('#easy_servicebar').remove();
 </script>
 
 

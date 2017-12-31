@@ -23,6 +23,7 @@
   </div>
   <%= content_tag('div', render(:partial => "isettings/main_settings", :locals => {}), :id => 'tab-content-main_settings', :style => (''), :class => 'tab-content') %>
   <%= content_tag('div', render(:partial => "isettings/groups_mgt", :locals => {}), :id => 'tab-content-liders_mgt', :style => ('display:none'), :class => 'tab-content') %>
+  
 <% else %>
   <div class="tabs">
     <ul>
@@ -42,7 +43,6 @@
 
 <script>
   $('div#settings form input[type="submit"]').val("Закрыть");
-  //$('#content').append("<%=j content_tag('div', render(:partial => 'isettings/resugroups_mgt', :locals => {}), :id => 'tab-content-resugroups_mgt', :style => ('display:none'), :class => 'tab-content') %>");
 </script>
 
 
@@ -58,5 +58,4 @@
   }
 </style>
 
-
-<%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>
+<%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => SecureRandom.hex(5), :style => (''), :class => '') %>

@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with access_tickets.  If not, see <http://www.gnu.org/licenses/>.
 
-
 class IGrouplider < ActiveRecord::Base
 
   belongs_to :user, :class_name => "User", :foreign_key => "user_id"

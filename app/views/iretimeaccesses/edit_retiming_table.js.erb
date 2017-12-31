@@ -1,0 +1,341 @@
+var issue_itickets = $.parseJSON('<%=j raw @accesses %>');
+//console.log(issue_itickets);
+
+$(document.body).on('click', 'button.icon-del', function() {
+  $('#edit_ticket').DataTable().row( $(this).parents('tr') ).remove().draw();
+  $('#at_versions option:selected').removeAttr("selected");
+});
+
+
+$("#msgBox").html(' \
+  <table id ="edit_ticket" class="list entities issues issues_index context-menu-container"> \
+	<thead><tr> \
+    <th style="" title="<%=j l(:at_activity) %>" style="background:none !important"><a class="icon icon-settings settings"/a></th>        \
+		<th style="" title="<%=j l(:at_employee) %>"><%=j l(:at_employee) %></th>        \
+		<th style="" title="<%=j l(:at_resource) %> / <%=j l(:at_role) %>"><%=j l(:at_resource) %> / <%=j l(:at_role) %></th>        \
+		<th style="" title="<%=j l(:at_note) %>"><%=j l(:at_note) %></th>       \
+		<th style="width:12%" title="<%=j l(:at_period) %>"><%=j l(:at_period) %></th>      \
+    <th style="width:15%" title="<%=j l(:at_r_date) %>"><%=j l(:at_r_date) %></th>      \
+	</tr></thead>    \
+	<tbody><tr>     \
+		<td></td>  \
+		<td></td>   \
+		<td></td>    \
+		<td></td> \
+		<td></td>    \
+    <td></td>    \
+	</tr></tbody>  \
+	   </table>' );
+
+
+$('#msgBox').prop('title', '<%=j l(:at_retiming_changing) %>');
+
+
+$('#msgBox').dialog({
+  //autoOpen: false,
+  resizable: false,
+  //autoResize: true,
+  //show: "clip",
+  //hide: "clip",
+  height: '600',
+  width: '1120',
+  //autoOpen: false,
+  modal: true,
+  position: 'center',
+  buttons: [{ 
+    text: "<%=j l(:at_cancel) %>",
+    class: "button-6",
+    click: function () {
+              $(this).dialog('close');
+            }, 
+  },
+
+  { 
+    text: "<%=j l(:at_save) %>",
+    class: "button-5",
+    click: function() {
+      var table_errors = 0;
+      var Rows = $('#edit_ticket').DataTable().settings()[0]["aoData"];
+      var sendData = new Array();
+      if (Rows.length > 0) {
+        $('#edit_ticket tbody tr').each(function(){
+
+          var access = {};
+          access["r_uid"] = "";
+          access["r_date"] = [];
+          access["users"] = new Array();
+          $(this).find('span').each(function(){
+            user = {};
+            user["id"] =  $(this).attr('id');
+            access["users"].push(user);
+          });
+          access["r_uid"] = $(this).attr('id');
+          //access["e_date"] = $(this).attr('data_e_date');
+          access["r_date"] = $(this).find('.r_date').val();
+          sendData.push(access);
+        });
+        $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_retiming_table/save", { issue_id: <%=j @issue_id %>, i_tickets: JSON.stringify(sendData) }, function( data ) {
+          $( "#ajax-modal" ).before($('#ajax-indicator').clone());
+          location.reload();
+        }, "json");
+      } 
+      $( "#msgBox" ).dialog( "close" );
+      
+    } 
+  }]
+
+});
+
+$(document.body).on('focus', '.chosen-container', function() {
+    $(this).find('a').css("border-color", "");
+});
+
+$(document.body).on('focus', '.search-field input', function() {
+    $(this).parent().parent().css("border-color", "");
+});
+
+
+showModal('msgBox');
+
+
+
+$('#edit_ticket').DataTable({
+    "bPaginate": true,
+    "bFilter": true, 
+    //"processing": false,
+    //"serverSide": true,
+   
+    "createdRow" : function( row, data, index ) {
+
+        // Add identity if it specified
+        //if( data.hasOwnProperty("id") ) {
+        //    row.id = "row-" + data.id;
+        //} 
+        //var count = 
+        if (index > 0) {
+          var IDs = [];
+          $("#edit_ticket").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          //console.log(IDs);
+          //console.log(Math.max.apply(Math,IDs));
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": false,
+    //"iDisplayLength": 4,
+    "lengthMenu": [[4, -1 ], [4, "<%= l(:at_all_entries) %>"]],
+    "bSort" : false,
+    "oLanguage": {
+		"sInfo": "<%= l(:at_sInfo) %>",
+		"sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+		"sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+		"sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                "sSearch": "",
+    "oPaginate": {
+            "sFirst": "<%= l(:at_sFirst) %>",
+            "sNext": "<%= l(:at_sNext) %>",
+            "sLast": "<%= l(:at_sLast) %>",
+            "sPrevious": "<%= l(:at_sPrevious) %>"
+    },
+		"sLengthMenu": "<%= l(:at_sLengthMenu) %>",
+    "columns": [
+        {"sClass": "dom"},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+	},
+});
+
+
+
+
+
+var dpOptions={dateFormat: 'dd.mm.yy', 
+  firstDay: 1,  
+  onSelect: function(dateText, inst){
+    $('#'+ inst.id).change();
+    $(this).css('border-color','#CCC');
+    $(this).removeAttr('style');
+  },
+  showOn: 'button', 
+  buttonImageOnly: false, 
+  buttonText: 'C', 
+  showButtonPanel: true, 
+  showWeek: true, 
+  showOtherMonths: true, 
+  selectOtherMonths: true, 
+  changeMonth: true, 
+  changeYear: true, 
+  yearRange: '2015:2025',
+  beforeShow: function( input ) {
+
+  setTimeout(function() {  
+    $("button.ui-datepicker-current").remove();
+     var buttonPane = $( input )  
+       .datepicker( "widget" )  
+       .find( ".ui-datepicker-buttonpane" );  
+     var btn = $('<button class="ui-datepicker-current ui-state-default ui-priority-secondary ui-corner-all" type="button"><%=j l(:at_forever) %></button>');  
+     btn  
+      .unbind("click")  
+     .bind("click", function () {   
+       $(input).removeAttr('style');
+       $(input).val("<%=j l(:at_forever) %>");
+       $(input).datepicker("hide");
+       $(input).css('border-color','#CCC');
+    });  
+    btn.appendTo( buttonPane );    
+  }, 1 );  
+  }
+};
+
+var g_dpOptions={dateFormat: 'dd.mm.yy', 
+  firstDay: 1,  
+  onSelect: function(dateText, inst){
+    $('#'+ inst.id).change();
+    $(this).css('border-color','#CCC');
+    $(this).removeAttr('style');
+    set_r_date(dateText);
+  },
+  showOn: 'button', 
+  buttonImageOnly: false, 
+  buttonText: 'C', 
+  showButtonPanel: true, 
+  showWeek: true, 
+  showOtherMonths: true, 
+  selectOtherMonths: true, 
+  changeMonth: true, 
+  changeYear: true, 
+  yearRange: '2015:2025',
+  beforeShow: function( input ) {
+
+  setTimeout(function() {  
+    $("button.ui-datepicker-current").remove();
+     var buttonPane = $( input )  
+       .datepicker( "widget" )  
+       .find( ".ui-datepicker-buttonpane" );  
+     var btn = $('<button class="ui-datepicker-current ui-state-default ui-priority-secondary ui-corner-all" type="button"><%=j l(:at_forever) %></button>');  
+     btn  
+      .unbind("click")  
+     .bind("click", function () {   
+       $(input).removeAttr('style');
+       $(input).val("<%=j l(:at_forever) %>");
+       $(input).datepicker("hide");
+       $(input).css('border-color','#CCC');
+    });  
+    btn.appendTo( buttonPane );    
+  }, 1 );  
+  }
+};
+
+function set_r_date(date){
+  var Rows = $('#edit_ticket').DataTable().settings()[0]["aoData"];
+  var sendData = new Array();
+  if (Rows.length > 0) {
+    $('#edit_ticket tbody tr').each(function(){
+      $(this).find('.r_date').val(date);
+    });
+  }
+}
+
+function update_tickets_table(itickets){
+  $('#edit_ticket').DataTable().clear().draw();
+  var description;
+  $.each(itickets,function(i){
+    var description,checkbox,users;
+    if (this["users_ids"].length > 0) {
+        users = "";
+        $.each(this["users_ids"],function(i){
+          users = users + '<span id="' + this["id"] + '">' + this["name"] + '</span>' + '<br>';
+        });
+    }
+
+
+    if (this["ientities"].length > 0) {
+        description = "";
+        $.each(this["ientities"],function(i){
+          description = description + '<label class="entity_caption">' + this["caption"] + '</label>' + '<br>';
+        });
+    } else {
+      description = this["description"];
+    }
+    if (this["r_date"] == undefined) {
+      r_date = '<input type="text" class="r_date" readonly="readonly" value="'+ this["e_date"] + '">';
+    } else {
+      if (this["prolongation"] == 1) { 
+        color = '#4ebf67';
+      } else {
+        color = '#F78282';
+      }
+      r_date = '<input style="color: ' + color + '" type="text" class="r_date" readonly="readonly" value="'+ this["r_date"] + '">';
+    }
+    $('#edit_ticket').DataTable().row.add([
+        '<button class="icon icon-del button-2 button-blue" title="<%=j l(:at_remove) %>"><span class="glyph info"></span> </button>',
+        users,
+        this["i_resource"]+ ' / <br>' + this["i_roles"].join('<br>'),
+        description,
+        this["s_date"] + " - " + this["e_date"],
+        r_date
+    ]).draw()
+        .nodes()
+        .to$()
+        .attr('id', this["r_uid"] )
+        //.attr('user_id', this["users_ids"][0]["id"] )
+        .attr('data_e_date', this["e_date"] );
+    $('.r_date').datepicker(dpOptions);
+  });
+}
+
+if (issue_itickets) {
+  update_tickets_table(issue_itickets);
+}
+  $('#ticket_action').remove();
+
+$(".ui-dialog-titlebar").after('<div id="ticket_action" style="" class="dataTables_wrapper"></div>');
+
+$('#ticket_action').append('<div id="user_management" style=""></div>');
+$('#user_management').append('<%= label_tag(:at_employee_id, l(:at_employee) + ":") %>');
+ $("label[for='at_employee_id']").attr("style","float:left;margin-top:4px"); 
+$('#user_management').append('<%=j select_tag("users_list", nil, {:style=>"width: 200px; margin-top: 4px;float: left;margin-left:10px;", :class => "", :onchange => "show_retiming_accesses(this)", :prompt => l(:at_select_employee), "data-placeholder" => l(:at_select_employee)} ) %>');
+
+$('#ticket_action').append('<div id="date_management" style="margin-top:4px"></div>');
+$('#date_management').append('<span style= "float: right; width:15%;margin-left:5px" ><input id="at_g_date" type="text" class="r_date" readonly="readonly" value=""></span>');
+$('#at_g_date').datepicker(g_dpOptions);
+$('#date_management').append('<%= label_tag(:l_at_g_date, l(:at_g_date) + ":") %>');
+ $("label[for='l_at_g_date']").attr("style","float:right;margin-top:5px"); 
+
+
+
+<% for user in @users_list %>
+  $('#users_list').append('<option value="<%= user[:id] %>"><%= user[:name] %></option>');
+<% end %>
+
+var ch_opts = {width:"250px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
+$('#users_list').chosen(ch_opts);
+
+
+$('#edit_ticket_filter label input[type=search]').hide();
+
+/*<% if !ITicket.active.where(:issue_id => @issue_id).empty? %>
+
+  $('#at_versions option[value='+'<%=j ITicket.ticket_last_version(@issue_id).t_uid %>'+']').attr('selected','selected');
+
+<% end %>*/
+
+function show_retiming_accesses(obj) {
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_retiming_accesses", { issue_id: <%=j @issue_id %>, user_id: $(obj).val() }, function( data ) {
+    if (data[0].length > 0) {
+      update_tickets_table(data[0]);
+    }
+  }, "json");
+}
+
+var ch_opts = {allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>'};
+
+

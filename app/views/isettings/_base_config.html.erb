@@ -18,8 +18,21 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_project_bs, l(:at_or_create_plugin_project)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('project_name', nil, :title => l(:at_enter_name), :value => l(:at_access_tickets), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_new_emp_id, l(:at_tr_new_emp_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_new_emp_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_new_emp, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_new_emp_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_new_emp_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
 
@@ -31,11 +44,23 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_tracker_grant, l(:at_or_create_new_tracker)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('tr_grant_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_grant_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
 
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_change_term_id, l(:at_tr_change_term_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_change_term_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_change_term, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_change_term_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_change_term_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
 
   <div class="param-line" style="margin-bottom:5px;width:95%;">
     <div class="param-label">
@@ -45,12 +70,37 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_tracker_revoke, l(:at_or_create_new_tracker)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('tr_revoke_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_revoke_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
 
 
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_dismissal_id, l(:at_tr_dismissal_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_dismissal_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_dismissal, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_dismissal_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_dismissal_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:access_tickets_tr_template_agreement_id, l(:at_tr_template_agreement_sbs) + ':') %>
+    </div>
+    <%= select_tag('tr_template_agreement_id', options_from_collection_for_select(Tracker.all, :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_tracker_template_agreement, l(:at_or_create_new_tracker)) %>
+    </div>
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('tr_template_agreement_name', nil, :title => l(:at_enter_name), :value => l(:at_tr_template_agreement_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
 
   <div class="param-line" style="margin-bottom:5px;width:95%;">
       <div class="param-label">
@@ -60,7 +110,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_verified_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_verified_name', nil, :title => l(:at_enter_name), :value => l(:at_cf_verified_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -73,7 +123,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_approved_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_approved_name', nil, :title => l(:at_enter_name), :value => l(:at_cf_approved_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -88,7 +138,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_granting_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_granting_name', nil, :title => l(:at_enter_name), :value => l(:at_granted_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -101,7 +151,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_confirming_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_confirming_name', nil, :title => l(:at_enter_name), :value => l(:at_confirmed_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -115,7 +165,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_revoked_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_revoked_name', nil, :title => l(:at_enter_name), :value => l(:at_access_revoking_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -128,8 +178,21 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cf_deactivated_id, l(:at_or_create_new_cf)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cf_deactivated_name', nil, :title => l(:at_enter_name), :value => l(:at_access_deactivating_bs), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
+    </div>
+  </div>
+
+  <div class="param-line" style="margin-bottom:5px;width:95%;">
+    <div class="param-label">
+      <%= label_tag(:at_cf_new_emp_first_day_id, l(:at_cf_new_emp_first_day_sbs) + ':') %>
+    </div>
+    <%= select_tag('cf_new_emp_first_day_id', options_from_collection_for_select(IssueCustomField.where(:type => 'IssueCustomField', :field_format => "date"), :id, :name), {:style=>'width: 200px !important', :include_blank => true, :onchange => "clear_input(this);"} ) %>
+    <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= label_tag(:at_new_cf_new_emp_first_day_id, l(:at_or_create_new_cf)) %>
+    </div>
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
+      <%= text_field_tag('cf_new_emp_first_day_name', nil, :title => l(:at_enter_name), :value => l(:at_cf_new_emp_first_day), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
 
@@ -141,7 +204,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_working_issue_status, l(:at_or_create_new_status)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('wis_name', nil, :title => l(:at_enter_name), :value => l(:at_issue_in_progress_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -154,7 +217,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_granted_issue_status, l(:at_or_create_new_status)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('gis_name', nil, :title => l(:at_enter_name), :value => l(:at_issue_resolved_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input' ) %>
     </div>
   </div>
@@ -167,7 +230,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_blocked_issue_status, l(:at_or_create_new_status)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('bis_name', nil, :title => l(:at_enter_name), :value => l(:at_issue_closed_status), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
     </div>
   </div>
@@ -180,7 +243,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_sec_group, l(:at_or_create_new_group)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('sec_group_name', nil, :title => l(:at_enter_name), :value => l(:at_security_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
     </div>
   </div>
@@ -193,7 +256,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_admin_group, l(:at_or_create_new_group)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('admin_group_name', nil, :title => l(:at_enter_name), :value => l(:at_admin_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
     </div>
   </div>
@@ -206,7 +269,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_hr_group, l(:at_or_create_new_group)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('hr_group_name', nil, :title => l(:at_enter_name), :value => l(:at_hr_group), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
     </div>
   </div>
@@ -219,7 +282,7 @@
     <div class="new-input-label" style="margin-left:10px;width: 300px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= label_tag(:at_new_cw_group, l(:at_or_create_new_group)) %>
     </div>
-    <div class="new-input" style="width: 220px;display: inline-block;text-align: right;vertical-align: middle;">
+    <div class="new-input" style="width: 175px;display: inline-block;text-align: right;vertical-align: middle;">
       <%= text_field_tag('cw_group_name', nil, :title => l(:at_enter_name), :value => l(:at_constanly_watchers), :style=>'width: 220px;float:left;margin-left:10px;', :maxlength => "32", :class => 'at_input'  ) %>
     </div>
 
@@ -231,9 +294,9 @@
 <script type="text/javascript">
 
 
-var ws_ch_opts = {width:"200px", disable_search: false, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
+var ws_ch_opts = {width:"250px", disable_search: false, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
-var ms_ch_opts = {width:"200px", disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
+var ms_ch_opts = {width:"250px", disable_search: true, allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:''};
 
 $('#at_simple_approvement').chosen(ms_ch_opts);
 

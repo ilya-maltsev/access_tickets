@@ -1,5 +1,5 @@
 var issue_itickets = $.parseJSON('<%=j raw @accesses %>');
-//console.log(issue_itickets);
+
 
 $(document.body).on('click', 'button.icon-del', function() {
   $('#edit_ticket').DataTable().row( $(this).parents('tr') ).remove().draw();
@@ -74,6 +74,9 @@ function uncheck_single_row(obj) {
 
 
 
+
+
+
 $("#msgBox").html(' \
   <table id ="edit_ticket" class="list entities issues issues_index context-menu-container"> \
 	<thead><tr> \
@@ -134,7 +137,7 @@ $('#msgBox').dialog({
             sendData.push(access);
           }
         });
-        $.post("access_tickets/edit_revoking_table/save", { issue_id: <%=j @issue_id %>, r_user_id: <%=j @r_user_id %>, i_tickets: JSON.stringify(sendData) }, function( data ) {
+        $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/edit_revoking_table/save", { issue_id: <%=j @issue_id %>, r_user_id: <%=j @r_user_id %>, i_tickets: JSON.stringify(sendData) }, function( data ) {
           $( "#ajax-modal" ).before($('#ajax-indicator').clone());
           location.reload();
         }, "json");
@@ -156,8 +159,6 @@ $(document.body).on('focus', '.search-field input', function() {
 
 showModal('msgBox');
 
-
-
 $('#edit_ticket').DataTable({
     "bPaginate": true,
     "bFilter": true, 
@@ -177,18 +178,18 @@ $('#edit_ticket').DataTable({
     "lengthMenu": [[4, -1 ], [4, "<%= l(:at_all) %>"]],
     "bSort" : true,
     "oLanguage": {
-		"sInfo": "<%= l(:at_sInfo) %>",
-		"sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
-		"sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
-		"sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+    "sInfo": "<%= l(:at_sInfo) %>",
+    "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+    "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+    "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
                 "sSearch": "",
-		"oPaginate": {
+    "oPaginate": {
             "sFirst": "<%= l(:at_sFirst) %>",
             "sNext": "<%= l(:at_sNext) %>",
             "sLast": "<%= l(:at_sLast) %>",
             "sPrevious": "<%= l(:at_sPrevious) %>"
-		},
-		"sLengthMenu": "<%= l(:at_sLengthMenu) %>",
+    },
+    "sLengthMenu": "<%= l(:at_sLengthMenu) %>",
     "columns": [
         {"sClass": "dom"},
         {},
@@ -201,19 +202,30 @@ $('#edit_ticket').DataTable({
 });
 
 
+
 if (issue_itickets) {
 
   $('#edit_ticket').DataTable().clear().draw();
 
   var description;
-
   $.each(issue_itickets,function(i){
-    var actions,description,checkbox;
-    actions = '<input id="'+ this["r_uid"] +'" type="checkbox" class="single_checker" onclick="check_single_row(this)">';
+    var actions,description,checkbox,class_id, rev_issue_id;
+    rev_issue_id = this["rev_issue_id"];
+    if ((rev_issue_id == null)||(rev_issue_id == <%=j @issue_id %>)) {
+      class_id = ""; 
+      actions = '<input id="'+ this["r_uid"] +'" type="checkbox" class="single_checker" onclick="check_single_row(this)">';
+    } else {
+      class_id = "revoked"; 
+      actions = '<a title="<%= l(:at_access_already_deactivating) %>'+ rev_issue_id + '" href="<%= Redmine::Utils::relative_url_root %>/issues/'+ rev_issue_id +'">#';
+    }
     if (this["ientities"].length > 0) {
         description = "";
         $.each(this["ientities"],function(i){
-          checkbox = '<input id="'+ this["id"] +'" type="checkbox" class="entity_checker" onclick="uncheck_single_row(this)">';
+          if ((rev_issue_id == null)||(rev_issue_id == <%=j @issue_id %>)) {
+            checkbox = '<input id="'+ this["id"] +'" type="checkbox" class="entity_checker" onclick="uncheck_single_row(this)">';
+          } else {
+            checkbox = "";
+          }
           description = description + '<label class="entity_caption">' + checkbox +  this["caption"] + '</label>' + '<br>';
         });
     } else {
@@ -229,7 +241,10 @@ if (issue_itickets) {
         description,
         this["s_date"],
         this["e_date"]
-    ]).draw();
+    ]).draw()
+    .nodes()
+    .to$()
+    .addClass(class_id);
 
   });
 

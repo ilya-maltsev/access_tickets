@@ -1,0 +1,459 @@
+<% if @issue.project_id == ISetting.active.where(:param => "at_project_id").first.value.to_i && (IGrouplider.is_group_lider(User.current.id) || IResowner.is_resowner(User.current.id) || IResgranter.is_resgranter(User.current.id) || ITicket.check_security_officer(User.current)) %>
+
+
+<div id="" class="box">
+
+<fieldset class="at_descript">
+<legend><h4><%= l(:at_template_access_list) %></h4></legend>
+
+
+  <table id="show_access" class="list entities issues issues_index context-menu-container">
+    <thead>
+      <tr>
+        <th style="width:25%" title="<%= l(:at_resource) %>"><a><%= l(:at_resource) %></a></th>
+        <th style="width:15%" title="<%= l(:at_role) %>"><a><%= l(:at_role) %></a></th>
+        <th style="width:25%" title="<%= l(:at_note) %>"><a><%= l(:at_note) %></a></th>
+        <th style="width:10%" title="<%= l(:at_status) %>"><a><%= l(:at_status) %></a></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for template in ITicktemplate.template_tickets_list(at_template_status[3], at_template_status[2], @issue.id) %>
+        <tr>
+          <td>
+            <span class="nowrap">
+              <a id="<%= template[:i_resource_id].first %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= template[:i_resource] %></a>
+            </span>
+          </td>
+
+          <td>
+            <% for role in template[:i_resource_roles] %>
+              <%= role[:name] %><br>
+            <% end %>
+          </td>
+
+          <td>
+            <% if template[:i_res_has_entities] %>
+              <% for entity in template[:i_entities].where(:id => template[:i_entity]) %>
+                <% if template[:i_res_has_ip] %>
+                  <%= entity[:name] %> [<%= entity[:ipv4] %>];<br>
+                <% else %>
+                  <%= entity[:name] %><br>
+                <% end %>
+              <% end %>
+            <% else %>
+              <%= template[:description] %>
+            <% end %>
+          </td>
+
+          <td>
+          <span class="add-user-links" data-id="1">
+          <% if template[:status_id] == 2  %>
+          <p style="color: #4ebf67 !important"><%= template[:status] %>
+            <a href="<%= Redmine::Utils::relative_url_root %>/users/<%= template[:user_id] %>/profile" class="" data-remote="true" title="<%= l(:title_user_detail) %>"><%= template[:user_name] %></a></span>
+            
+          <% elsif template[:status_id] == 3 %>
+          <p style="color: #4ebf67 !important"><%= template[:status] %>
+
+          <a href="<%= Redmine::Utils::relative_url_root %>/issues/<%= template[:new_retime_issue_id] %>">#<%= template[:new_retime_issue_id] %></a>
+          <% else %>
+            <p style="color: #F78282 !important"><%= template[:status] %>
+          <% end %>
+            </p>
+          </td>
+
+
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+
+<div style="clear: both;"></div>
+
+</fieldset>
+
+</div>
+
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/access_tickets.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.dataTables.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
+<script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
+
+<script type="text/javascript">
+var security_officer = <%= ITicket.check_security_officer(User.current) ? 1 : 0 %>;
+
+<% if ISetting.plugin_settings_ermi() == 1 %>
+$('table.attributes tbody').first().append('<tr><th style="padding-top:15px"><%= l(:at_group) %>:</th><td><%=j select_tag("group_list", options_from_collection_for_select(Group.where(:id => IGrouplider.group_ids(User.current.id)), :id, :name), {:style=>"width: 300px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "show_group_templates(this)", :prompt => l(:at_select_group), "data-placeholder" => l(:at_select_group)} ) %></td><th style="padding-top:15px"><%= l(:at_template) %>:</th><td><%=j select_tag("template_list", nil, {:style=>"width: 400px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "set_issue_template(this)", :prompt => l(:at_select_template), "data-placeholder" => l(:at_select_template)} ) %></td></tr>');
+$('#group_list').find('option[value="'+<%= at_template_status[2] %>+'"]').attr('selected','selected');
+$('#group_list').chosen(ch_opts);
+$('#group_list_chosen').attr('style','float:left; width:300px;margin-top: 6px');
+<% else %>
+$('div.attributes').first().append('<div style="padding-top:15px;margin-top:10px;height:50px !important" class="splitcontent"><div class="splitcontentleft"><div class="attribute" style="margin-top:20px;height:50px !important"><div style="margin-top:20px !important" class="label"><%= l(:at_group) %>:</div><div class="value"><%=j select_tag("group_list", options_from_collection_for_select(Group.where(:id => IGrouplider.group_ids(User.current.id)), :id, :name), {:style=>"width: 300px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "show_group_templates(this)", :prompt => l(:at_select_group), "data-placeholder" => l(:at_select_group)} ) %></div></div></div><div class="splitcontentleft"><div class="attribute" style="margin-top:20px;height:50px !important"><div style="margin-top:20px !important" class="label"><%= l(:at_template) %>:</div><div class="value"><%=j select_tag("template_list", nil, {:style=>"width: 400px; margin-top: 4px;float: left;margin-right:10px;", :class => "", :onchange => "set_issue_template(this)", :prompt => l(:at_select_template), "data-placeholder" => l(:at_select_template)} ) %>  </div></div></div></div>');
+$('#group_list').find('option[value="'+<%= at_template_status[2] %>+'"]').attr('selected','selected');
+$('#group_list').chosen(ch_opts);
+$('#group_list_chosen').attr('style','float:left; width:300px;margin-top: 10px;z-index:2');
+<% end %>
+
+
+
+<% if at_template_status[0] == 1 %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_verified_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_verified_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+<% if at_template_status[1] == 1 %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_approved_id").first.value.to_i %>]']").attr("style", "color: #4ebf67 !important");
+<% else %>
+  $("span[data-name='issue[custom_field_values][<%= ISetting.active.where(:param => "cf_approved_id").first.value.to_i %>]']").attr("style", "color: #F78282 !important");
+<% end %>
+
+
+    <% if at_template_status[0] == 1 %>
+      $('select#template_list').prop('disabled','disabled');
+      $('select#group_list').prop('disabled','disabled');
+      $('#group_list').trigger("chosen:updated");
+    <% end %>
+
+  <% if at_template_status[2] != 0 && at_template_status[3] != 0 %>
+    <% if at_template_status[1] == 1 %>
+      <% for template in ITicktemplate.select([:id,:name]).where(:id => at_template_status[3]) %>
+        $('#template_list').append('<option value="<%= template[:id] %>"><%= template[:name] %></option>');
+      <% end %>
+    <% else %>
+
+      <% for template in ITicktemplate.unapproved_templates(at_template_status[2]) %>
+        $('#template_list').append('<option value="<%= template[:id] %>"><%= template[:name] %></option>');
+      <% end %>
+
+    <% end %>
+    $('#template_list').find('option[value="'+<%= at_template_status[3] %>+'"]').attr('selected','selected');
+
+  <% end %>
+
+
+<% if ISetting.plugin_settings_ermi() == 1 %>
+  $('#template_list').chosen(ch_opts);
+  $('#template_list_chosen').attr('style','float:left; width:300px;margin-top: 6px');
+<% else %>
+  $('#template_list').chosen(ch_opts);
+  $('#template_list_chosen').attr('style','float:left; width:300px;margin-top: 10px;z-index:2');
+<% end %>
+
+$('#ajax-indicator span').text('<%= l(:at_loading) %>');
+
+$('#show_access').DataTable({
+    "createdRow" : function( row, data, index ) {
+        if (index > 0) {
+          var IDs = [];
+          $("#show_access").find("tr").each(function(){ 
+            IDs.push(this.id); 
+          });
+          row.id = Math.max.apply(Math,IDs) + 1;
+        } else {
+          row.id = index;
+        }   
+    },
+    "bInfo": false,
+    "bPaginate": false,
+    "bFilter": false, 
+    "lengthMenu": [[5, 10, -1], ["5 <%= l(:at_entries) %>", "10 <%= l(:at_entries) %>", "<%= l(:at_all_entries) %>"]],
+    "bSort" : false,
+    "oLanguage": {
+    "sInfo": "<%= l(:at_sInfo) %>",
+    "sInfoFiltered": "<%= l(:at_sInfoFiltered) %>",
+    "sInfoEmpty": "<%= l(:at_sInfoEmpty) %>",
+    "sZeroRecords": "<%= l(:at_ZeroRecords) %>",
+                "sSearch": "",
+    "oPaginate": {
+            "sFirst": "<%= l(:at_sFirst) %>",
+            "sNext": "<%= l(:at_sNext) %>",
+            "sLast": "<%= l(:at_sLast) %>",
+            "sPrevious": "<%= l(:at_sPrevious) %>"
+    },
+    "sLengthMenu": "<%= l(:at_sLengthMenu) %>",
+    "columns": [
+        {"sClass": "dom"},
+        {},
+        {},
+        {},
+        {},
+        {}
+    ],
+
+  },
+  });
+
+  $('div#show_ticket_length label').attr("style","float:left !important; width: 200px !important;"); 
+
+  $('#show_ticket_length label select').attr("style", "width:65% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
+
+
+
+  $('#show_ticket_length').attr("style","width:98%;margin-left:3px"); 
+
+  $('table#show_access').before('<div class="dataTables_wrapper dataTables_length" style="width:98%;display:none">');
+
+<% if at_template_status[2] > 0 %>
+  $('.dataTables_wrapper').show();
+<% end %>
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_verify_template" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_verify_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_red" id="at_reject_verification_template" name="button" style="float: left;margin-left:10px;display: none" type="button"><%=j l(:at_reject_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-1 nomargin-bottom" id="at_approve_template" name="button" style="float: right;margin-left:10px;display: none" type="button"><%=j l(:at_approve_all) %></button>');
+
+  $('.dataTables_length').append('<button class="button-2 nomargin-bottom at_background_red" id="at_refuse_approve_template" name="button" style=";float: left;margin-left:10px; display: none" type="button"><%=j l(:at_revoke_all) %></button>');
+
+
+
+  <% if at_template_status[0..1] == [0,0] %>
+    <% if at_template_status[4] == 1 %>
+      $("#at_verify_template").show();
+    <% end %>
+  <% else %> 
+    <% if at_template_status[4] == 0 %>
+      $('select#group_list').prop('disabled','disabled');
+      $('select#template_list').prop('disabled','disabled');
+    <% end %>
+
+    <% if at_template_status[0..1] == [1,0] %>
+
+      $("#at_reject_verification_template").show();
+      <% if at_template_status[6] == 1 %>
+        $("#at_approve_template").show();
+      <% end %>
+    <% else %>  
+      <% if at_template_status[0..1] == [1,1] %>
+        <% if at_template_status[7] == 1 %>
+          $("#at_refuse_approve_template").show();
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+
+  $("#at_verify_template").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/verify_template?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+  $("#at_reject_verification_template").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/reject_template?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+  $("#at_approve_template").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/approve_template?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+
+  $("#at_refuse_approve_template").click(function(e) { 
+    $(this).prop( "disabled", true );
+    $('#ajax-indicator').show();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/revoke_template?issue_id=<%= @issue.id.to_s %>","_self");
+  });
+
+function show_resource(obj) { 
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+}
+
+function update_datatable(data){
+
+    $('#ticket_version').html(data[1]);
+    $.each(data[0],function(i){
+      var color,status,actions,period,description,user_id,resource;
+      if (this["ientities"].length > 0) {
+        description = "";
+        $.each(this["ientities"],function(i){
+          description = description + '<label class="entity_caption">' + this["caption"] + '</label>' + '<br>';
+        });
+      } else {
+        description = this["description"];
+      }
+      resource = '<span class="nowrap"><a id="' + this["i_resource_id"] +'" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>">' + this["i_resource"] + '</a></span>';
+      if (this["status_id"] == 3 && this["may_be_revoked"] == 1) {
+        actions = '<a id="' + this["uid"] + '" class="revoke_grant icon icon-close at_red" title="<%= l(:at_revoke_grant_it) %>" onclick="revoke_single_grant(this);"> </a>';
+        $('#show_ticket').DataTable().column(6).visible( true );
+      } else if (this["status_id"] == 2 && this["may_be_granted"] == 1) {
+        actions = '<a id="' + this["uid"] + '" style="color: #4ebf67 !important" class="grant_access icon icon-checked at_green" title="<%= l(:at_grant_it) %>" onclick="grant_single_access(this);">';
+        $('#show_ticket').DataTable().column(6).visible( true );
+      } else {
+        actions = "";
+      }
+      
+      if ( this["status_id"] == 2) {
+        if ( this["status_id"] == 2 ) {
+          color = "#4ebf67";
+          status = '<span class="nowrap add-user-links" data-id="1"><a href="<%=j Redmine::Utils::relative_url_root %>/users/' + this["user_id"] + '/profile" class="user active" data-remote="true" title="">' + this["user_name"] + '</a></span>' + '<p style="color: ' + color +  ' !important">'+ this["status"] + "</p>";
+        } 
+
+      } else if (this["status_id"] == 1 || this["status_id"] == 0) {
+        color = "#F78282";
+        status = '<p style="color: ' + color +  ' !important">'+ this["status"] + '</p>';
+
+      } 
+      if (this["e_date"] == "31.12.2025") {
+        period = "<%= l(:at_forever) %><%= l(:at_since) %>" + this["s_date"];
+      } else {
+        //period = this["s_date"]+" -<br>"+this["e_date"];
+        period = this["s_date"]+" -<br>"+this["e_date"];
+      }
+      
+
+      $('#show_ticket').DataTable().row.add([
+      resource,
+      this["i_roles"].join('<br>'),
+      description,
+      period,
+      this["r_date"],
+      status,
+      actions
+      ]).draw();
+    });
+}
+
+
+function show_roles(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/settings/plugin/access_tickets_iresources/show_details", { id: $(obj).val() }, function( data ) {
+    var row = $(obj).parent().parent();
+    var uid = row.attr('uid');
+    $("#role_id_" + uid).empty();
+    var i_roles = data.i_roles;
+    $("#role_id_" + uid).append("<option value=''><%=j l(:at_select_role) %></option>");
+    $("#role_id_" + uid).attr("data-placeholder","<%=j l(:at_select_role) %>");
+    $.each(i_roles,function(i){
+      $("#role_id_" + uid).append('<option value=' + i_roles[i].i_role.id + '>' + i_roles[i].i_role.name + '</option>');
+    });
+    $("#role_id_" + uid).trigger("chosen:updated");
+  }, "json");
+}
+
+function show_ientities(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource/ientity_show_list", { res_id: $(obj).val() }, function( data ) {
+    //console.log(data.ientities.length);
+    var row = $(obj).parent().parent();
+    var uid = row.attr('uid');
+
+    if (data.has_entities == true) {
+      var ientities = data.ientities;
+      if (ientities.length > 0) {
+        if (row.find('#description').length > 0 ) {
+          row.find('#description').parent().append('<%=j select_tag("entity_id", nil,  {:style=>"width: 250px", :class => "entity_id",  :prompt => l(:at_select_ientity),"data-placeholder" => l(:at_select_ientity), "multiple" => "", "tabindex" => "3" } )  %>');
+          row.find('#entity_id').attr('id','entity_id_' + uid);
+          row.find('#description').remove();
+        }
+        $('#entity_id_' + uid).empty();
+        $('#entity_id_' + uid).append("<option value=''><%=j l(:at_select_ientity) %></option>");
+        $('#entity_id_' + uid).chosen(ch_opts);
+        $('#entity_id_' + uid + '_chosen').attr('style','width:100%');
+        $.each(ientities, function(i) {
+          var ipv4 = "";
+          if (data.has_ip == true) {
+            ipv4 = ' [' +ientities[i].i_entity.ipv4 + ']';
+          }
+          $('#entity_id_' + uid).append('<option value=' + ientities[i].i_entity.id + '>' + ientities[i].i_entity.name + ipv4 + '</option>');
+        });
+        $('#entity_id_' + uid).trigger('chosen:updated');
+      } else {
+        if (row.find('#description').length > 0 ) {
+          row.find('#description').val("");
+        } 
+        if ($('#entity_id_' + uid).length > 0 ) {
+          $('#entity_id_' + uid).parent().append('<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>');
+          $('#entity_id_' + uid +'_chosen').remove();
+          $('#entity_id_' + uid).remove();
+        }
+      }
+    } else {
+      $('#entity_id_' + uid).before('<%=j text_area_tag("description", nil,  :title => l(:at_note), :style=>"width:100%;height:100%", "maxlength" => "127"   ) %>');
+      $('#entity_id_' + uid +'_chosen').remove();
+      $('#entity_id_' + uid).remove();
+
+    }
+  }, "json");
+}
+
+
+function set_issue_template(obj){
+  if ( $("select#template_list option").filter(":selected").val() == 'null' ) {
+  } else {
+    $('#ajax-indicator').show();
+    var group_id = $("select#group_list").val();
+    var template_id = $("select#template_list").val();
+    window.open("<%=j Redmine::Utils::relative_url_root %>/access_tickets/set_issue_template?issue_id=<%= @issue.id.to_s %>&group_id="+ group_id +"&template_id=" + template_id, "_self");
+  }
+}
+
+  function show_resource(obj) { 
+    $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+  }
+
+function show_group_templates(obj){
+  $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/show_group_templates", { group_id: $(obj).val(), issue_id: <%= @issue.id.to_s %> }, function( data ) {
+    //console.log(data);
+    $('#show_access').DataTable().clear().draw();
+    $('#template_list').empty();
+
+    $('#add_template_button').show();
+    $('#template_name').show();
+    $('#remove_template_button').hide();
+    $('#edit_template_name').hide();
+
+    $('#add_row_button').hide();
+    $('#save_template_button').hide();
+    if (security_officer == 1) {
+      $('#at_iticket_verify').hide();
+      $('#at_iticket_reject').hide();
+    }
+    if ( data.is_lider_for_group == 1) {
+      $('#template_action').show();
+    } else {
+      $('#template_action').hide();
+    }
+
+
+    var templates = data.templates;
+    if (templates.length == 0) {
+      $('#template_list').append('<option value=""><%= l(:at_templates_missing)%></option>');
+    } else {
+      $('#template_list').append('<option value=""><%= l(:at_select_template)%></option>');
+      $.each(templates,function(i){
+
+        var template_id, template_name;
+        if (templates[i].i_ticktemplate !== undefined) {
+          template_id = templates[i].i_ticktemplate.id;
+          template_name = templates[i].i_ticktemplate.name;
+        } else {
+          template_id = templates[i].id;
+          template_name = templates[i].name;
+        }
+        $('#template_list').append('<option value=' + template_id + '>' + template_name + '</option>');
+      }); 
+    }
+    $('#template_list').val(data.group_templates);
+    $('#template_list').trigger("chosen:updated");
+  }, "json");
+}
+
+
+var ch_opts = {width:"250px", allow_single_deselect:true, single_backstroke_delete:false,no_results_text:'<%=j l(:at_not_matched)%>',placeholder_text_multiple:' '};
+$('#users_list').chosen(ch_opts);
+$('select[name="show_ticket_length"]').parent().hide();
+$('#show_ticket_wrapper').attr('style','min-height:300px');
+
+
+
+</script>
+
+<div id="msgBox" style="display:none;"></div>
+
+<%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>
+
+<% end %>
