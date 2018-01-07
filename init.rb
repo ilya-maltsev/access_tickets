@@ -19,7 +19,7 @@
 
 require 'access_tickets/hooks'
 
-ACCESS_TICKETS_VERSION_TYPE = "2.0"
+ACCESS_TICKETS_VERSION_TYPE = "2.0.1"
 
 Redmine::Plugin.register :access_tickets do
   name 'Access tickets' 
