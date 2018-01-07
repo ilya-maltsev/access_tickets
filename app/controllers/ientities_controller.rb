@@ -110,6 +110,8 @@ class IentitiesController < ApplicationController
         ientity = IEntity.new(:name => params[:name], :description => params[:description], :updated_by_id => User.current.id)
         if params[:ipv4].present? && iresource.has_ip
           ientity.ipv4 = params[:ipv4]
+        else
+          ientity.ipv4 = '127.0.0.1'
         end
         ientity.updated_by_id = User.current.id
         ientity.save
