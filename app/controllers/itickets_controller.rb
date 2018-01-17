@@ -128,7 +128,7 @@ class IticketsController < ApplicationController
       end
     end
     @itickets = []
-    if ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 0 || (ITicket.check_security_officer(User.current) && @tracker_id != tr_new_emp_id )
+    if ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 0 || (ITicket.check_granting_cf(issue_id)[0] == 0 && @tracker_id != tr_new_emp_id )
       @itickets = ITicket.edit_tickets_list(@issue_id).to_json
     end
 
