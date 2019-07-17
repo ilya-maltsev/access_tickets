@@ -2,30 +2,30 @@
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.chosen.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.validate.js"></script>
 <script src="<%= Redmine::Utils::relative_url_root %>/plugin_assets/access_tickets/javascripts/jquery.ui-contextmenu-1.7.js"></script>
-
+<script src="<%= Redmine::Utils::relative_url_root %>/javascripts/datepicker.js"></script>
 
 <div id="" class="box">
 <% if ITicket.check_security_officer(User.current) %>
- 
+
 <fieldset class="at_descript">
 <legend><h4><%= l(:at_expired_access_list) %></h4></legend>
 
 
   <table id="show_expired_accesses" class="list entities issues issues_index context-menu-container">
     <thead>
-    <tr> 
-      <th style="width:6%;background-color:white" title="<%= l(:at_issue_number) %>"><%= text_field_tag("exp_issue_number", nil, :title => "", :placeholder => l(:at_issue_search), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>   
-      <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>" style="background:none !important"><%= text_field_tag("exp_search_employee", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %>   
-        </th>         
-      <th style="width:20%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("exp_search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
-      <th style="width:13%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("exp_search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
-      <th style="width:20%;background-color:white" title="<%= l(:at_search_note) %>"><%= text_field_tag("exp_search_note", nil, :title => "", :placeholder => l(:at_search_note), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
-      <th style="width:9%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("exp_search_s_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+    <tr>
+      <th style="width:6%;background-color:white" title="<%= l(:at_issue_number) %>"><%= text_field_tag("exp_issue_number", nil, :title => "", :placeholder => l(:at_search), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>" style="background:none !important"><%= text_field_tag("exp_search_employee", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %>
+        </th>
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("exp_search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:13%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("exp_search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_note) %>"><%= text_field_tag("exp_search_note", nil, :title => "", :placeholder => l(:at_search_note), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:9%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("exp_search_s_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
       <th style="width:10%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("exp_search_e_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
-        <th style="width:20%;background-color:white" title="<%= l(:at_activity) %>" style="background:none !important">   
-        </th>      
+        <th style="width:20%;background-color:white" title="<%= l(:at_activity) %>" style="background:none !important">
+        </th>
 
-    </tr> 
+    </tr>
       <tr>
         <th style="width:5%" title="<%= l(:at_issue) %>"><a><%= l(:at_issue) %></a></th>
         <th style="width:10%;" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
@@ -174,18 +174,18 @@ $(document).ready( function () {
 
   <table id="show_access" class="list entities issues issues_index context-menu-container">
     <thead>
-    <tr> 
-      <th style="width:5%;background-color:white" title="<%= l(:at_issue_number) %>"><%= text_field_tag("issue_number", nil, :title => "", :placeholder => l(:at_issue_search), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>   
-      <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>" style="background:none !important"><%= text_field_tag("search_employee", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %>   
-        </th>         
-      <th style="width:20%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
-      <th style="width:15%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>        
-      <th style="width:20%;background-color:white" title="<%= l(:at_search_note) %>"><%= text_field_tag("search_note", nil, :title => "", :placeholder => l(:at_search_note), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
-      <th style="width:10%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("search_s_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th> 
+    <tr>
+      <th style="width:5%;background-color:white" title="<%= l(:at_issue_number) %>"><%= text_field_tag("issue_number", nil, :title => "", :placeholder => l(:at_search), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:15%;background-color:white" title="<%= l(:at_search_employee) %>" style="background:none !important"><%= text_field_tag("search_employee", nil, :title => "", :placeholder => l(:at_search_employee), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %>
+        </th>
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_resource) %>"><%= text_field_tag("search_resource", nil, :title => "", :placeholder => l(:at_search_resource), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:15%;background-color:white" title="<%= l(:at_search_role) %>"><%= text_field_tag("search_role", nil, :title => "", :placeholder => l(:at_search_role), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:20%;background-color:white" title="<%= l(:at_search_note) %>"><%= text_field_tag("search_note", nil, :title => "", :placeholder => l(:at_search_note), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
+      <th style="width:10%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("search_s_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
       <th style="width:10%;background-color:white" title="<%= l(:at_search_date) %>"><%= text_field_tag("search_e_date", nil, :title => "", :placeholder => l(:at_search_date), :maxlength => "64", :style=>"text-align: center !important;width: 100%;", :class => "at_input actions") %></th>
-        <th style="width:20%;background-color:white" title="<%= l(:at_activity) %>" style="background:none !important">   
-        </th>      
-    </tr> 
+        <th style="width:20%;background-color:white" title="<%= l(:at_activity) %>" style="background:none !important">
+        </th>
+    </tr>
       <tr>
         <th style="width:5%" title="<%= l(:at_issue) %>"><a><%= l(:at_issue) %></a></th>
         <th style="width:10%;" title="<%= l(:at_employee) %>"><a><%= l(:at_employee) %></a></th>
@@ -233,9 +233,9 @@ $(document).ready( function () {
 
     <% for access in IAccess.revoked_accesses_list(@user_id,User.current.id) %>
       <tr class="revoked">
-        
+
         <td><a href="<%= Redmine::Utils::relative_url_root %>/issues/<%= access[:issue_id] %>">#<%= access[:issue_id] %></a></td>
-        <td></td>        
+        <td></td>
         <td>
           <span class="nowrap">
             <a id="<%= access[:i_resource_id] %>" onclick="show_resource(this);" class="" title="<%= l(:at_show_resource_details) %>"><%= access[:i_resource] %></a>
@@ -263,7 +263,7 @@ $(document).ready( function () {
         <% end %>
         </td>
         <td>
-          
+
         </td>
       </tr>
     <% end %>
@@ -287,7 +287,7 @@ $('#wrapper').append('<div id="msgBox"></div>');
 
   $('#show_access').DataTable({
     "bPaginate": false,
-    //"bFilter": false, 
+    //"bFilter": false,
     "bInfo": false,
     "oLanguage": {
       "sInfo": "<%= l(:at_sInfo) %>",
@@ -315,53 +315,54 @@ $('#wrapper').append('<div id="msgBox"></div>');
     ],
   });
 
-$('#issue_number').on( 'input', function () { 
+
+$('#issue_number').on( 'input', function () {
   $('#show_access').DataTable().columns(0).search($('#issue_number').val()).draw();
 } );
-$('#search_employee').on( 'input', function () { 
+$('#search_employee').on( 'input', function () {
   $('#show_access').DataTable().columns(1).search($('#search_employee').val()).draw();
 } );
-$('#search_resource').on( 'input', function () { 
+$('#search_resource').on( 'input', function () {
   $('#show_access').DataTable().columns(2).search($('#search_resource').val()).draw();
 } );
-$('#search_role').on( 'input', function () { 
+$('#search_role').on( 'input', function () {
   $('#show_access').DataTable().columns(3).search($('#search_role').val()).draw();
 } );
-$('#search_note').on( 'input', function () { 
+$('#search_note').on( 'input', function () {
   $('#show_access').DataTable().columns(4).search($('#search_note').val()).draw();
 } );
-$('#search_s_date').on( 'input', function () { 
+$('#search_s_date').on( 'input', function () {
   $('#show_access').DataTable().columns(5).search($('#search_s_date').val()).draw();
 } );
-$('#search_e_date').on( 'input', function () { 
+$('#search_e_date').on( 'input', function () {
   $('#show_access').DataTable().columns(6).search($('#search_e_date').val()).draw();
 } );
 
 
-$('#exp_issue_number').on( 'input', function () { 
+$('#exp_issue_number').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(0).search($('#exp_issue_number').val()).draw();
 } );
-$('#exp_search_employee').on( 'input', function () { 
+$('#exp_search_employee').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(1).search($('#exp_search_employee').val()).draw();
 } );
-$('#exp_search_resource').on( 'input', function () { 
+$('#exp_search_resource').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(2).search($('#exp_search_resource').val()).draw();
 } );
-$('#exp_search_role').on( 'input', function () { 
+$('#exp_search_role').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(3).search($('#exp_search_role').val()).draw();
 } );
-$('#exp_search_note').on( 'input', function () { 
+$('#exp_search_note').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(4).search($('#exp_search_note').val()).draw();
 } );
-$('#exp_search_s_date').on( 'input', function () { 
+$('#exp_search_s_date').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(5).search($('#exp_search_s_date').val()).draw();
 } );
-$('#exp_search_e_date').on( 'input', function () { 
+$('#exp_search_e_date').on( 'input', function () {
   $('#show_expired_accesses').DataTable().columns(6).search($('#exp_search_e_date').val()).draw();
 } );
 
-  function show_resource(obj) { 
-    $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");  
+  function show_resource(obj) {
+    $.post("<%= Redmine::Utils::relative_url_root %>/access_tickets/show_resource", { resource_id: $(obj).attr('id') },"json");
   }
 
   $("#show_access_wrapper").before(' \
@@ -370,10 +371,10 @@ $('#exp_search_e_date').on( 'input', function () {
   ');
 
 
-  $('div#show_access_length label').attr("style","float:left !important; width: 200px !important"); 
+  $('div#show_access_length label').attr("style","float:left !important; width: 200px !important");
   $('#show_access_length label select').attr("style", "width:65% !important;min-width:0px;padding-top:4px !important;height:33px !important; margin-top:2px");
 
-  $('#show_access_length').attr("style","width:98%;margin-left:3px"); 
+  $('#show_access_length').attr("style","width:98%;margin-left:3px");
 
 
   $('.dataTables_length').append('<div style="margin-top: 6px;width:280px;display:inline-block"><input id="hide_revoked" type="checkbox" onclick="hide_revoked_accesses(this)"><label style="margin-left:5px" for="hide_revoked"><%=j l(:at_hide_revoked) %></label></div>');
@@ -393,12 +394,19 @@ $('#exp_search_e_date').on( 'input', function () {
       $('#show_access').DataTable().column(1).visible( false );
       $('#employee_management').append("<%=j select_tag('sw_type', options_for_select([[l(:at_employee) + ':', 0], [l(:at_resource)+':', 1]], :selected => 0), {:style=>'width: 200px; margin-top: 4px;float: right;margin-left:10px;margin-right:10px;', :include_blank => true, :onchange => 'set_showing_type(this)'} ) %>");
       $('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 5px;float: right;margin-left:10px;display:none"><%= l(:at_showing_type) %>:</label>');
+      $('#access_list_action').append("<%=j button_tag(l(:at_add),  :id => 'add_access_button', :type => 'button', :class => 'button-1 nomargin-bottom', :style => 'float:right;margin-left:10px;line-height:0 !important;height:30px !important;') %>");
+
+      $("#add_access_button").click(function(e) {
+        $(e).hide();
+        $.post("<%=j Redmine::Utils::relative_url_root %>/access_tickets/accesses_list/add_accesses", { }, "json");
+        $(e).show();
+      });
 
     <% else %>
       $('#employee_management').append('<label class="" id="user_list-label" style="margin-top: 5px;float: right;margin-left:10px;"><%= l(:at_employee) %>:</label>');
     <% end %>
-   
-    
+
+
 
     $('#items_list').append("<option value=''><%=j l(:at_select_employee) %></option>");
     $('#items_list').attr("data-placeholder","<%=j l(:at_select_employee) %>");
@@ -412,6 +420,7 @@ $('#exp_search_e_date').on( 'input', function () {
 $('#show_access').DataTable().column(7).visible( false );
 $('#show_expired_accesses').DataTable().column(7).visible( false );
 
+
 <% if @is_security %>
 
 <% else %>
@@ -419,7 +428,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
 <% end %>
 
 <% if @is_group_lider || @is_resgranter || @is_resowner %>
-    function check_all_rows(obj) { 
+    function check_all_rows(obj) {
       var value = 0;
       if ($(obj).is(":checked")) {
         value = 1;
@@ -440,7 +449,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
 
   function update_accesses_list_table(data){
     $('#show_access').DataTable().clear().draw();
-    
+
 
     $.each(data[0],function(i){
       var description,checkbox,e_date,resource,users;
@@ -466,7 +475,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       this["i_roles"].join('<br>'),
       description,
       this["s_date"],
-      this["e_date"], 
+      this["e_date"],
       checkbox
       ]).draw();
     });
@@ -506,7 +515,7 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
       this["i_roles"].join('<br>'),
       description,
       this["s_date"],
-      e_date, 
+      e_date,
       actions
       ]).draw()
       .nodes()
@@ -519,16 +528,16 @@ $('#show_expired_accesses').DataTable().column(7).visible( false );
   function show_items_list(obj) {
 <% if @is_security || @is_resgranter || @is_resowner %>
     if ($('#sw_type').val() == 0) {
-      
+
       $.post("show_accesses", { user_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
       }, "json");
     } else {
-      
+
 
       $.post("show_accesses", { resource_id: $(obj).val() }, function( data ) {
         update_accesses_list_table(data);
-      }, "json");        
+      }, "json");
     }
 <% else %>
     $.post("show_accesses", { user_id: $(obj).val() }, function( data ) {
@@ -594,8 +603,8 @@ function show_available_resources() {
     });
     $('#items_list').trigger("chosen:updated");
   }, "json");
-      
-  
+
+
 }
 
 <% end %>
@@ -609,16 +618,16 @@ function show_confirm_dialog(title, warning, code) {
     .dialog({
     title: title,
     //modal: true,
-    autoOpen: false, 
+    autoOpen: false,
     height:250,
     resizable: false,
-    buttons: [{ 
+    buttons: [{
       text: "<%= l(:at_no) %>",
       class: "button-4",
       click: function () {
         confirm_result =  false;
         $(this).dialog('close');
-      }, 
+      },
     },  {
       text: "<%= l(:at_yes) %>",
       class: "button-6",
@@ -639,7 +648,7 @@ function show_confirm_dialog(title, warning, code) {
   $confirmDialog.dialog('open');
 }
 
-function enable_filter_g(obj) { 
+function enable_filter_g(obj) {
   var value = 0;
   if ($(obj).is(":checked")) {
     value = 1;
@@ -655,7 +664,7 @@ function enable_filter_g(obj) {
   }
 }
 
-function enable_filter_r(obj) { 
+function enable_filter_r(obj) {
   var value = 0;
   if ($(obj).is(":checked")) {
     value = 1;
@@ -696,61 +705,61 @@ function export_accesses(obj) {
 }
 
 var datepickerOptions={
-  dateFormat: 'dd.mm.yy', 
-  firstDay: 1,  
+  dateFormat: 'dd.mm.yy',
+  firstDay: 1,
   onSelect: function(dateText, inst){
     $('#'+ inst.id).change();
     $(this).css('border-color','#CCC');
   },
   disabled: true,
-  showOn: 'button', 
-  buttonImageOnly: false, 
-  buttonText: 'C', 
-  showButtonPanel: true, 
+  showOn: 'button',
+  buttonImageOnly: false,
+  buttonText: 'C',
+  showButtonPanel: true,
   showWeek: true,
-  showOtherMonths: true, 
-  selectOtherMonths: true, 
-  changeMonth: true, 
+  showOtherMonths: true,
+  selectOtherMonths: true,
+  changeMonth: true,
   changeYear: true,
-  yearRange: '2015:2025', 
+  yearRange: '2015:2025',
   beforeShow: beforeShowDatePicker
 };
 
 
-var dpOptions={dateFormat: 'dd.mm.yy', 
-  firstDay: 1,  
+var dpOptions={dateFormat: 'dd.mm.yy',
+  firstDay: 1,
   onSelect: function(dateText, inst){
     $('#'+ inst.id).change();
     $(this).css('border-color','#CCC');
   },
   disabled: true,
-  showOn: 'button', 
-  buttonImageOnly: false, 
-  buttonText: 'C', 
-  showButtonPanel: true, 
-  showWeek: true, 
-  showOtherMonths: true, 
-  selectOtherMonths: true, 
-  changeMonth: true, 
-  changeYear: true, 
+  showOn: 'button',
+  buttonImageOnly: false,
+  buttonText: 'C',
+  showButtonPanel: true,
+  showWeek: true,
+  showOtherMonths: true,
+  selectOtherMonths: true,
+  changeMonth: true,
+  changeYear: true,
   yearRange: '2015:2025',
   beforeShow: function( input ) {
 
-  setTimeout(function() {  
+  setTimeout(function() {
     $("button.ui-datepicker-current").remove();
-     var buttonPane = $( input )  
-       .datepicker( "widget" )  
-       .find( ".ui-datepicker-buttonpane" );  
-     var btn = $('<button class="ui-datepicker-current ui-state-default ui-priority-secondary ui-corner-all" type="button"><%=j l(:at_forever) %></button>');  
-     btn  
-      .unbind("click")  
-     .bind("click", function () {   
+     var buttonPane = $( input )
+       .datepicker( "widget" )
+       .find( ".ui-datepicker-buttonpane" );
+     var btn = $('<button class="ui-datepicker-current ui-state-default ui-priority-secondary ui-corner-all" type="button"><%=j l(:at_forever) %></button>');
+     btn
+      .unbind("click")
+     .bind("click", function () {
        $(input).val("<%=j l(:at_forever) %>");
        $(input).datepicker("hide");
        $(input).css('border-color','#CCC');
-    });  
-    btn.appendTo( buttonPane );    
-  }, 1 );  
+    });
+    btn.appendTo( buttonPane );
+  }, 1 );
   }
 };
 
@@ -791,5 +800,3 @@ $('#easy_servicebar').remove();
 
 
 <%= content_tag('div', render(:partial => "/at_css_styles", :locals => {}), :id => 'at_css_styles', :style => ('display:none'), :class => '') %>
-
-

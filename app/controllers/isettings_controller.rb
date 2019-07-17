@@ -52,7 +52,7 @@ class IsettingsController < ApplicationController
   def show_group_details
     if ITicket.check_security_officer(User.current) && params[:group_id].present?
       #users = User.active.select([:id,:login])
-      users = [] 
+      users = []
       User.active.each do |obj|
         user = {}
         user[:id] = obj[:id]
@@ -91,8 +91,26 @@ class IsettingsController < ApplicationController
   def set_settings_value
     if ITicket.check_security_officer(User.current)
       params.each do |key,value|
-        if key.in?(ISetting.values_map()) 
-          IsettingController.save_settings_value(key,value)
+        if key.in?(ISetting.values_map())
+          #IsettingController.save_settings_value(key,value)
+          if ISetting.active.where(:param => key).nil?
+            new_settings = ISetting.new
+            new_settings[:key] = key
+            new_settings[:value] = ""
+            new_settings.save
+          end
+          settings = ISetting.active.where(:param => key).first
+          settings[:value] = value
+          if settings.save
+            respond_to do |format|
+              format.json { render :json => {:status => "ok"} }
+            end
+          else
+            respond_to do |format|
+              format.json { render :json => {:status => "false"} }
+            end
+          end
+
         end
       end
     else
@@ -100,24 +118,24 @@ class IsettingsController < ApplicationController
     end
   end
 
-  def self.save_settings_value(key,value)
-    if ISetting.active.where(:param => key).nil?
-      new_settings = ISetting.new
-      new_settings[:key] = key
-      new_settings[:value] = ""
-      new_settings.save
-    end
-    settings = ISetting.active.where(:param => key).first
-    settings[:value] = value
-    if settings.save
-      respond_to do |format|
-        format.json { render :json => {:status => "ok"} }
-      end
-    else
-      respond_to do |format|
-        format.json { render :json => {:status => "false"} }
-      end
-    end
-  end
+  #def self.save_settings_value(key,value)
+  #  if ISetting.active.where(:param => key).nil?
+  #    new_settings = ISetting.new
+  #    new_settings[:key] = key
+  #    new_settings[:value] = ""
+  #    new_settings.save
+  #  end
+  #  settings = ISetting.active.where(:param => key).first
+  #  settings[:value] = value
+  #  if settings.save
+  #    respond_to do |format|
+  #      format.json { render :json => {:status => "ok"} }
+  #    end
+  #  else
+  #    respond_to do |format|
+  #      format.json { render :json => {:status => "false"} }
+  #    end
+  #  end
+  #end
 
 end

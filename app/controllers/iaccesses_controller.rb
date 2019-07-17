@@ -19,6 +19,13 @@
 
 class IaccessesController < ApplicationController
 
+  def add_accesses
+      respond_to do |format|
+        format.js
+      end
+  end
+
+
   def export_all_accesses
     if ITicket.check_security_officer(User.current)
       current_user_id = User.current.id
@@ -105,7 +112,7 @@ class IaccessesController < ApplicationController
         e_date_r = params[:e_date_r]
       end
     end
-    if ITicket.check_security_officer(User.current) && params[:user_id].present? 
+    if ITicket.check_security_officer(User.current) && params[:user_id].present?
       accesses_list = IAccess.accesses_list(params[:user_id].to_i, nil, current_user_id)
       rev_accesses_list = IAccess.revoked_accesses_list(params[:user_id].to_i, current_user_id)
 
@@ -242,7 +249,7 @@ class IaccessesController < ApplicationController
           i = Issue.create(:tracker_id => tr_r, :project_id => at_pr, :author_id => User.current.id, :assigned_to_id => sec_group_id,:subject => l(:at_prolongation, :resource_name => IResource.find(resource_id).name), :description => "", :priority_id => 1)
           if i.save
             IRetimeaccess.create_prolongated_accesses(i.id,eal,Date.today.next_year.strftime("%d.%m.%Y"))
-            i.watcher_user_ids = i.watcher_user_ids | IRetimeaccess.resowners_for_issue(i.id) 
+            i.watcher_user_ids = i.watcher_user_ids | IRetimeaccess.resowners_for_issue(i.id)
             i.save
             redirect_to Redmine::Utils::relative_url_root + "/issues/" + i.id.to_s, :status => 302 #root_url
           else
@@ -267,7 +274,7 @@ class IaccessesController < ApplicationController
       r_user_id = params[:r_user_id].to_i
       user_id = User.current.id
       if IAccess.can_dismiss_user(r_user_id, user_id)
-        old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id) 
+        old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id)
         if !old_r_accesses.empty?
           old_r_accesses.update_all(:revoked_by_id => nil, :rev_issue_id => nil, :deactivated_by_id => nil, :deactivated_at => nil)
           IAccess.refuse_confirmation_revoking_for_accesses(issue_id, user_id)
@@ -388,7 +395,7 @@ class IaccessesController < ApplicationController
       issue_id = params[:issue_id]
       if params[:uid].present?
         r_uid = params[:uid]
-      else 
+      else
         r_uid = nil
       end
       user_id = User.current.id
@@ -430,7 +437,7 @@ class IaccessesController < ApplicationController
       issue_id = params[:issue_id]
       if params[:uid].present?
         r_uid = params[:uid]
-      else 
+      else
         r_uid = nil
       end
       user_id = User.current.id
@@ -491,7 +498,7 @@ class IaccessesController < ApplicationController
     if IaccessesController.check_revoking_editable(issue_id,User.current)
       inputData = JSON.parse(params[:i_tickets])
       #inputData = params[:i_tickets]
-      old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id) 
+      old_r_accesses = IAccess.active.where(:rev_issue_id => issue_id)
       if !old_r_accesses.empty?
         old_r_accesses.update_all(:revoked_by_id => nil, :revoked_at => nil, :rev_issue_id => nil, :r_created_by_id => nil)
       end
@@ -511,7 +518,7 @@ class IaccessesController < ApplicationController
       end
       #issue = Issue.find(issue_id)
       #issue.watcher_user_ids = issue.watcher_user_ids | User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "admin_group_id").first.value.to_i).map(&:id) | User.active.in_group(ISetting.active.where(:param => "cw_group_id").first.value.to_i).map(&:id) | Issue.where(:id => issue_id).map(&:author_id)
-      #issue.save      
+      #issue.save
       accesses = IAccess.accesses_list(r_user_id, issue_id)
       respond_to do |format|
         format.json { render :json =>  [accesses, IAccess.last_revoking_version(issue_id, user_id), IAccess.check_revoking_status(issue_id, user_id)] }
@@ -527,7 +534,7 @@ class IaccessesController < ApplicationController
     @accesses = IAccess.accesses_list(@r_user_id).to_json
     if IaccessesController.check_revoking_editable(@issue_id,User.current)
       respond_to do |format|
-        format.js 
+        format.js
       end
     else
       head :forbidden
@@ -537,9 +544,9 @@ class IaccessesController < ApplicationController
 
 
   def self.check_revoking_editable(issue_id, user)
-    if user.id == 1 || user.id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id)) 
+    if user.id == 1 || user.id.in?(User.active.in_group(ISetting.active.where(:param => "sec_group_id").first.value.to_i).map(&:id))
       return true
-    elsif CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => ISetting.active.where(:param => "cf_revoked_id").first.value.to_i, :value => 1).count > 0 || CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i, :value => 1).count > 0 
+    elsif CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => ISetting.active.where(:param => "cf_revoked_id").first.value.to_i, :value => 1).count > 0 || CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => ISetting.active.where(:param => "cf_deactivated_id").first.value.to_i, :value => 1).count > 0
       return false
     else
       return true
@@ -590,7 +597,7 @@ class IaccessesController < ApplicationController
       respond_to do |format|
         format.html {
           render :template => 'iaccesses/access_templates'
-        } 
+        }
       end
     else
       render_error({:message => :notice_file_not_found, :status => 404})
@@ -632,7 +639,7 @@ class IaccessesController < ApplicationController
       issue_id = params[:issue_id]
       if params[:uid].present?
         r_uid = params[:uid]
-      else 
+      else
         r_uid = nil
       end
       user_id = User.current.id
@@ -654,7 +661,7 @@ class IaccessesController < ApplicationController
           issue.update_attributes(:assigned_to_id => issue.author_id)
           issue.update_attributes(:status_id => ISetting.active.where(:param => "granted_issue_status_id").first.value.to_i)
         end
-        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
+        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302
       else
         render_error({:message => :notice_file_not_found, :status => 404})
       end
@@ -668,7 +675,7 @@ class IaccessesController < ApplicationController
       issue_id = params[:issue_id]
       if params[:uid].present?
         r_uid = params[:uid]
-      else 
+      else
         r_uid = nil
       end
       user_id = User.current.id
@@ -680,8 +687,8 @@ class IaccessesController < ApplicationController
         if issue_status[0..3] == [1,1,0,0] && old_issue_status[0..3] == [1,1,1,0]
           issue = Issue.find(issue_id)
           cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
-          journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id) ### set system user_id   
-          details = JournalDetail.new(:property => "cf", :prop_key => cf_granting_id.to_s, :old_value => "1", :value => "0") 
+          journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id) ### set system user_id
+          details = JournalDetail.new(:property => "cf", :prop_key => cf_granting_id.to_s, :old_value => "1", :value => "0")
           journal.details << details
           details = JournalDetail.new(:property => "attr", :prop_key => "assigned_to_id", :old_value => issue.assigned_to_id, :value => ISetting.active.where(:param => "admin_group_id").first.value)
           journal.details << details
@@ -691,7 +698,7 @@ class IaccessesController < ApplicationController
           issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "admin_group_id").first.value)
           issue.update_attributes(:status_id => ISetting.active.where(:param => "working_issue_status_id").first.value.to_i)
         end
-        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
+        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302
       else
         render_error({:message => :notice_file_not_found, :status => 404})
       end
@@ -704,7 +711,7 @@ class IaccessesController < ApplicationController
     issue_id = params[:issue_id]
     if params[:uid].present?
       r_uid = params[:uid]
-    else 
+    else
       r_uid = nil
     end
     user_id = User.current.id
@@ -738,7 +745,7 @@ class IaccessesController < ApplicationController
     issue_id = params[:issue_id]
     if params[:uid].present?
       r_uid = params[:uid]
-    else 
+    else
       r_uid = nil
     end
     user_id = User.current.id
@@ -750,8 +757,8 @@ class IaccessesController < ApplicationController
       if issue_status[0..3] == [1,1,0,0] && old_issue_status[0..3] == [1,1,1,0]
         issue = Issue.find(issue_id)
         cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
-        journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id) ### set system user_id   
-        details = JournalDetail.new(:property => "cf", :prop_key => cf_granting_id.to_s, :old_value => "1", :value => "0") 
+        journal = Journal.create(:journalized_id => issue_id, :journalized_type=> "Issue", :user_id=> user_id) ### set system user_id
+        details = JournalDetail.new(:property => "cf", :prop_key => cf_granting_id.to_s, :old_value => "1", :value => "0")
         journal.details << details
         details = JournalDetail.new(:property => "attr", :prop_key => "assigned_to_id", :old_value => issue.assigned_to_id, :value => ISetting.active.where(:param => "admin_group_id").first.value)
         journal.details << details
@@ -789,7 +796,7 @@ class IaccessesController < ApplicationController
           journal.save
           issue.update_attributes(:status_id => ISetting.active.where(:param => "blocked_issue_status_id").first.value.to_i)####
         end
-        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
+        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302
       else
         render_error({:message => :notice_file_not_found, :status => 404})
       end
@@ -817,9 +824,165 @@ class IaccessesController < ApplicationController
           journal.details << details
           journal.save
         end
-        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302 
+        redirect_to Redmine::Utils::relative_url_root + "/issues/" + issue_id, :status => 302
       else
         render_error({:message => :notice_file_not_found, :status => 404})
+      end
+    else
+      head :forbidden
+    end
+  end
+
+
+
+
+
+  def accesses_list_save
+    if ITicket.check_security_officer(User.current)
+      issue_name = params[:issue_name]
+      description = params[:description]
+      user_id = User.current.id
+      itickets_ids = []
+      at_pr = ISetting.active.where(:param => "at_project_id").first.value
+      tr_r = ISetting.active.where(:param => "tr_grant_id").first.value
+      bs_id = ISetting.active.where(:param => "blocked_issue_status_id").first.value
+      #old_tickets = ITicket.active.where(:issue_id => issue_id) # mark as deleted prev tickets for this issue
+      #if !old_tickets.empty?
+      #  old_tickets.update_all(:deleted => true)
+      #end
+      exist_accesses = []
+      #issue = Issue.where(:id => issue_id).first
+      if params[:group_id].present? && params[:template_id].present? #&& ISetting.active.where(:param => "at_simple_approvement").first.value.to_i == 1
+        #rawData = JSON.parse(params[:i_tickets])
+        group_id = params[:group_id]
+        i_ticktemplate_id = params[:template_id]
+        #vData = ITicket.verify_tickets_for_simple_approvement(rawData, group_id, i_ticktemplate_id, issue_id)
+        vData = JSON.parse(params[:i_tickets])
+        inputData = ITicket.verify_tickets_for_duplicates(vData)
+        exist_accesses = inputData[:exist_accesses]
+        t_uid = SecureRandom.hex(5)
+        if !inputData[:ticktets].empty?
+          i = Issue.create(:tracker_id => tr_r, :project_id => at_pr, :author_id => user_id, :assigned_to_id => user_id,:subject => issue_name, :description => description, :priority_id => 1, :status_id => bs_id)
+          i.save
+          issue_id = i.id
+          cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
+          cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
+          cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
+          cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id).update_all(:value => 1)
+          inputData[:ticktets].each do |object|
+            r_uid = SecureRandom.hex(5)
+            if object["user_id"] == nil
+              object["user_id"] = []
+              object["user_id"].push(0)
+            end
+            object["user_id"].each do |user|
+              object["role_id"].each do |role|
+                if object["description"].nil?
+                  description = ""
+                else
+                  description = object["description"]
+                end
+                iticket = ITicket.new(:user_id => user, :i_role_id => role, :t_uid => t_uid, :i_resource_id => object["resource_id"], :r_uid => r_uid,
+                  :description => description, :s_date => object["s_date"], :e_date => object["e_date"], :f_date => object["e_date"], :issue_id => issue_id,:verified_by_id => user_id, :verified_at => Time.now,:approved_by_id => user_id, :approved_at => Time.now)
+                iticket.save
+                itickets_ids.push(iticket.id)
+                if object["entity_id"]
+                  object["entity_id"].each do |entity|
+                    itickentity = iticket.itickentities.new(:i_entity_id => entity)
+                    itickentity.save
+                  end
+                end
+              end
+            end
+          #ITicket.verify_tickets_by_security(issue_id, 1)
+          #ITicket.active.where(:issue_id => issue_id).update_all(:approved_by_id => user_id, :approved_at => Time.now) ####?????
+          #issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "admin_group_id").first.value)
+
+          end
+        end
+
+
+      else
+        vData = JSON.parse(params[:i_tickets])
+        inputData = ITicket.verify_tickets_for_duplicates(vData)
+        exist_accesses = inputData[:exist_accesses]
+        t_uid = SecureRandom.hex(5)
+        if !inputData[:ticktets].empty?
+          i = Issue.create(:tracker_id => tr_r, :project_id => at_pr, :author_id => user_id, :assigned_to_id => user_id,:subject => issue_name, :description => description, :priority_id => 1, :status_id => bs_id)
+          i.save
+          issue_id = i.id
+          cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
+          cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
+          cf_granting_id = ISetting.active.where(:param => "cf_granting_id").first.value
+          cf_confirming_id = ISetting.active.where(:param => "cf_confirming_id").first.value
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_granting_id).update_all(:value => 1)
+          CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_confirming_id).update_all(:value => 1)
+          inputData[:ticktets].each do |object|
+            r_uid = SecureRandom.hex(5)
+            object["user_id"].each do |user|
+              object["role_id"].each do |role|
+                if object["description"].nil?
+                  description = ""
+                else
+                  description = object["description"]
+                end
+                iticket = ITicket.new(:user_id => user, :i_role_id => role, :t_uid => t_uid, :i_resource_id => object["resource_id"], :r_uid => r_uid, :description => description, :s_date => Date.parse(object["s_date"]), :e_date => Date.parse(object["e_date"]), :f_date => Date.parse(object["e_date"]), :issue_id => issue_id, :verified_by_id => user_id, :verified_at => Time.now,:approved_by_id => user_id, :approved_at => Time.now)
+                iticket.save
+                itickets_ids.push(iticket.id)
+                if object["entity_id"]
+                  object["entity_id"].each do |entity|
+                    itickentity = iticket.itickentities.new(:i_entity_id => entity)
+                    itickentity.save
+                  end
+                end
+              end
+            end
+          end
+        end
+
+        #issue.update_attributes(:assigned_to_id => ISetting.active.where(:param => "sec_group_id").first.value)
+      end
+
+      if !itickets_ids.empty?
+        itickets = ITicket.active.where(:id => itickets_ids)
+        itickets.each do |iticket|
+          if iticket.iaccesses.active.count > 0
+            iticket.iaccesses.active.each  { |access| access.delete }
+          end
+        end
+        itickets.each do |iticket|
+          if iticket.ientities.empty?
+              iaccess = IAccess.new(:i_ticket_id => iticket.id, :granted_by_id => user_id, :granted_at => Time.now, :confirmed_by_id => user_id, :confirmed_at => Time.now)
+              iaccess.save
+          else
+            iticket.ientities.each {|entity|
+              iaccess = IAccess.new(:i_ticket_id => iticket.id, :granted_by_id => user_id, :granted_at => Time.now, :confirmed_by_id => user_id, :confirmed_at => Time.now, :i_entity_id => entity.id)
+              iaccess.save
+            }
+          end
+        end
+      end
+
+
+      #issue = Issue.where(:id => issue_id).first
+      #issue.watcher_user_ids = issue.watcher_user_ids | ITicket.resowners_for_issue(issue_id)
+
+      #issue.save
+      #ITicket.check_itickets_for_verified(issue_id)
+      #ITicket.check_itickets_for_approved(issue_id)
+      #ITicket.check_itickets_for_granted(issue_id)
+      #ITicket.check_itickets_for_confirmed(issue_id)
+      #check_issue_status = 0
+      #show_last_ticket_version = 0
+      tickets = itickets_ids.count
+      respond_to do |format|
+        format.json { render :json =>  [tickets, issue_id, exist_accesses] } # show_last_ticket_version, check_issue_status
       end
     else
       head :forbidden

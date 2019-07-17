@@ -14,6 +14,8 @@ match '/access_tickets/accesses_list/export_accesses', :controller => 'iaccesses
 
 match '/access_tickets/accesses_list/export_all_accesses', :controller => 'iaccesses', :action => 'export_all_accesses', :via => :post
 
+match '/access_tickets/accesses_list/add_accesses', :controller => 'iaccesses', :action => 'add_accesses', :via => :post
+
 match '/access_tickets/show_accesses', :controller => 'iaccesses', :action => 'show_accesses', :via => :post
 
 match '/access_tickets/show_resources_list', :controller => 'iresources', :action => 'show_resources_list', :via => :post
@@ -155,6 +157,8 @@ match '/access_tickets/reject_tickets', :controller => 'itickets', :action => 'r
 match '/access_tickets/access_templates', :controller => 'iaccesses', :action => 'access_templates', :via => :get
 
 match '/access_tickets/accesses_list', :controller => 'iaccesses', :action => 'accesses_list', :via => :get
+
+match '/access_tickets/accesses_list_save', :controller => 'iaccesses', :action => 'accesses_list_save', :via => :post
 
 match '/access_tickets/show_accesses', :controller => 'iaccesses', :action => 'show_accesses', :via => :post
 
