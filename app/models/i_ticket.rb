@@ -21,7 +21,7 @@ class ITicket < ActiveRecord::Base
   scope :deleted, -> { where(deleted: true) }
   scope :active, -> { where(deleted: false) }
 
-  attr_accessible  :may_be_granted, :may_be_revoked,:i_ticktemplate_id, :description, :t_uid, :r_uid, :f_date, :e_date, :s_date, :user_id, :i_resource_id, :i_role_id, :deleted, :issue_id, :created_at, :updated_at
+  attr_accessible  :approved_at,:approved_by_id,:verified_by_id,:verified_at,:may_be_granted, :may_be_revoked,:i_ticktemplate_id, :description, :t_uid, :r_uid, :f_date, :e_date, :s_date, :user_id, :i_resource_id, :i_role_id, :deleted, :issue_id, :created_at, :updated_at
 
   belongs_to :issue, :class_name => "Issue", :foreign_key => "issue_id"
   belongs_to :user, :class_name => "User", :foreign_key => "user_id"
@@ -73,7 +73,7 @@ class ITicket < ActiveRecord::Base
           object["user_id"].each do |user|
             user_accesses = IAccess.accesses_list_by_resource_for_user(user,object["resource_id"])#IAccess.accesses_list(user)
             if !user_accesses.empty? && !object["resource_id"].nil? && !object["role_id"].nil?
-              duplicated_entities = [] 
+              duplicated_entities = []
               not_duplicated_entities = []
               user_accesses.each do |access|
                 exist_access = {}
@@ -112,7 +112,7 @@ class ITicket < ActiveRecord::Base
                         IRole.where(:id => exist_access["role_id"]).each do |role|
                           exist_access["i_roles"].push(role.name)
                         end
-                        exist_access["entity_id"] = object["entity_id"].map(&:to_i) & access[:i_entities_id] 
+                        exist_access["entity_id"] = object["entity_id"].map(&:to_i) & access[:i_entities_id]
                         exist_access["ientities"] = []
                         IEntity.where(:id => exist_access["entity_id"]).select([:id,:name,:ipv4]).each do |entity|
                           if entity.iresource.has_ip
@@ -148,7 +148,7 @@ class ITicket < ActiveRecord::Base
           exist_accesses_by_r_uid = []
           exist_accesses_users = []
           exist_accesses.each do |ea_r_uid|
-            if ea_r_uid["r_uid"] == object["r_uid"] 
+            if ea_r_uid["r_uid"] == object["r_uid"]
               exist_accesses_users = exist_accesses_users + ea_r_uid["users_ids"]
               exist_accesses_by_r_uid.push(ea_r_uid)
             end
@@ -264,12 +264,12 @@ class ITicket < ActiveRecord::Base
     tickets = []
     if IGrouptemplate.where(:group_id => group_id, :i_ticktemplate_id => i_ticktemplate_id).count > 0
       tracker_id = Issue.find(issue_id).tracker_id
-      tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i 
+      tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
       templ_using_issue_id = ITicktemplate.where(:id => i_ticktemplate_id).first[:using_issue_id]
       template_uids =  ITicket.active.where(:issue_id => templ_using_issue_id,:i_ticktemplate_id => i_ticktemplate_id).map(&:r_uid).uniq
       group_users_ids = User.in_group(group_id).map(&:id).uniq
       if !rawData.empty?
-        rawData.each do |object|  
+        rawData.each do |object|
           if object["r_uid"].in?(template_uids)
             user_ids = []
             if tracker_id != tr_new_emp_id
@@ -297,7 +297,7 @@ class ITicket < ActiveRecord::Base
                 elsif !(template_entities & object_entities).empty?
                   ticket["entity_id"] = template_entities & object_entities
                 else
-                  ticket["entity_id"] = template_entities 
+                  ticket["entity_id"] = template_entities
                 end
               end
               if object["s_date"].nil?
@@ -404,12 +404,12 @@ class ITicket < ActiveRecord::Base
       ticket[:uid] = hash
       #ticket[:e_date] = IticketsController.check_itickets_for_period(ticket[:e_date])
       users = self.active.where(:issue_id => issue_id, :r_uid => hash).select(:user_id).map(&:user_id).uniq
-      users.each {|id| 
+      users.each {|id|
         object = {}
-        if id == 0 
+        if id == 0
           object[:id] = 0
           object[:name] = ""
-        else 
+        else
           object[:id] = id
           object[:name] = User.where(:id => id).first.name
         end
@@ -466,7 +466,7 @@ class ITicket < ActiveRecord::Base
         end
       end
       ticket[:i_roles] = []
-      self.active.where(:issue_id => issue_id, :r_uid => hash).select(:i_role_id).map(&:i_role_id).uniq.each {|id| 
+      self.active.where(:issue_id => issue_id, :r_uid => hash).select(:i_role_id).map(&:i_role_id).uniq.each {|id|
         ticket[:i_roles].push(IRole.where(:id => id).first.name)
       }
       ticket[:ientities] = []
@@ -478,7 +478,7 @@ class ITicket < ActiveRecord::Base
         end
       }
       tickets.push(ticket)
-    end  
+    end
     tickets
   end
 
@@ -503,7 +503,7 @@ class ITicket < ActiveRecord::Base
       ticket[:s_date] = s_date
       ticket[:e_date] = e_date
       tickets.push(ticket)
-    end  
+    end
     tickets
   end
 
@@ -594,10 +594,10 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.reject_tickets_by_security(issue_id, user_id)
-    
+
     tracker_id = Issue.find(issue_id).tracker_id
     tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
-    if tracker_id == tr_new_emp_id 
+    if tracker_id == tr_new_emp_id
       ITicket.active.where(:issue_id => issue_id).update_all(:verified_by_id => nil, :verified_at => nil, :user_id => 0, :approved_by_id => nil, :approved_at => nil)
     else
       ITicket.active.where(:issue_id => issue_id).update_all(:verified_by_id => nil, :verified_at => nil)
@@ -665,7 +665,7 @@ class ITicket < ActiveRecord::Base
       may_be_revoke_grant = IAccess.may_be_revoke_grant_by_issue_status(issue_id, user_id) ? 1 : 0
       access_confirmer = IAccess.check_access_confirmer(issue_id, User.where(:id => user_id).first) ? 1 : 0
       may_be_set_ticket_user = ITicket.may_be_set_ticket_user(issue_id, user_id) ? 1 : 0
-      #            0           1              2           3              4                 5                6              7               8                       9 .                             
+      #            0           1              2           3              4                 5                6              7               8                       9 .
       return cf_verified, cf_approved, cf_granting, cf_confirming, tickets_count, security_officer, may_be_approved, may_be_revoked, may_be_grant_access, may_be_revoke_grant, access_confirmer, may_be_set_ticket_user
       #     10                     11
     end
@@ -706,7 +706,7 @@ class ITicket < ActiveRecord::Base
         cf_confirming_v = cf_confirming.first.value
       end
       all_tickets_count = ITicket.active.where(:issue_id => issue_id).count
-      if all_tickets_count > 0 
+      if all_tickets_count > 0
         verified_tickets_count = ITicket.active.where("i_tickets.verified_by_id IS NOT NULL").where(:issue_id => issue_id).count
         if all_tickets_count != verified_tickets_count
           cf_verified.update_all(:value => 0)
@@ -811,7 +811,7 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.check_itickets_for_verified(issue_id) # Not used
-    if ITicket.active.where(:issue_id => issue_id).count > 0 
+    if ITicket.active.where(:issue_id => issue_id).count > 0
       cf_verified_id = ISetting.active.where(:param => "cf_verified_id").first.value
       if ITicket.active.where(:issue_id => issue_id).count == ITicket.active.where("i_tickets.verified_by_id IS NOT NULL").where(:issue_id => issue_id).count
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_verified_id).update_all(:value => 1)
@@ -824,7 +824,7 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.check_itickets_for_approved(issue_id)
-    if ITicket.active.where(:issue_id => issue_id).count > 0 
+    if ITicket.active.where(:issue_id => issue_id).count > 0
       cf_approved_id = ISetting.active.where(:param => "cf_approved_id").first.value
       if ITicket.active.where(:issue_id => issue_id).count == ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id).count
         CustomValue.where(:customized_type => "Issue",:customized_id => issue_id, :custom_field_id => cf_approved_id).update_all(:value => 1)
@@ -842,7 +842,7 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.check_itickets_for_granted(issue_id)
-    if ITicket.active.where(:issue_id => issue_id).count > 0 
+    if ITicket.active.where(:issue_id => issue_id).count > 0
       i = 0
       ITicket.active.where(:issue_id => issue_id).each do |iticket|
         if iticket.iaccesses.active.count > 0
@@ -863,7 +863,7 @@ class ITicket < ActiveRecord::Base
   end
 
   def self.check_itickets_for_confirmed(issue_id)
-    if ITicket.active.where(:issue_id => issue_id).count > 0 
+    if ITicket.active.where(:issue_id => issue_id).count > 0
       i = 0
       ITicket.active.where(:issue_id => issue_id).each do |iticket|
         if iticket.iaccesses.active.count > 0
@@ -897,7 +897,7 @@ class ITicket < ActiveRecord::Base
 
   def self.may_be_revoked_by_owner_status(issue_id, owner_id, r_uid = nil)
     #if ITicket.check_issue_status(issue_id)[0..1] == [1,0] &&
-    if ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count > 0 
+    if ITicket.active.where("i_tickets.approved_by_id IS NOT NULL").where(:issue_id => issue_id,:i_resource_id => IResowner.where(:user_id => owner_id).map(&:i_resource_id)).count > 0
         tracker_id = Issue.find(issue_id).tracker_id
         tr_new_emp_id = ISetting.active.where(:param => "tr_new_emp_id").first.value.to_i
         tr_grant_id = ISetting.active.where(:param => "tr_grant_id").first.value.to_i
@@ -932,4 +932,3 @@ class ITicket < ActiveRecord::Base
 
 
 end
-

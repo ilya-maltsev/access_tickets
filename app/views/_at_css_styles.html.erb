@@ -21,6 +21,10 @@
 
 <% light_border_color = "#52AFE5" %>
 
+<% background_color = "#f6f6f6" %>
+
+
+
 table.dataTable {
   width: 100% !important;
 }
@@ -171,11 +175,11 @@ div#ticket_action {
 }
 
 div#user_management {
-  text-align: center; 
-  width: 350px; 
-  float: left; 
-  margin-right: 10px; 
-  margin-left: 10px; 
+  text-align: center;
+  width: 350px;
+  float: left;
+  margin-right: 10px;
+  margin-left: 10px;
   margin-top: 5px;
 }
 
@@ -236,12 +240,25 @@ fieldset legend h4 {
 <% else %>
 /*------for standard redmine ---<%= SecureRandom.hex(5) %>---*/
 
+
+
+
+
 <% border_color = "#628db6"   %>
 <% light_border_color = "#759fcf" %>
+
+<% background_color = "#f9f9f9" %>
+
+a.search-choice-close {
+  transition-duration: 0s !important;
+}
+
+
 td .icon-add, th .icon-add {
 
   cursor: pointer;
-  background-image: url(../images/add.png);  
+/* disabled_for_minelab
+  background-image: url(../images/add.png);  */
   background-position: 0% 50%;
   background-repeat: no-repeat;
   padding-left: 20px;
@@ -251,7 +268,7 @@ td .icon-add, th .icon-add {
 
 td .icon-import, th .icon-import {
   cursor: pointer;
-  background-image: url(../images/2downarrow.png);  
+  background-image: url(../images/2downarrow.png);
   background-position: 0% 50%;
   background-repeat: no-repeat;
   padding-left: 20px;
@@ -262,7 +279,7 @@ td .icon-import, th .icon-import {
 
 td .icon-export, th .icon-export {
   cursor: pointer;
-  background-image: url(../images/2uparrow.png);  
+  background-image: url(../images/2uparrow.png);
   background-position: 0% 50%;
   background-repeat: no-repeat;
   padding-left: 20px;
@@ -304,19 +321,34 @@ button {
 
 table#resources_list tr td {
   vertical-align: middle;
-  background-color:#f6f6f6;
+  background-color:<%= background_color %>;
 }
 
 table.dataTable th.sorting_disabled {
-  background-color: #f6f6f6 !important;
+  background-color: <%= background_color %> !important;
 }
 
 table.dataTable th {
-  background-color: #f6f6f6 !important;
+  background-color: <%= background_color %> !important;
 }
 
 table.dataTable tbody tr {
-  background-color: #f6f6f6 !important;
+  background-color: <%= background_color %> !important;
+  border-bottom-color: <%= background_color %> !important;
+}
+
+
+table.dataTable, table.dataTable tbody, table.dataTable tbody tr td {
+
+  border-bottom-color: <%= background_color %> !important;
+}
+
+#footer {
+  display: none;
+}
+
+.ui-widget-content {
+  background-color: <%= background_color %> !important;
 }
 
 td .icon-cf {
@@ -360,9 +392,14 @@ td .icon-save {
 }
 
 button.icon-del {
-    color: #F78282 !important;line-height: 30px !important; font-size: 15px !important; cursor: pointer;
+    color: #446E9B !important;
+    /*line-height: 30px !important;*/
+
+     font-size: 15px !important;
+
+      cursor: pointer;
     margin-left: 10px;
-    background-image: url(../images/delete.png);
+    /*background-image: url(../images/delete.png);*/
     padding-right: 8px;
     background-position: 0% 50%;
     background-repeat: no-repeat;
@@ -370,7 +407,7 @@ button.icon-del {
     padding-top: 0px;
     padding-bottom: 3px;
     font-size: 0.9em;
-    background-color: #F6F6F6 !important;
+    background-color: <%= background_color %> !important;
     width: 16px !important;
     height: 16px !important;
     border: none !important;
@@ -400,11 +437,11 @@ height:30px;
 }
 
 .button-5:hover {
-  
+
 }
 
 .button-6:hover {
-  
+
 }
 
 .ui-dialog-buttonpane{
@@ -429,7 +466,7 @@ div.ui-dialog-buttonset button.ui-button {
 }
 
 .dataTables_length {
-  width:99%;
+  width:100%;
   /*margin-left:5px;
   margin-right: 5px;
   /*height:39px;*/
@@ -440,7 +477,7 @@ div.ui-dialog-buttonset button.ui-button {
 
 .ui-dialog .ui-dialog-content {
   padding: 0px !important;
-  background-color: #F6F6F6 !important;
+  background-color: <%= background_color %> !important;
   }
 
 div#ticket_action {
@@ -456,11 +493,11 @@ table.dataTable thead th {
 
 
 .at_background_red {
-  
+
 }
 
 .at_background_blue {
-  
+
 }
 
 .at_background_green {
@@ -474,11 +511,11 @@ table.dataTable thead th {
 
 
 div#user_management {
-  text-align: center; 
-  width: 350px; 
-  float: left; 
-  margin-right: 10px; 
-  margin-left: 10px; 
+  text-align: center;
+  width: 350px;
+  float: left;
+  margin-right: 10px;
+  margin-left: 10px;
   margin-top: 0px;
 }
 
@@ -490,6 +527,7 @@ button.ui-datepicker-trigger {
   margin: 4px 0px 0px -20px !important;
   vertical-align: top;
   text-indent: -9999px;
+  box-sizing: border-box;
 }
 
 #s_date, #e_date {
@@ -504,8 +542,8 @@ table.dataTable tbody tr td {
 }
 
 div#ticket_action, .dataTables_length, div#resource_action{
-  background-color: #F6F6F6;
-  border: 1px solid #E6E6E6;
+  background-color: <%= background_color %>;
+  border: 0px solid #E6E6E6;
   padding: 8px;
   margin-bottom: 10px;
 }
@@ -580,7 +618,7 @@ div.param-label {
 
 /*div.param-label {
 width : 300px;display:inline-block;text-align:right;vertical-align:middle;
-  
+
 }*/
 
 
@@ -629,12 +667,12 @@ border-right:  none ;
 }
 
 #entity_list tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #entity_list tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -643,11 +681,11 @@ width: 200px !important;
   height: 20px ;
   /*width: 190px;*/
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 
@@ -722,12 +760,12 @@ border-right:  none ;
 }
 
 #show_expired_accesses tbody tr td select,#resources_list tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #show_expired_accesses tbody tr td select.user_id,#resources_list tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -736,11 +774,11 @@ width: 200px !important;
   height: 20px ;
   width: 190px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 #show_expired_accesses tbody tr td textarea:focus {
@@ -784,12 +822,12 @@ border-right:  none ;
 }
 
 #show_user_access tbody tr td select,#resources_list tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #show_user_access tbody tr td select.user_id,#resources_list tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -798,11 +836,11 @@ width: 200px !important;
   height: 20px ;
   width: 190px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 #show_user_access tbody tr td textarea:focus {
@@ -848,12 +886,12 @@ border-right:  none ;
 }
 
 #show_access tbody tr td select,#resources_list tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #show_access tbody tr td select.user_id,#resources_list tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -862,11 +900,11 @@ width: 200px !important;
   height: 20px ;
   width: 190px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 #show_access tbody tr td textarea:focus {
@@ -926,11 +964,11 @@ border-right:  none ;
   height: 70px ;
   width: 250px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 #edit_ticket tbody tr td textarea:focus {
@@ -977,12 +1015,12 @@ border-right:  none ;
 }
 
 #exist_accesses tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #exist_accesses tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -991,11 +1029,11 @@ width: 200px !important;
   height: 20px ;
   width: 190px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 #exist_accesses tbody tr td textarea:focus {
@@ -1038,12 +1076,12 @@ border-right:  none ;
 }
 
 #show_ticket tbody tr td select {
-width: 175px ; 
+width: 175px ;
 
 }
 
 #show_ticket tbody tr td select.user_id {
-width: 200px !important; 
+width: 200px !important;
 
 }
 
@@ -1052,24 +1090,30 @@ width: 200px !important;
   height: 20px ;
   width: 190px;
   font-size: 13px;
-  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);  
-  background: linear-gradient(bottom, #fcfcfc , #fff);  
-  border: 1px solid #ccc;  padding: 6px 3px;  
-  box-sizing: border-box;  
+  background: -moz-linear-gradient(bottom, #fcfcfc , #fff);
+  background: -webkit-linear-gradient(bottom, #fcfcfc , #fff);
+  background: linear-gradient(bottom, #fcfcfc , #fff);
+  border: 1px solid #ccc;  padding: 6px 3px;
+  box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
+
 #show_ticket tbody tr td textarea:focus {
   border: 1px solid #5897fb;
 }
 
+table.dataTable thead .sorting_asc {
 
 
+}
 
+table.dataTable thead .sorting_asc {
+
+}
 
 #table-error {
 
-  width:30%; 
+  width:30%;
   background: url("../images/exclamation.png") no-repeat left;
   padding-left:20px;
   margin:10px 0 0 10px;
@@ -1094,7 +1138,7 @@ margin-bottom: 4px;
   padding: 0px !important;
   margin-top: 8px!important;
   width:30px !important;
-  line-height: 0.7 !important; 
+  line-height: 0.7 !important;
   height:30px !important;
   background-color: <%= border_color %>
 }
@@ -1103,7 +1147,7 @@ margin-bottom: 4px;
   padding: 0px 22px !important;
   margin-top: 8px!important;
   width:30px !important;
-  line-height: 0.7 !important; 
+  line-height: 0.7 !important;
   height:30px !important;
   background-color: #F78282 !important
 }
@@ -1128,10 +1172,10 @@ margin-bottom: 4px;
 }
 
 input#hide_revoked {
-  height:13px; 
-  width:13px; 
-  padding:0; 
-  margin-top:4px; 
+  height:13px;
+  width:13px;
+  padding:0;
+  margin-top:4px;
   margin-bottom:6px;
   vertical-align:middle; /* mozilla */
   /*vertical-align:top; chromium*/
@@ -1140,10 +1184,10 @@ input#hide_revoked {
 
 input.entity_checker {
   cursor: pointer;
-  height:13px; 
-  width:13px; 
-  padding:0; 
-  margin-top:5px; 
+  height:13px;
+  width:13px;
+  padding:0;
+  margin-top:5px;
   margin-bottom:6px;
   vertical-align:middle; /* mozilla */
   /*vertical-align:top; chromium*/
@@ -1151,7 +1195,7 @@ input.entity_checker {
 
 label.entity_caption {
   line-height:21px;
-  display:inline-block; 
+  display:inline-block;
   vertical-align:top;
 }
 
@@ -1197,21 +1241,21 @@ input, textarea, button {
   padding-left:10px !important;
 }
 
-.blink2 { 
-  -webkit-animation: blink2 1s linear infinite; animation: blink2 1s linear infinite; 
-  } 
-  @-webkit-keyframes blink2 { 
-    100% { 
+.blink2 {
+  -webkit-animation: blink2 1s linear infinite; animation: blink2 1s linear infinite;
+  }
+  @-webkit-keyframes blink2 {
+    100% {
       /*color: rgba(34, 34, 34, 0); */
     color: #F78282;
-    } 
-  } 
+    }
+  }
   @keyframes blink2 {
-  100% { 
+  100% {
     /*color: rgba(34, 34, 34, 0); */
     color: #F78282;
-  } 
-} 
+  }
+}
 
 
 

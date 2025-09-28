@@ -23,6 +23,8 @@ class ISetting < ActiveRecord::Base
 
   attr_accessible :param, :value, :updated_at, :updated_by_id, :deleted
 
+
+
   def self.check_config
     if ISetting.active.all.count == ISetting.values_map.count && Project.where(:id => ISetting.active.where(:param => "at_project_id").first.value).count > 0
       true
@@ -68,7 +70,7 @@ class ISetting < ActiveRecord::Base
   def self.set_basic_settings(params)
 
     ISetting.active.update_all(:deleted =>  1)
-    
+
     if ISetting.active.where(:param => "at_simple_approvement").count == 0
       ISetting.create(:param => "at_simple_approvement", :value => 0, :deleted => 0 )
     end
@@ -502,4 +504,3 @@ def self.get_plugin_config
 
 
 end
-

@@ -459,10 +459,10 @@ $('#entity_list').DataTable({
 
 
 
-  $('#resource_action').append('<div id="resource_attr" style="height: 30px; line-height: 30px; padding: 0;margin-right:10px"></div>');
+  $('#resource_action').append('<div id="resource_attr" style="text-align: left;width : 100%;float: left;margin-right:10px;margin-top:10px;height: 40px; padding: 0;"></div>');
 
 
-  $('#resource_attr').append('<div style="height:30px;width : 150px;display:inline-block;text-align:right"><label style="" for="resource_name"><%= l(:at_resource_name) %>:</label></div><div style="display:inline-block;"><%=j text_field_tag("edit_resource_name", @resource.name, :title => l(:at_resource_name), :res_id => @resource.id,:placeholder => l(:at_resource_name), :style=>"width:340px;margin-left:10px;", :maxlength => "64", :class => "at_input"  ) %></div>');
+  $('#resource_attr').append('<div style="height:30px;width : 150px;display:inline-block;text-align:right"><label style="" for="resource_name"><%= l(:at_resource_name) %>:</label></div><div style="height:50px;display:inline-block;vertical-align:middle"><%=j text_field_tag("edit_resource_name", @resource.name, :title => l(:at_resource_name), :res_id => @resource.id,:placeholder => l(:at_resource_name), :style=>"width:340px;margin-left:10px;", :maxlength => "64", :class => "at_input"  ) %></div>');
 
 
   $('#resource_attr').append('<div align="center" id="label_switch_entities" style="width:15%;display:inline-block;margin-left:10px"><%=j label_tag(:has_entities_id, l(:at_has_entities)) %>:</div>');
@@ -501,7 +501,7 @@ $('#entity_list').DataTable({
     $('#role_id').chosen(ch_opts);
     $('#role_id_chosen').attr("style","margin-bottom:3px;margin-left:10px;");
     $("#role_id_chosen").addClass( "role_name_width" );
-    $('#role_action').append("<%=j button_tag(l(:at_remove), :id => 'at_irole_remove', :type => 'button', :class => 'button-2 remove-button at_background_red', :title => l(:at_remove_role),:style => 'margin-left: 0px;margin-right: 30px;float:right') %><%=j button_tag(l(:at_add), :id => 'at_irole_add', :type => 'button', :class => 'button-1 add-button', :style => 'margin-left:10px') %><%=j text_field_tag('at_irole_name', nil, :title => l(:at_role_name), :placeholder => l(:at_role_name), :maxlength => "32", :class => 'at_input role_name_width',:style=>'width: 220px;margin-right:10px;vertical-align:top;' ) %><%=j button_tag(l(:at_edit), :id => 'at_irole_edit', :type => 'button', :class => 'button-2 edit-button', :style => 'margin: 0px !important') %>");
+    $('#role_action').append("<%=j button_tag(l(:at_remove), :id => 'at_irole_remove', :type => 'button', :class => 'button-2 remove-button at_background_red', :title => l(:at_remove_role),:style => 'margin-left: 0px;margin-right: 30px;float:right') %><%=j button_tag(l(:at_add), :id => 'at_irole_add', :type => 'button', :class => 'button-1 add-button', :style => 'margin-left:10px;margin-top:-3px') %><%=j text_field_tag('at_irole_name', nil, :title => l(:at_role_name), :placeholder => l(:at_role_name), :maxlength => "32", :class => 'at_input role_name_width',:style=>'width: 230px !important;margin-right:13px;vertical-align:top;' ) %><%=j button_tag(l(:at_edit), :id => 'at_irole_edit', :type => 'button', :class => 'button-2 edit-button', :style => 'margin: -3px 0px 0px 0px !important') %>");
 
     $('#resource_action').append('<div id="role_action2" style="text-align:left;width:100%;display:inline-block;float: left;margin-right:10px;height: 30px; line-height: 30px; padding: 0;margin-top:10px"></div>');
     $('#role_action2').append('<div style="width : 150px;display:inline-block;text-align:right;vertical-align:top;"><%=j label_tag(:at_l_roles_desc, l(:at_role_desc)) %>:</div>');
